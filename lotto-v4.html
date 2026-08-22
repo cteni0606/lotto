@@ -76,12 +76,13 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
     </div>
     <input id="auth-email" type="email" placeholder="이메일" autocomplete="email" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:9px">
     <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:#7080A0;margin-bottom:8px"><input type="checkbox" id="auth-remember" checked style="width:16px;height:16px;accent-color:#2563EB"> 이메일 저장</label>
     <div id="auth-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
     <button id="auth-submit" onclick="doAuth()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">로그인</button>
     <button onclick="toggleAuthMode()" id="auth-toggle" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#7080A0;font-size:12px;margin-bottom:14px">처음이신가요? 회원가입</button>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div><span style="font-size:10px;color:#5A6A8E">또는</span><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div></div>
-    <button onclick="doOAuth('google')" style="width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:#fff;color:#1a1a2e;font-weight:700;font-size:13px;margin-bottom:8px">G&nbsp; 구글로 계속하기</button>
-    <button onclick="doOAuth('kakao')" style="width:100%;padding:12px;border-radius:11px;border:none;background:#FEE500;color:#191919;font-weight:700;font-size:13px">💬 카카오로 계속하기</button>
+    <button id="oauth-google" onclick="doOAuth('google')" style="width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:#fff;color:#1a1a2e;font-weight:700;font-size:13px;margin-bottom:8px">G&nbsp; 구글로 계속하기</button>
+    <button id="oauth-kakao" onclick="doOAuth('kakao')" style="width:100%;padding:12px;border-radius:11px;border:none;background:#FEE500;color:#191919;font-weight:700;font-size:13px">💬 카카오로 계속하기</button>
   </div>
 </div>
 
@@ -111,7 +112,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login'};
+var state={session:null,level:0,mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -272,7 +273,18 @@ function doTab(id){
 }
 
 // ── 인증 ──
-function openAuth(){state.authMode='login';syncAuthUI();document.getElementById('auth-modal').style.display='block';}
+function openAuth(){
+  state.authMode='login';syncAuthUI();
+  var saved='';try{saved=localStorage.getItem('lotto-last-email')||'';}catch(e){}
+  var em=document.getElementById('auth-email');if(em&&!em.value&&saved)em.value=saved;
+  syncOAuthButtons();
+  document.getElementById('auth-modal').style.display='block';
+}
+function syncOAuthButtons(){
+  var g=document.getElementById('oauth-google'),k=document.getElementById('oauth-kakao');
+  if(g){if(state.providers.google){g.style.opacity='1';g.innerHTML='G&nbsp; 구글로 계속하기';}else{g.style.opacity='.45';g.innerHTML='G&nbsp; 구글 로그인 (준비 중)';}}
+  if(k){if(state.providers.kakao){k.style.opacity='1';k.innerHTML='💬 카카오로 계속하기';}else{k.style.opacity='.45';k.innerHTML='💬 카카오 로그인 (준비 중)';}}
+}
 function closeAuth(){document.getElementById('auth-modal').style.display='none';document.getElementById('auth-msg').textContent='';}
 function toggleAuthMode(){state.authMode=state.authMode==='login'?'signup':'login';syncAuthUI();}
 function syncAuthUI(){
@@ -290,14 +302,33 @@ function doAuth(){
   msg.style.color='#7080A0';msg.textContent='처리 중...';
   var p=state.authMode==='login'?sb.auth.signInWithPassword({email:email,password:pw}):sb.auth.signUp({email:email,password:pw});
   p.then(function(res){
-    if(res.error){msg.style.color='#F87171';msg.textContent=res.error.message;return;}
+    if(res.error){msg.style.color='#F87171';msg.textContent=authErrKo(res.error.message);return;}
+    try{
+      var rm=document.getElementById('auth-remember');
+      if(rm&&rm.checked)localStorage.setItem('lotto-last-email',email);
+      else localStorage.removeItem('lotto-last-email');
+    }catch(e){}
     closeAuth();
   });
 }
+function authErrKo(m){
+  if(!m)return '오류가 발생했습니다.';
+  if(m.indexOf('Invalid login credentials')>=0)return '이메일 또는 비밀번호가 올바르지 않습니다.';
+  if(m.indexOf('already registered')>=0)return '이미 가입된 이메일입니다. 로그인해 주세요.';
+  if(m.indexOf('at least 6')>=0)return '비밀번호는 6자 이상이어야 합니다.';
+  if(m.indexOf('valid email')>=0||m.indexOf('invalid format')>=0)return '올바른 이메일 주소를 입력해 주세요.';
+  if(m.indexOf('rate limit')>=0||m.indexOf('Too many')>=0)return '시도가 너무 잦습니다. 잠시 후 다시 시도해 주세요.';
+  return m;
+}
 function doOAuth(provider){
+  var msg=document.getElementById('auth-msg');
+  if(!state.providers[provider]){
+    if(msg){msg.style.color='#FBBF24';msg.textContent=(provider==='google'?'구글':'카카오')+' 로그인은 준비 중입니다. 이메일로 가입해 주세요.';}
+    return;
+  }
   sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:window.location.origin+window.location.pathname}})
     .then(function(res){
-      if(res.error){var msg=document.getElementById('auth-msg');msg.style.color='#F87171';msg.textContent=provider+' 로그인이 아직 설정되지 않았습니다.';}
+      if(res.error&&msg){msg.style.color='#F87171';msg.textContent='소셜 로그인 실패: '+res.error.message;}
     });
 }
 function doLogout(){sb.auth.signOut();state.rec=null;}
@@ -314,6 +345,23 @@ sb.auth.onAuthStateChange(function(ev,session){
   state.session=session;state.rec=null;state.mode='wide';
   loadProfile(refresh);
 });
+// 활성 프로바이더 조회 → 버튼 상태 반영
+fetch(SB_URL+'/auth/v1/settings',{headers:{apikey:SB_ANON}})
+  .then(function(r){return r.json();})
+  .then(function(j){
+    if(j&&j.external){state.providers.google=!!j.external.google;state.providers.kakao=!!j.external.kakao;}
+    syncOAuthButtons();
+  }).catch(function(e){});
+// 소셜 로그인 실패로 리디렉트된 경우 안내
+try{
+  if(window.location.hash&&window.location.hash.indexOf('error')>=0){
+    var _hm=window.location.hash.match(/error_description=([^&]+)/);
+    openAuth();
+    var _am=document.getElementById('auth-msg');
+    if(_am){_am.style.color='#F87171';_am.textContent='소셜 로그인 실패: '+(_hm?decodeURIComponent(_hm[1].replace(/\+/g,' ')):'설정을 확인해 주세요');}
+    history.replaceState(null,'',window.location.pathname);
+  }
+}catch(e){}
 sb.auth.getSession().then(function(res){
   state.session=res.data?res.data.session:null;
   loadProfile(function(){
