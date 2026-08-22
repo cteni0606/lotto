@@ -19,6 +19,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: 신규 회차 수집
         run: node scripts/update-lotto.js
+      - name: DB 동기화 (Supabase 설정 시)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_KEY" ]; then
+            node scripts/sync-db.mjs
+          else
+            echo "Supabase 미설정 — 건너뜀"
+          fi
       - name: 변경 시 커밋
         run: |
           if ! git diff --quiet lotto-update.json; then
