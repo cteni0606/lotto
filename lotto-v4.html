@@ -75,9 +75,7 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
     <div id="auth-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
     <button id="auth-submit" onclick="doAuth()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">로그인</button>
     <button onclick="toggleAuthMode()" id="auth-toggle" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#7080A0;font-size:12px;margin-bottom:14px">처음이신가요? 회원가입</button>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div><span style="font-size:10px;color:#5A6A8E">또는</span><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div></div>
-    <button id="oauth-google" onclick="doOAuth('google')" style="width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:#fff;color:#1a1a2e;font-weight:700;font-size:13px;margin-bottom:8px">G&nbsp; 구글로 계속하기</button>
-    <button id="oauth-kakao" onclick="doOAuth('kakao')" style="width:100%;padding:12px;border-radius:11px;border:none;background:#FEE500;color:#191919;font-weight:700;font-size:13px">💬 카카오로 계속하기</button>
+    <button onclick="doRecover()" style="width:100%;padding:8px;background:none;border:none;color:#5A6A8E;font-size:11px;text-decoration:underline">비밀번호를 잊으셨나요?</button>
   </div>
 </div>
 
@@ -100,8 +98,9 @@ var LEVELS=[
   {lv:3,name:'골드',c:'#FBBF24',desc:'+ 세트 구조 전략(분산/집중) · 프리미엄 정보',cond:'실버에서 연속 6일 더'}
 ];
 var MASTER={lv:100,name:'마스터',c:'#F472B6',desc:'운영자',cond:'-'};
-function lvInfo(lv){if(lv===100)return MASTER;return LEVELS[Math.max(0,Math.min(3,lv))];}
-function effLv(){return state.level===100?3:state.level;}
+var TESTER={lv:99,name:'테스터',c:'#4ADE80',desc:'테스트 계정',cond:'-'};
+function lvInfo(lv){if(lv===100)return MASTER;if(lv===99)return TESTER;return LEVELS[Math.max(0,Math.min(3,lv))];}
+function effLv(){return(state.level===100||state.level===99)?3:state.level;}
 
 var TABS=[
   {id:'rec',label:'🎯 추천',min:0},
@@ -121,7 +120,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -138,7 +137,7 @@ function renderAcct(){
   if(state.session){
     var li=lvInfo(state.level);
     var streakStr=state.streak>0?'<span style="font-size:10px;color:#F97316;margin-right:6px">🔥 '+state.streak+'일</span>':'';
-    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
+    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level===99?'T':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
   }else{
     el.innerHTML='<span style="font-size:10px;font-weight:800;color:#6B7A9E;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:2px 9px;border-radius:9px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);padding:4px 14px;border-radius:9px">로그인</button>';
   }
@@ -149,7 +148,7 @@ function renderTabs(){
   for(var i=0;i<TABS.length;i++){
     var t=TABS[i];
     if(t.min===100&&state.level!==100)continue; // 관리 탭은 마스터에게만 노출
-    var locked=state.level<t.min&&state.level!==100;
+    var locked=state.level===100?false:(effLv()<t.min);
     html+='<button class="tb'+(state.tab===t.id?' on':'')+'" onclick="doTab(\''+t.id+'\')" data-t="'+t.id+'" style="'+(locked?'opacity:.45':'')+'">'+(locked?'🔒 ':'')+t.label+'</button>';
   }
   nav.innerHTML=html;
@@ -164,7 +163,7 @@ function renderRec(){
   }
   var rows='';
   for(var i=0;i<LEVELS.length;i++){
-    var L=LEVELS[i],mine=L.lv===state.level||(state.level===100&&L.lv===3),locked=effLv()<L.lv;
+    var L=LEVELS[i],mine=L.lv===state.level||((state.level===100||state.level===99)&&L.lv===3),locked=effLv()<L.lv;
     rows+='<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:11px;margin-bottom:5px;background:'+(mine?L.c+'14':'rgba(255,255,255,.02)')+';border:1px solid '+(mine?L.c+'55':'rgba(255,255,255,.05)')+'">'
       +'<span style="flex-shrink:0;font-size:10px;font-weight:800;color:'+(locked?'#4A5570':L.c)+';min-width:52px">'+(mine?'▶ ':'')+'Lv.'+L.lv+' '+L.name+'</span>'
       +'<span style="font-size:10px;color:'+(locked?'#4A5570':'#9AA6C8')+';line-height:1.5;flex:1">'+(locked?'🔒 ':'')+L.desc+'</span>'
@@ -176,7 +175,7 @@ function renderRec(){
     var pct=Math.round(done/need*100);
     prog='<div style="margin-top:9px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#7080A0;margin-bottom:4px"><span>🔥 연속 출석 '+state.streak+'일</span><span>'+lvInfo(state.level+1).name+'까지 '+state.toNext+'일</span></div><div style="background:rgba(255,255,255,.08);border-radius:6px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#F97316,#FBBF24);border-radius:6px"></div></div></div>';
   }
-  html+='<div class="card"><div class="ttl">🏅 내 레벨: <span style="color:'+li.c+'">'+(state.level===100?'👑 마스터':'Lv.'+state.level+' '+li.name)+'</span></div>'+rows+prog
+  html+='<div class="card"><div class="ttl">🏅 내 레벨: <span style="color:'+li.c+'">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</span></div>'+rows+prog
     +(state.level===0?'<div style="font-size:11px;color:#38BDF8;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:9px 12px;margin-top:8px">💡 무료 가입 시 분석 알고리즘 + 매일 접속만 해도 자동 승급됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
     +'</div>';
   if(effLv()>=3){
@@ -353,7 +352,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>';
 }
 
 // ── 탭 라우팅 ──
@@ -367,7 +366,7 @@ function doTab(id){
     renderTabs();
     var c=document.getElementById('content'),html='';
     var tdef=null;for(var i=0;i<TABS.length;i++)if(TABS[i].id===id)tdef=TABS[i];
-    var locked=tdef&&state.level<tdef.min&&state.level!==100;
+    var locked=tdef?(state.level===100?false:(effLv()<tdef.min)):false;
     if(locked)html=lockedCard(tdef);
     else if(id==='rec')html=renderRec();
     else if(id==='freq')html=renderFreq();
@@ -376,7 +375,9 @@ function doTab(id){
     else if(id==='prem')html=renderPrem();
     else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
-    c.innerHTML=html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
+    var recCard='';
+    if(state.recovery)recCard='<div class="card" style="border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.05)"><div class="ttl" style="color:#38BDF8">🔑 새 비밀번호 설정</div><input type="password" id="new-pw" placeholder="새 비밀번호 (6자 이상)" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:8px"><div id="new-pw-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px"></div><button onclick="setNewPw()" style="width:100%;padding:12px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;font-weight:700;font-size:13px">비밀번호 변경</button></div>';
+    c.innerHTML=recCard+html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
     if(!locked&&(id==='freq'||id==='hist'||id==='hot')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
   }catch(e){showErr('렌더 오류: '+e.message);}
 }
@@ -429,6 +430,27 @@ function doAuth(){
     closeAuth();
   });
 }
+function doRecover(){
+  var email=document.getElementById('auth-email').value.trim();
+  var msg=document.getElementById('auth-msg');
+  if(!email){msg.style.color='#FBBF24';msg.textContent='가입한 이메일을 입력한 뒤 다시 눌러주세요.';return;}
+  msg.style.color='#7080A0';msg.textContent='재설정 메일 발송 중...';
+  sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname})
+    .then(function(res){
+      if(res.error){msg.style.color='#F87171';msg.textContent=authErrKo(res.error.message);return;}
+      msg.style.color='#4ADE80';msg.textContent='재설정 메일을 보냈습니다. 메일함(스팸함 포함)을 확인하세요.';
+    });
+}
+function setNewPw(){
+  var pw=document.getElementById('new-pw').value;
+  var msg=document.getElementById('new-pw-msg');
+  if(pw.length<6){if(msg)msg.textContent='6자 이상 입력하세요.';return;}
+  sb.auth.updateUser({password:pw}).then(function(res){
+    if(res.error){if(msg)msg.textContent=authErrKo(res.error.message);return;}
+    state.recovery=false;state.notice='✅ 비밀번호가 변경되었습니다. 다음부터 이메일+비밀번호로 로그인하세요.';
+    doTab('rec');
+  });
+}
 function doOAuth(provider){
   var msg=document.getElementById('auth-msg');
   if(!state.providers[provider]){
@@ -469,6 +491,7 @@ function doCheckin(){
 // ── 부트스트랩 ──
 function refresh(){renderAcct();renderTabs();doTab(state.tab);}
 sb.auth.onAuthStateChange(function(ev,session){
+  if(ev==='PASSWORD_RECOVERY')state.recovery=true;
   state.session=session;state.rec=null;state.mode='wide';state.admin=null;
   loadProfile(function(){refresh();if(session)doCheckin();});
 });
