@@ -59,12 +59,7 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
   <p>제 <strong style="color:#FBBF24" id="h-next">…</strong>회 추천 &nbsp;·&nbsp; 전체 <strong style="color:#C084FC" id="h-total">…</strong>회</p>
   <div id="acct" style="margin-top:8px"></div>
 </div>
-<div id="tab-nav">
-  <button class="tb on" onclick="doTab('rec')" data-t="rec">🎯 추천</button>
-  <button class="tb" onclick="doTab('freq')" data-t="freq">📊 빈도</button>
-  <button class="tb" onclick="doTab('hist')" data-t="hist">📋 기록</button>
-  <button class="tb" onclick="doTab('me')" data-t="me">👤 내정보</button>
-</div>
+<div id="tab-nav"></div>
 <div id="content"><div style="text-align:center;padding:40px;color:#6B7A9E">불러오는 중...</div></div>
 
 <!-- 로그인 모달 -->
@@ -87,7 +82,7 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 </div>
 
 <script>
-// ── v4: 서버 분리 클라이언트 (알고리즘 없음 — 렌더링과 API 호출만) ──
+// ── v4.1: 서버 분리 클라이언트 + 출석 레벨 시스템 (알고리즘 없음) ──
 function showErr(msg){
   var b=document.getElementById('err-banner');
   if(b){b.style.display='block';b.innerHTML='<b>오류:</b><br>'+msg;}
@@ -99,11 +94,25 @@ var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
 var LEVELS=[
-  {lv:0,name:'게스트',c:'#6B7A9E',desc:'순수 랜덤 — 아무 분석도 적용되지 않습니다'},
-  {lv:1,name:'회원',c:'#38BDF8',desc:'기본 필터 (합계·홀짝·구간 균형) + 역대 5개 일치 조합 회피'},
-  {lv:2,name:'실버',c:'#C0C8D8',desc:'+ 통계 점수 후보풀 + 독식지수 (인기 조합 회피 → 당첨 시 독식 확률↑)'},
-  {lv:3,name:'골드',c:'#FBBF24',desc:'+ 세트 구조 전략 (분산: 30개 완전 분리 / 집중: 핵심 3개 공유) + 신선도'}
+  {lv:0,name:'게스트',c:'#6B7A9E',desc:'순수 랜덤 번호만',cond:'-'},
+  {lv:1,name:'회원',c:'#38BDF8',desc:'기본 필터 + 5개일치 회피 · 빈도/기록 열람',cond:'가입 즉시'},
+  {lv:2,name:'실버',c:'#C0C8D8',desc:'+ 독식지수(인기 회피) · 핫&콜드 열람',cond:'연속 출석 3일'},
+  {lv:3,name:'골드',c:'#FBBF24',desc:'+ 세트 구조 전략(분산/집중) · 프리미엄 정보',cond:'실버에서 연속 6일 더'}
 ];
+var MASTER={lv:100,name:'마스터',c:'#F472B6',desc:'운영자',cond:'-'};
+function lvInfo(lv){if(lv===100)return MASTER;return LEVELS[Math.max(0,Math.min(3,lv))];}
+function effLv(){return state.level===100?3:state.level;}
+
+var TABS=[
+  {id:'rec',label:'🎯 추천',min:0},
+  {id:'freq',label:'📊 빈도',min:1},
+  {id:'hist',label:'📋 기록',min:1},
+  {id:'hot',label:'🔥 핫&콜드',min:2},
+  {id:'prem',label:'🔮 프리미엄',min:3},
+  {id:'adm',label:'🛠 관리',min:100},
+  {id:'me',label:'👤 내정보',min:0}
+];
+
 var ZONES=[
   {lo:1,hi:10,c:"#FBBF24",tc:"#1A1000"},{lo:11,hi:20,c:"#38BDF8",tc:"#001525"},
   {lo:21,hi:30,c:"#F87171",tc:"#200000"},{lo:31,hi:40,c:"#C084FC",tc:"#120025"},
@@ -112,7 +121,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -120,44 +129,63 @@ function ballHTML(n,size,glow,delay){
   var sh=glow?'0 0 14px '+z.c+'BB,0 3px 10px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.5)':'0 3px 10px rgba(0,0,0,.45),inset 0 2px 4px rgba(255,255,255,.45)';
   return '<div class="ball ap" style="width:'+size+'px;height:'+size+'px;background:radial-gradient(circle at 37% 32%,'+z.c+'FF 0%,'+z.c+'CC 55%,'+z.c+'99 100%);color:'+z.tc+';font-size:'+Math.round(size*.33)+'px;box-shadow:'+sh+';animation-delay:'+delay+'ms">'+n+'</div>';
 }
-function lvInfo(lv){return LEVELS[Math.max(0,Math.min(3,lv))];}
 function rdate(r){var d=new Date(1039264200000+(r-1)*7*864e5);return d.getFullYear()+'.'+(''+(d.getMonth()+1)).padStart(2,'0')+'.'+(''+d.getDate()).padStart(2,'0');}
+function fmtNum(x){return String(x).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 
-// ── 계정 표시줄 ──
+// ── 상단 계정/탭 ──
 function renderAcct(){
   var el=document.getElementById('acct');if(!el)return;
   if(state.session){
     var li=lvInfo(state.level);
-    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+state.level+' '+li.name+'</span> <button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
+    var streakStr=state.streak>0?'<span style="font-size:10px;color:#F97316;margin-right:6px">🔥 '+state.streak+'일</span>':'';
+    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
   }else{
     el.innerHTML='<span style="font-size:10px;font-weight:800;color:#6B7A9E;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:2px 9px;border-radius:9px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);padding:4px 14px;border-radius:9px">로그인</button>';
   }
+}
+function renderTabs(){
+  var nav=document.getElementById('tab-nav');if(!nav)return;
+  var html='';
+  for(var i=0;i<TABS.length;i++){
+    var t=TABS[i];
+    if(t.min===100&&state.level!==100)continue; // 관리 탭은 마스터에게만 노출
+    var locked=state.level<t.min&&state.level!==100;
+    html+='<button class="tb'+(state.tab===t.id?' on':'')+'" onclick="doTab(\''+t.id+'\')" data-t="'+t.id+'" style="'+(locked?'opacity:.45':'')+'">'+(locked?'🔒 ':'')+t.label+'</button>';
+  }
+  nav.innerHTML=html;
 }
 
 // ── 추천 탭 ──
 function renderRec(){
   var li=lvInfo(state.level);
   var html='';
-  // 레벨 카드
+  if(state.notice){
+    html+='<div class="card" style="border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)"><div style="font-size:13px;font-weight:700;color:#FBBF24;text-align:center">'+state.notice+'</div></div>';
+  }
   var rows='';
   for(var i=0;i<LEVELS.length;i++){
-    var L=LEVELS[i],mine=L.lv===state.level,locked=L.lv>state.level;
+    var L=LEVELS[i],mine=L.lv===state.level||(state.level===100&&L.lv===3),locked=effLv()<L.lv;
     rows+='<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:11px;margin-bottom:5px;background:'+(mine?L.c+'14':'rgba(255,255,255,.02)')+';border:1px solid '+(mine?L.c+'55':'rgba(255,255,255,.05)')+'">'
       +'<span style="flex-shrink:0;font-size:10px;font-weight:800;color:'+(locked?'#4A5570':L.c)+';min-width:52px">'+(mine?'▶ ':'')+'Lv.'+L.lv+' '+L.name+'</span>'
-      +'<span style="font-size:10px;color:'+(locked?'#4A5570':'#9AA6C8')+';line-height:1.5">'+(locked?'🔒 ':'')+L.desc+'</span></div>';
+      +'<span style="font-size:10px;color:'+(locked?'#4A5570':'#9AA6C8')+';line-height:1.5;flex:1">'+(locked?'🔒 ':'')+L.desc+'</span>'
+      +'<span style="flex-shrink:0;font-size:9px;color:'+(locked?'#5A6A8E':'#4ADE80')+'">'+L.cond+'</span></div>';
   }
-  html+='<div class="card"><div class="ttl">🏅 내 레벨: <span style="color:'+li.c+'">Lv.'+state.level+' '+li.name+'</span></div>'+rows
-    +(state.level===0?'<div style="font-size:11px;color:#38BDF8;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:9px 12px;margin-top:8px">💡 무료 가입만 해도 분석 알고리즘이 적용됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
+  var prog='';
+  if(state.session&&state.level>=1&&state.level<=2&&state.toNext!==null){
+    var need=state.level===1?3:6,done=need-state.toNext;
+    var pct=Math.round(done/need*100);
+    prog='<div style="margin-top:9px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#7080A0;margin-bottom:4px"><span>🔥 연속 출석 '+state.streak+'일</span><span>'+lvInfo(state.level+1).name+'까지 '+state.toNext+'일</span></div><div style="background:rgba(255,255,255,.08);border-radius:6px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#F97316,#FBBF24);border-radius:6px"></div></div></div>';
+  }
+  html+='<div class="card"><div class="ttl">🏅 내 레벨: <span style="color:'+li.c+'">'+(state.level===100?'👑 마스터':'Lv.'+state.level+' '+li.name)+'</span></div>'+rows+prog
+    +(state.level===0?'<div style="font-size:11px;color:#38BDF8;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:9px 12px;margin-top:8px">💡 무료 가입 시 분석 알고리즘 + 매일 접속만 해도 자동 승급됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
     +'</div>';
-  // 모드 선택 (L3 전용)
-  if(state.level>=3){
+  if(effLv()>=3){
     var wOn=state.mode==='wide';
     var bw='flex:1;padding:11px 6px;border-radius:12px;font-size:12px;font-weight:700;min-height:52px;';
     html+='<div class="card"><div class="ttl">🧭 세트 구조 전략</div><div style="display:flex;gap:8px">'
       +'<button onclick="setMode(1)" style="'+bw+'border:1.5px solid '+(wOn?'#38BDF8':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(56,189,248,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#38BDF8':'#6B7A9E')+'">🌐 분산<br><span style="font-size:9px;font-weight:400">30개 완전 분리 · 3개+ 11.9%</span></button>'
       +'<button onclick="setMode(0)" style="'+bw+'border:1.5px solid '+(!wOn?'#C084FC':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(192,132,252,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#C084FC':'#6B7A9E')+'">🎯 집중<br><span style="font-size:9px;font-weight:400">핵심 3개 공유 · 동반 적중형</span></button></div></div>';
   }
-  // 추천 결과 / 버튼
   if(state.recBusy){
     html+='<div class="card" style="text-align:center"><div class="ttl">서버에서 생성 중...</div><div style="background:rgba(255,255,255,.08);border-radius:8px;height:6px;overflow:hidden;margin:12px 0"><div style="width:55%;height:100%;background:linear-gradient(90deg,#0EA5E9,#6366F1);animation:shimmer 1.4s linear infinite"></div></div></div>';
   }else if(state.rec){
@@ -184,7 +212,6 @@ function renderRec(){
   }
   return html;
 }
-
 function getRec(){
   if(state.recBusy)return;
   state.recBusy=true;doTab('rec');
@@ -193,15 +220,15 @@ function getRec(){
     .then(function(r){return r.json();})
     .then(function(j){
       state.recBusy=false;
-      if(j&&j.sets){state.rec=j;if(typeof j.level==='number')state.level=j.level;}
+      if(j&&j.sets)state.rec=j;
       else showErr((j&&j.error)||'추천 실패');
-      renderAcct();doTab('rec');
+      doTab('rec');
     })
     .catch(function(e){state.recBusy=false;showErr('서버 연결 실패: '+e.message);doTab('rec');});
 }
 function setMode(w){state.mode=w?'wide':'focus';state.rec=null;doTab('rec');}
 
-// ── 데이터 (공개 통계용) ──
+// ── 데이터 (공개 통계) ──
 function loadDraws(cb){
   if(state.draws){cb();return;}
   var all=[];
@@ -213,10 +240,8 @@ function loadDraws(cb){
         if(res.data&&res.data.length===1000)page(from+1000);
         else{
           state.draws=all;
-          var eN=document.getElementById('h-next');var eT=document.getElementById('h-total');
-          if(all.length){
-            if(eT)eT.textContent=String(all.length).replace(/\B(?=(\d{3})+(?!\d))/g,',');
-          }
+          var eT=document.getElementById('h-total');
+          if(eT&&all.length)eT.textContent=fmtNum(all.length);
           cb();
         }
       });
@@ -224,9 +249,12 @@ function loadDraws(cb){
   page(0);
 }
 function drawNums(d){return[d.n1,d.n2,d.n3,d.n4,d.n5,d.n6];}
+function needDraws(id){
+  return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">데이터 로딩 중...</div>';
+}
 
 function renderFreq(){
-  if(!state.draws)return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">데이터 로딩 중...</div>';
+  if(!state.draws)return needDraws('freq');
   var freq={};for(var n=1;n<=45;n++)freq[n]=0;
   for(var i=0;i<state.draws.length;i++){var nn=drawNums(state.draws[i]);for(var j=0;j<6;j++)freq[nn[j]]++;}
   var mx=0;for(var n=1;n<=45;n++)if(freq[n]>mx)mx=freq[n];
@@ -240,7 +268,7 @@ function renderFreq(){
 }
 
 function renderHist(){
-  if(!state.draws)return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">데이터 로딩 중...</div>';
+  if(!state.draws)return needDraws('hist');
   var html='';
   for(var i=0;i<20&&i<state.draws.length;i++){
     var d=state.draws[i],nn=drawNums(d),balls='';
@@ -251,24 +279,105 @@ function renderHist(){
   return '<div class="card"><div class="ttl">최근 20회 당첨 번호</div>'+html+'</div>';
 }
 
-function renderMe(){
-  if(!state.session)return '<div class="card" style="text-align:center"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#7080A0;margin-bottom:14px">로그인하면 레벨과 계정 정보를 볼 수 있습니다.</div><button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인 / 회원가입</button></div>';
-  var li=lvInfo(state.level);
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:13px;font-weight:800;color:'+li.c+';margin-bottom:10px">Lv.'+state.level+' '+li.name+'</div><div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">적용 알고리즘: '+li.desc+'<br>레벨 승급은 운영자가 부여합니다.</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>';
+function renderHot(){
+  if(!state.draws)return needDraws('hot');
+  var N=state.draws.length,rF={},ls={},sums=[],evenTot=0;
+  for(var n=1;n<=45;n++){rF[n]=0;ls[n]=N;}
+  for(var i=0;i<N;i++){
+    var nn=drawNums(state.draws[i]),sum=0;
+    for(var j=0;j<6;j++){
+      var n=nn[j];sum+=n;if(n%2===0)evenTot++;
+      if(i<10)rF[n]++;
+      if(ls[n]===N)ls[n]=i;
+    }
+    sums.push(sum);
+  }
+  var avgEven=evenTot/N,avgSum=0;for(var i=0;i<N;i++)avgSum+=sums[i];avgSum/=N;
+  var hot='',hs=[];
+  for(var n=1;n<=45;n++)if(rF[n]>=2)hs.push([n,rF[n]]);
+  hs.sort(function(a,b){return b[1]-a[1];});
+  for(var i=0;i<hs.length;i++)hot+='<div style="text-align:center">'+ballHTML(hs[i][0],38,true,0)+'<div style="font-size:9px;color:#F97316;margin-top:3px;font-weight:700">'+hs[i][1]+'회</div></div>';
+  if(!hot)hot='<div style="font-size:11px;color:#5A6A8E">해당 없음</div>';
+  var cold='',lsS=[];
+  for(var n=1;n<=45;n++)lsS.push([n,ls[n]]);
+  lsS.sort(function(a,b){return b[1]-a[1];});
+  for(var i=0;i<15;i++)cold+='<div style="text-align:center">'+ballHTML(lsS[i][0],36,false,0)+'<div style="font-size:9px;color:#38BDF8;margin-top:3px">'+lsS[i][1]+'회전</div></div>';
+  var mn=Math.min.apply(null,sums),mxs=Math.max.apply(null,sums);
+  return '<div class="card"><div class="ttl" style="color:#F97316">🔥 최근 10회 핫넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+hot+'</div></div>'
+    +'<div class="card"><div class="ttl" style="color:#38BDF8">🧊 장기 미출현 콜드넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+cold+'</div></div>'
+    +'<div class="card"><div class="ttl">홀짝 · 합계 분포</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+avgEven.toFixed(1)+'</div><div class="sl">짝수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#F87171">'+(6-avgEven).toFixed(1)+'</div><div class="sl">홀수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+Math.round(avgSum)+'</div><div class="sl">합계 평균</div></div></div><div style="font-size:10px;color:#5A6A8E;text-align:center">합계 범위: '+mn+' ~ '+mxs+'</div></div>';
 }
 
-// ── 탭 ──
+function renderPrem(){
+  return '<div class="card" style="text-align:center;padding:34px 20px"><div style="font-size:34px;margin-bottom:12px">🔮</div><div class="ttl" style="color:#FBBF24">프리미엄 분석 — 준비 중</div><div style="font-size:11px;color:#7080A0;line-height:1.8">골드 등급 전용 심화 분석이 준비되고 있습니다.<br>공개되면 이 탭에서 가장 먼저 만날 수 있습니다.</div></div>';
+}
+
+// ── 관리자 ──
+function renderAdm(){
+  if(state.level!==100)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">권한이 없습니다</div>';
+  if(!state.admin){
+    if(!state.admBusy)loadAdmin();
+    return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">관리 데이터 로딩 중...</div>';
+  }
+  var a=state.admin;
+  var boxes='<div style="display:flex;gap:7px;margin-bottom:4px">'
+    +'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:10px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+a.totalUsers+'</div><div class="sl">총 가입자</div></div>'
+    +'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:10px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#4ADE80">'+a.dauToday+'</div><div class="sl">오늘 DAU</div></div>'
+    +'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:10px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+a.mau+'</div><div class="sl">MAU (30일)</div></div></div>';
+  var mxd=1;for(var i=0;i<a.days.length;i++)if(a.days[i].n>mxd)mxd=a.days[i].n;
+  var bars='';
+  for(var i=0;i<a.days.length;i++){
+    var d=a.days[i],h=Math.max(3,Math.round(d.n/mxd*70));
+    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:8px;color:#7080A0">'+d.n+'</span><div style="width:70%;height:'+h+'px;background:'+(i===a.days.length-1?'#4ADE80':'#38BDF8')+';border-radius:3px 3px 0 0;opacity:.85"></div><span style="font-size:7px;color:#5A6A8E">'+d.day.slice(8)+'</span></div>';
+  }
+  var urows='';
+  for(var i=0;i<a.users.length;i++){
+    var u=a.users[i],li=lvInfo(u.level);
+    urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td></tr>';
+  }
+  return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+boxes+'</div>'
+    +'<div class="card"><div class="ttl">최근 14일 DAU</div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
+    +'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th></tr></thead><tbody>'+urows+'</tbody></table></div><div style="font-size:9px;color:#5A6A8E;margin-top:8px">레벨 수동 변경: Supabase 대시보드 → Table Editor → profiles</div></div>';
+}
+function loadAdmin(){
+  state.admBusy=true;
+  fetch(SB_URL+'/functions/v1/admin',{headers:{'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON)}})
+    .then(function(r){return r.json();})
+    .then(function(j){state.admBusy=false;if(j&&j.users)state.admin=j;if(state.tab==='adm')doTab('adm');})
+    .catch(function(e){state.admBusy=false;showErr('관리 데이터 실패: '+e.message);});
+}
+
+function renderMe(){
+  if(!state.session)return '<div class="card" style="text-align:center"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#7080A0;margin-bottom:14px">로그인하면 레벨·출석 현황을 볼 수 있습니다.</div><button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인 / 회원가입</button></div>';
+  var li=lvInfo(state.level);
+  var nextInfo='';
+  if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
+  else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>';
+}
+
+// ── 탭 라우팅 ──
+function lockedCard(t){
+  var li=lvInfo(t.min);
+  return '<div class="card" style="text-align:center;padding:34px 20px"><div style="font-size:32px;margin-bottom:10px">🔒</div><div class="ttl">'+t.label+' — Lv.'+t.min+' '+li.name+'부터</div><div style="font-size:11px;color:#7080A0;line-height:1.8">'+(state.session?('연속 출석으로 승급하세요! (현재 🔥 '+state.streak+'일)'):'가입 후 매일 접속하면 자동으로 승급됩니다.')+'</div>'+(state.session?'':'<button onclick="openAuth()" style="margin-top:12px;padding:11px 24px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">로그인 / 회원가입</button>')+'</div>';
+}
 function doTab(id){
   try{
     state.tab=id;
-    document.querySelectorAll('.tb').forEach(function(b){b.classList.toggle('on',b.dataset.t===id);});
+    renderTabs();
     var c=document.getElementById('content'),html='';
-    if(id==='rec')html=renderRec();
+    var tdef=null;for(var i=0;i<TABS.length;i++)if(TABS[i].id===id)tdef=TABS[i];
+    var locked=tdef&&state.level<tdef.min&&state.level!==100;
+    if(locked)html=lockedCard(tdef);
+    else if(id==='rec')html=renderRec();
     else if(id==='freq')html=renderFreq();
     else if(id==='hist')html=renderHist();
+    else if(id==='hot')html=renderHot();
+    else if(id==='prem')html=renderPrem();
+    else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
     c.innerHTML=html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
-    if((id==='freq'||id==='hist')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
+    if(!locked&&(id==='freq'||id==='hist'||id==='hot')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
   }catch(e){showErr('렌더 오류: '+e.message);}
 }
 
@@ -294,6 +403,15 @@ function syncAuthUI(){
   document.getElementById('auth-toggle').textContent=lg?'처음이신가요? 회원가입':'이미 계정이 있나요? 로그인';
   document.getElementById('auth-msg').textContent='';
 }
+function authErrKo(m){
+  if(!m)return '오류가 발생했습니다.';
+  if(m.indexOf('Invalid login credentials')>=0)return '이메일 또는 비밀번호가 올바르지 않습니다.';
+  if(m.indexOf('already registered')>=0)return '이미 가입된 이메일입니다. 로그인해 주세요.';
+  if(m.indexOf('at least 6')>=0)return '비밀번호는 6자 이상이어야 합니다.';
+  if(m.indexOf('valid email')>=0||m.indexOf('invalid format')>=0)return '올바른 이메일 주소를 입력해 주세요.';
+  if(m.indexOf('rate limit')>=0||m.indexOf('Too many')>=0)return '시도가 너무 잦습니다. 잠시 후 다시 시도해 주세요.';
+  return m;
+}
 function doAuth(){
   var email=document.getElementById('auth-email').value.trim();
   var pw=document.getElementById('auth-pw').value;
@@ -311,15 +429,6 @@ function doAuth(){
     closeAuth();
   });
 }
-function authErrKo(m){
-  if(!m)return '오류가 발생했습니다.';
-  if(m.indexOf('Invalid login credentials')>=0)return '이메일 또는 비밀번호가 올바르지 않습니다.';
-  if(m.indexOf('already registered')>=0)return '이미 가입된 이메일입니다. 로그인해 주세요.';
-  if(m.indexOf('at least 6')>=0)return '비밀번호는 6자 이상이어야 합니다.';
-  if(m.indexOf('valid email')>=0||m.indexOf('invalid format')>=0)return '올바른 이메일 주소를 입력해 주세요.';
-  if(m.indexOf('rate limit')>=0||m.indexOf('Too many')>=0)return '시도가 너무 잦습니다. 잠시 후 다시 시도해 주세요.';
-  return m;
-}
 function doOAuth(provider){
   var msg=document.getElementById('auth-msg');
   if(!state.providers[provider]){
@@ -331,28 +440,44 @@ function doOAuth(provider){
       if(res.error&&msg){msg.style.color='#F87171';msg.textContent='소셜 로그인 실패: '+res.error.message;}
     });
 }
-function doLogout(){sb.auth.signOut();state.rec=null;}
+function doLogout(){sb.auth.signOut();state.rec=null;state.admin=null;state.notice='';state.streak=0;state.toNext=null;}
 
 function loadProfile(cb){
-  if(!state.session){state.level=0;cb();return;}
-  sb.from('profiles').select('level').eq('id',state.session.user.id).single()
-    .then(function(res){state.level=(res.data&&typeof res.data.level==='number')?res.data.level:1;cb();});
+  if(!state.session){state.level=0;state.streak=0;state.toNext=null;cb();return;}
+  sb.from('profiles').select('level,streak').eq('id',state.session.user.id).single()
+    .then(function(res){
+      if(res.data){state.level=typeof res.data.level==='number'?res.data.level:1;state.streak=res.data.streak||0;}
+      else state.level=1;
+      cb();
+    });
+}
+function doCheckin(){
+  if(!state.session)return;
+  fetch(SB_URL+'/functions/v1/checkin',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&typeof j.level==='number'){
+        state.level=j.level;state.streak=j.streak;state.toNext=j.toNext;
+        if(j.leveledUp)state.notice='🎉 레벨 업! '+(j.level===100?'마스터':'Lv.'+j.level+' '+lvInfo(j.level).name)+' 달성!';
+        else if(j.leveledDown)state.notice='😢 연속 출석이 끊겨 Lv.'+j.level+' '+lvInfo(j.level).name+'(으)로 조정됐어요. 다시 시작!';
+        renderAcct();doTab(state.tab);
+      }
+    })
+    .catch(function(e){});
 }
 
 // ── 부트스트랩 ──
-function refresh(){renderAcct();doTab(state.tab);}
+function refresh(){renderAcct();renderTabs();doTab(state.tab);}
 sb.auth.onAuthStateChange(function(ev,session){
-  state.session=session;state.rec=null;state.mode='wide';
-  loadProfile(refresh);
+  state.session=session;state.rec=null;state.mode='wide';state.admin=null;
+  loadProfile(function(){refresh();if(session)doCheckin();});
 });
-// 활성 프로바이더 조회 → 버튼 상태 반영
 fetch(SB_URL+'/auth/v1/settings',{headers:{apikey:SB_ANON}})
   .then(function(r){return r.json();})
   .then(function(j){
     if(j&&j.external){state.providers.google=!!j.external.google;state.providers.kakao=!!j.external.kakao;}
     syncOAuthButtons();
   }).catch(function(e){});
-// 소셜 로그인 실패로 리디렉트된 경우 안내
 try{
   if(window.location.hash&&window.location.hash.indexOf('error')>=0){
     var _hm=window.location.hash.match(/error_description=([^&]+)/);
@@ -366,7 +491,7 @@ sb.auth.getSession().then(function(res){
   state.session=res.data?res.data.session:null;
   loadProfile(function(){
     refresh();
-    // 헤더 회차: draws 없이도 즉시 계산
+    if(state.session)doCheckin();
     var exp=Math.floor((Date.now()-1039264200000)/604800000)+1;
     var eN=document.getElementById('h-next');if(eN)eN.textContent=exp+1;
     loadDraws(function(){
@@ -375,10 +500,10 @@ sb.auth.getSession().then(function(res){
         var latest=state.draws[0].round;
         eN2.textContent=(exp>latest?exp:latest)+1;
       }
+      if(state.tab==='freq'||state.tab==='hist'||state.tab==='hot')doTab(state.tab);
     });
   });
 });
-
 </script>
 </body>
 </html>
