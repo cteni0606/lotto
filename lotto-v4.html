@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="로또 분석기">
+<title>🎱 로또 분석기 v4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;background:#07071a;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:linear-gradient(160deg,#07071a 0%,#0d0d25 50%,#100820 100%);color:#DDE3F5;min-height:100svh;padding-bottom:env(safe-area-inset-bottom,20px);}
+button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
+.rj{font-weight:800;letter-spacing:-.03em;}
+@keyframes popIn{0%{transform:scale(0);opacity:0}65%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+@keyframes spin2{0%,100%{opacity:1}50%{opacity:.3}}
+.ap{animation:popIn .35s cubic-bezier(.34,1.56,.64,1) both;}
+.as{animation:spin2 1.4s ease-in-out infinite;}
+#hdr{padding:max(env(safe-area-inset-top,14px),14px) 14px 12px;text-align:center;border-bottom:1px solid rgba(251,191,36,.12);background:linear-gradient(180deg,rgba(251,191,36,.06) 0%,transparent 100%);}
+#hdr h1{font-size:22px;font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#FBBF24,#FB923C,#FBBF24);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;}
+#hdr p{font-size:10px;color:#5A6A8E;margin-top:4px;}
+.zdots{display:flex;gap:8px;justify-content:center;margin-top:7px;flex-wrap:wrap;}
+.zdot{display:flex;align-items:center;gap:3px;font-size:9px;}
+.zd{width:7px;height:7px;border-radius:50%;}
+#stats{display:flex;gap:7px;padding:10px 9px 0;}
+.stat{flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06);}
+.sv{font-size:16px;font-weight:800;letter-spacing:-.03em;}
+.sl{font-size:9px;color:#6B7A9E;margin-top:2px;}
+#tab-nav{display:flex;gap:5px;overflow-x:auto;padding:10px 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+#tab-nav::-webkit-scrollbar{display:none;}
+.tb{padding:8px 11px;border-radius:18px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);color:#7080A0;font-size:11px;white-space:nowrap;flex-shrink:0;min-height:36px;transition:all .15s;}
+.tb.on{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.11);color:#FBBF24;font-weight:700;}
+#content{padding:0 9px;}
+.card{background:rgba(255,255,255,.035);border-radius:18px;border:1px solid rgba(255,255,255,.07);padding:14px 12px;margin-bottom:10px;}
+.cg{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.18);}
+.cd{background:rgba(255,255,255,.02);}
+.ttl{font-size:12px;font-weight:700;margin-bottom:11px;}
+.ball{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;user-select:none;flex-shrink:0;}
+.sb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:9px;font-weight:800;}
+.freq-bars{display:flex;gap:1px;align-items:flex-end;height:120px;overflow-x:auto;padding:0 0 4px;}
+.fb{width:7px;min-width:7px;border-radius:2px 2px 0 0;}
+.tag{font-size:9px;padding:2px 6px;border-radius:5px;}
+.set-tags{display:flex;gap:5px;margin-top:7px;margin-left:29px;}
+.bt-table{width:100%;font-size:10px;border-collapse:collapse;}
+.bt-table th{padding:6px 5px 8px;color:#5A6A8E;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
+.bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.05);}
+.duo-row{background:rgba(255,255,255,.025);border-radius:14px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(251,191,36,.12);}
+.footer{text-align:center;font-size:9px;color:#3A4460;line-height:1.9;padding:4px 8px 20px;}
+#err-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:#fff;padding:12px 14px;z-index:9999;font-size:11px;line-height:1.7;word-break:break-all;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<div id="err-banner"></div>
+<div id="hdr">
+  <h1>🎱 로또 번호 분석기 <span style="font-size:12px;color:#818CF8;font-weight:800;vertical-align:middle">v4</span></h1>
+  <p>제 <strong style="color:#FBBF24" id="h-next">…</strong>회 추천 &nbsp;·&nbsp; 전체 <strong style="color:#C084FC" id="h-total">…</strong>회</p>
+  <div id="acct" style="margin-top:8px"></div>
+</div>
+<div id="tab-nav">
+  <button class="tb on" onclick="doTab('rec')" data-t="rec">🎯 추천</button>
+  <button class="tb" onclick="doTab('freq')" data-t="freq">📊 빈도</button>
+  <button class="tb" onclick="doTab('hist')" data-t="hist">📋 기록</button>
+  <button class="tb" onclick="doTab('me')" data-t="me">👤 내정보</button>
+</div>
+<div id="content"><div style="text-align:center;padding:40px;color:#6B7A9E">불러오는 중...</div></div>
+
+<!-- 로그인 모달 -->
+<div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,10,.75);z-index:50;padding:20px;overflow-y:auto">
+  <div style="max-width:360px;margin:60px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div id="auth-title" style="font-size:16px;font-weight:800;color:#E8ECFF">로그인</div>
+      <button onclick="closeAuth()" style="background:none;border:none;color:#6B7A9E;font-size:20px;padding:4px 8px">✕</button>
+    </div>
+    <input id="auth-email" type="email" placeholder="이메일" autocomplete="email" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:9px">
+    <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:12px">
+    <div id="auth-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
+    <button id="auth-submit" onclick="doAuth()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">로그인</button>
+    <button onclick="toggleAuthMode()" id="auth-toggle" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#7080A0;font-size:12px;margin-bottom:14px">처음이신가요? 회원가입</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div><span style="font-size:10px;color:#5A6A8E">또는</span><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div></div>
+    <button onclick="doOAuth('google')" style="width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:#fff;color:#1a1a2e;font-weight:700;font-size:13px;margin-bottom:8px">G&nbsp; 구글로 계속하기</button>
+    <button onclick="doOAuth('kakao')" style="width:100%;padding:12px;border-radius:11px;border:none;background:#FEE500;color:#191919;font-weight:700;font-size:13px">💬 카카오로 계속하기</button>
+  </div>
+</div>
+
+<script>
+// ── v4: 서버 분리 클라이언트 (알고리즘 없음 — 렌더링과 API 호출만) ──
+function showErr(msg){
+  var b=document.getElementById('err-banner');
+  if(b){b.style.display='block';b.innerHTML='<b>오류:</b><br>'+msg;}
+}
+window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
+
+var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
+var sb=window.supabase.createClient(SB_URL,SB_ANON);
+
+var LEVELS=[
+  {lv:0,name:'게스트',c:'#6B7A9E',desc:'순수 랜덤 — 아무 분석도 적용되지 않습니다'},
+  {lv:1,name:'회원',c:'#38BDF8',desc:'기본 필터 (합계·홀짝·구간 균형) + 역대 5개 일치 조합 회피'},
+  {lv:2,name:'실버',c:'#C0C8D8',desc:'+ 통계 점수 후보풀 + 독식지수 (인기 조합 회피 → 당첨 시 독식 확률↑)'},
+  {lv:3,name:'골드',c:'#FBBF24',desc:'+ 세트 구조 전략 (분산: 30개 완전 분리 / 집중: 핵심 3개 공유) + 신선도'}
+];
+var ZONES=[
+  {lo:1,hi:10,c:"#FBBF24",tc:"#1A1000"},{lo:11,hi:20,c:"#38BDF8",tc:"#001525"},
+  {lo:21,hi:30,c:"#F87171",tc:"#200000"},{lo:31,hi:40,c:"#C084FC",tc:"#120025"},
+  {lo:41,hi:45,c:"#4ADE80",tc:"#001A00"}
+];
+var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
+var SETL=["A","B","C","D","E"];
+
+var state={session:null,level:0,mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login'};
+
+function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
+function ballHTML(n,size,glow,delay){
+  var z=gz(n);
+  var sh=glow?'0 0 14px '+z.c+'BB,0 3px 10px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.5)':'0 3px 10px rgba(0,0,0,.45),inset 0 2px 4px rgba(255,255,255,.45)';
+  return '<div class="ball ap" style="width:'+size+'px;height:'+size+'px;background:radial-gradient(circle at 37% 32%,'+z.c+'FF 0%,'+z.c+'CC 55%,'+z.c+'99 100%);color:'+z.tc+';font-size:'+Math.round(size*.33)+'px;box-shadow:'+sh+';animation-delay:'+delay+'ms">'+n+'</div>';
+}
+function lvInfo(lv){return LEVELS[Math.max(0,Math.min(3,lv))];}
+function rdate(r){var d=new Date(1039264200000+(r-1)*7*864e5);return d.getFullYear()+'.'+(''+(d.getMonth()+1)).padStart(2,'0')+'.'+(''+d.getDate()).padStart(2,'0');}
+
+// ── 계정 표시줄 ──
+function renderAcct(){
+  var el=document.getElementById('acct');if(!el)return;
+  if(state.session){
+    var li=lvInfo(state.level);
+    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+state.level+' '+li.name+'</span> <button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
+  }else{
+    el.innerHTML='<span style="font-size:10px;font-weight:800;color:#6B7A9E;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:2px 9px;border-radius:9px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);padding:4px 14px;border-radius:9px">로그인</button>';
+  }
+}
+
+// ── 추천 탭 ──
+function renderRec(){
+  var li=lvInfo(state.level);
+  var html='';
+  // 레벨 카드
+  var rows='';
+  for(var i=0;i<LEVELS.length;i++){
+    var L=LEVELS[i],mine=L.lv===state.level,locked=L.lv>state.level;
+    rows+='<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:11px;margin-bottom:5px;background:'+(mine?L.c+'14':'rgba(255,255,255,.02)')+';border:1px solid '+(mine?L.c+'55':'rgba(255,255,255,.05)')+'">'
+      +'<span style="flex-shrink:0;font-size:10px;font-weight:800;color:'+(locked?'#4A5570':L.c)+';min-width:52px">'+(mine?'▶ ':'')+'Lv.'+L.lv+' '+L.name+'</span>'
+      +'<span style="font-size:10px;color:'+(locked?'#4A5570':'#9AA6C8')+';line-height:1.5">'+(locked?'🔒 ':'')+L.desc+'</span></div>';
+  }
+  html+='<div class="card"><div class="ttl">🏅 내 레벨: <span style="color:'+li.c+'">Lv.'+state.level+' '+li.name+'</span></div>'+rows
+    +(state.level===0?'<div style="font-size:11px;color:#38BDF8;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:9px 12px;margin-top:8px">💡 무료 가입만 해도 분석 알고리즘이 적용됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
+    +'</div>';
+  // 모드 선택 (L3 전용)
+  if(state.level>=3){
+    var wOn=state.mode==='wide';
+    var bw='flex:1;padding:11px 6px;border-radius:12px;font-size:12px;font-weight:700;min-height:52px;';
+    html+='<div class="card"><div class="ttl">🧭 세트 구조 전략</div><div style="display:flex;gap:8px">'
+      +'<button onclick="setMode(1)" style="'+bw+'border:1.5px solid '+(wOn?'#38BDF8':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(56,189,248,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#38BDF8':'#6B7A9E')+'">🌐 분산<br><span style="font-size:9px;font-weight:400">30개 완전 분리 · 3개+ 11.9%</span></button>'
+      +'<button onclick="setMode(0)" style="'+bw+'border:1.5px solid '+(!wOn?'#C084FC':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(192,132,252,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#C084FC':'#6B7A9E')+'">🎯 집중<br><span style="font-size:9px;font-weight:400">핵심 3개 공유 · 동반 적중형</span></button></div></div>';
+  }
+  // 추천 결과 / 버튼
+  if(state.recBusy){
+    html+='<div class="card" style="text-align:center"><div class="ttl">서버에서 생성 중...</div><div style="background:rgba(255,255,255,.08);border-radius:8px;height:6px;overflow:hidden;margin:12px 0"><div style="width:55%;height:100%;background:linear-gradient(90deg,#0EA5E9,#6366F1);animation:shimmer 1.4s linear infinite"></div></div></div>';
+  }else if(state.rec){
+    var r=state.rec,setsHTML='';
+    for(var idx=0;idx<r.sets.length;idx++){
+      var s=r.sets[idx],bls='';
+      for(var i=0;i<s.nums.length;i++)bls+=ballHTML(s.nums[i],36,true,(idx*6+i)*40);
+      var tags='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">짝 '+s.meta.even+'</span><span class="tag" style="color:#F87171;background:rgba(248,113,113,.1)">홀 '+(6-s.meta.even)+'</span>';
+      if(typeof s.meta.unpop!=='undefined'){
+        var upC=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#FBBF24':'#F87171';
+        tags+='<span class="tag" style="color:'+upC+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span>';
+        tags+='<span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span>';
+      }
+      if(s.meta.freshness){
+        var fL=s.meta.freshness==='fresh'?'신선 ✓':s.meta.freshness==='overlap4'?'4개 겹침':'⚠ 유사';
+        var fC=s.meta.freshness==='fresh'?'#4ADE80':s.meta.freshness==='overlap4'?'#FBBF24':'#F87171';
+        tags+='<span class="tag" style="color:'+fC+';background:rgba(255,255,255,.06)">'+fL+'</span>';
+      }
+      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:11px 10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div class="rj" style="font-size:13px;color:'+SETC[idx]+'">'+s.meta.sum+'</div><div style="font-size:8px;color:#5A6A8E">합계</div></div></div><div class="set-tags">'+tags+'</div></div>';
+    }
+    html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="ttl" style="margin-bottom:0">🎯 제 '+r.nextRound+'회 추천 5세트</div><button onclick="getRec()" style="padding:6px 11px;border-radius:12px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#FBBF24;font-size:11px;font-weight:600">🔄 재생성</button></div><div style="font-size:10px;color:#5A6A8E;margin-bottom:12px">적용: '+r.algo+'</div>'+setsHTML+'</div>';
+  }else{
+    html+='<div class="card" style="text-align:center"><button onclick="getRec()" style="padding:14px 30px;border-radius:13px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:800;font-size:15px;min-height:52px">🎲 번호 받기</button><div style="font-size:10px;color:#5A6A8E;margin-top:10px">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
+  }
+  return html;
+}
+
+function getRec(){
+  if(state.recBusy)return;
+  state.recBusy=true;doTab('rec');
+  var tok=state.session?state.session.access_token:SB_ANON;
+  fetch(SB_URL+'/functions/v1/recommend?mode='+state.mode,{headers:{'Authorization':'Bearer '+tok}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.recBusy=false;
+      if(j&&j.sets){state.rec=j;if(typeof j.level==='number')state.level=j.level;}
+      else showErr((j&&j.error)||'추천 실패');
+      renderAcct();doTab('rec');
+    })
+    .catch(function(e){state.recBusy=false;showErr('서버 연결 실패: '+e.message);doTab('rec');});
+}
+function setMode(w){state.mode=w?'wide':'focus';state.rec=null;doTab('rec');}
+
+// ── 데이터 (공개 통계용) ──
+function loadDraws(cb){
+  if(state.draws){cb();return;}
+  var all=[];
+  function page(from){
+    sb.from('draws').select('round,n1,n2,n3,n4,n5,n6,bonus,drawn_date').order('round',{ascending:false}).range(from,from+999)
+      .then(function(res){
+        if(res.error){showErr('데이터 조회 실패: '+res.error.message);return;}
+        all=all.concat(res.data||[]);
+        if(res.data&&res.data.length===1000)page(from+1000);
+        else{
+          state.draws=all;
+          var eN=document.getElementById('h-next');var eT=document.getElementById('h-total');
+          if(all.length){
+            if(eT)eT.textContent=String(all.length).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+          }
+          cb();
+        }
+      });
+  }
+  page(0);
+}
+function drawNums(d){return[d.n1,d.n2,d.n3,d.n4,d.n5,d.n6];}
+
+function renderFreq(){
+  if(!state.draws)return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">데이터 로딩 중...</div>';
+  var freq={};for(var n=1;n<=45;n++)freq[n]=0;
+  for(var i=0;i<state.draws.length;i++){var nn=drawNums(state.draws[i]);for(var j=0;j<6;j++)freq[nn[j]]++;}
+  var mx=0;for(var n=1;n<=45;n++)if(freq[n]>mx)mx=freq[n];
+  var bars='';for(var n=1;n<=45;n++){var z=gz(n),h=Math.round(freq[n]/mx*110);bars+='<div class="fb" style="height:'+h+'px;background:'+z.c+'"></div>';}
+  var sorted=[];for(var n=1;n<=45;n++)sorted.push([n,freq[n]]);
+  sorted.sort(function(a,b){return b[1]-a[1];});
+  var t10='';for(var i=0;i<10;i++)t10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:8px;color:#5A6A8E;width:11px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C4CCEE">'+sorted[i][1]+'회</span></div>';
+  sorted.sort(function(a,b){return a[1]-b[1];});
+  var b10='';for(var i=0;i<10;i++)b10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:8px;color:#5A6A8E;width:11px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C4CCEE">'+sorted[i][1]+'회</span></div>';
+  return '<div class="card"><div class="ttl">전체 출현 빈도 ('+state.draws.length+'회)</div><div class="freq-bars">'+bars+'</div><div style="display:flex;justify-content:space-between;font-size:8px;color:#5A6A8E;margin:2px 0 16px"><span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>45</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:8px">🔴 많이 나온 TOP 10</div>'+t10+'</div><div><div style="font-size:11px;color:#38BDF8;font-weight:700;margin-bottom:8px">🔵 적게 나온 TOP 10</div>'+b10+'</div></div></div>';
+}
+
+function renderHist(){
+  if(!state.draws)return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">데이터 로딩 중...</div>';
+  var html='';
+  for(var i=0;i<20&&i<state.draws.length;i++){
+    var d=state.draws[i],nn=drawNums(d),balls='';
+    for(var j=0;j<6;j++)balls+=ballHTML(nn[j],26,false,0);
+    var dt=d.drawn_date?d.drawn_date.replace(/-/g,'.'):rdate(d.round);
+    html+='<div style="border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:9px;margin-bottom:9px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span class="rj" style="font-size:11px;color:#FBBF24">제 '+d.round+'회</span><span style="font-size:9px;color:#5A6A8E">'+dt+'</span></div><div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">'+balls+'<span style="color:#5A6A8E;font-size:11px;margin:0 1px">+</span>'+ballHTML(d.bonus,26,false,0)+'<span style="font-size:8px;color:#445066">보너스</span></div></div>';
+  }
+  return '<div class="card"><div class="ttl">최근 20회 당첨 번호</div>'+html+'</div>';
+}
+
+function renderMe(){
+  if(!state.session)return '<div class="card" style="text-align:center"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#7080A0;margin-bottom:14px">로그인하면 레벨과 계정 정보를 볼 수 있습니다.</div><button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인 / 회원가입</button></div>';
+  var li=lvInfo(state.level);
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:13px;font-weight:800;color:'+li.c+';margin-bottom:10px">Lv.'+state.level+' '+li.name+'</div><div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">적용 알고리즘: '+li.desc+'<br>레벨 승급은 운영자가 부여합니다.</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>';
+}
+
+// ── 탭 ──
+function doTab(id){
+  try{
+    state.tab=id;
+    document.querySelectorAll('.tb').forEach(function(b){b.classList.toggle('on',b.dataset.t===id);});
+    var c=document.getElementById('content'),html='';
+    if(id==='rec')html=renderRec();
+    else if(id==='freq')html=renderFreq();
+    else if(id==='hist')html=renderHist();
+    else if(id==='me')html=renderMe();
+    c.innerHTML=html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
+    if((id==='freq'||id==='hist')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
+  }catch(e){showErr('렌더 오류: '+e.message);}
+}
+
+// ── 인증 ──
+function openAuth(){state.authMode='login';syncAuthUI();document.getElementById('auth-modal').style.display='block';}
+function closeAuth(){document.getElementById('auth-modal').style.display='none';document.getElementById('auth-msg').textContent='';}
+function toggleAuthMode(){state.authMode=state.authMode==='login'?'signup':'login';syncAuthUI();}
+function syncAuthUI(){
+  var lg=state.authMode==='login';
+  document.getElementById('auth-title').textContent=lg?'로그인':'회원가입';
+  document.getElementById('auth-submit').textContent=lg?'로그인':'가입하기';
+  document.getElementById('auth-toggle').textContent=lg?'처음이신가요? 회원가입':'이미 계정이 있나요? 로그인';
+  document.getElementById('auth-msg').textContent='';
+}
+function doAuth(){
+  var email=document.getElementById('auth-email').value.trim();
+  var pw=document.getElementById('auth-pw').value;
+  var msg=document.getElementById('auth-msg');
+  if(!email||pw.length<6){msg.textContent='이메일과 6자 이상 비밀번호를 입력하세요.';return;}
+  msg.style.color='#7080A0';msg.textContent='처리 중...';
+  var p=state.authMode==='login'?sb.auth.signInWithPassword({email:email,password:pw}):sb.auth.signUp({email:email,password:pw});
+  p.then(function(res){
+    if(res.error){msg.style.color='#F87171';msg.textContent=res.error.message;return;}
+    closeAuth();
+  });
+}
+function doOAuth(provider){
+  sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:window.location.origin+window.location.pathname}})
+    .then(function(res){
+      if(res.error){var msg=document.getElementById('auth-msg');msg.style.color='#F87171';msg.textContent=provider+' 로그인이 아직 설정되지 않았습니다.';}
+    });
+}
+function doLogout(){sb.auth.signOut();state.rec=null;}
+
+function loadProfile(cb){
+  if(!state.session){state.level=0;cb();return;}
+  sb.from('profiles').select('level').eq('id',state.session.user.id).single()
+    .then(function(res){state.level=(res.data&&typeof res.data.level==='number')?res.data.level:1;cb();});
+}
+
+// ── 부트스트랩 ──
+function refresh(){renderAcct();doTab(state.tab);}
+sb.auth.onAuthStateChange(function(ev,session){
+  state.session=session;state.rec=null;state.mode='wide';
+  loadProfile(refresh);
+});
+sb.auth.getSession().then(function(res){
+  state.session=res.data?res.data.session:null;
+  loadProfile(function(){
+    refresh();
+    // 헤더 회차: draws 없이도 즉시 계산
+    var exp=Math.floor((Date.now()-1039264200000)/604800000)+1;
+    var eN=document.getElementById('h-next');if(eN)eN.textContent=exp+1;
+    loadDraws(function(){
+      var eN2=document.getElementById('h-next');
+      if(eN2&&state.draws&&state.draws.length){
+        var latest=state.draws[0].round;
+        eN2.textContent=(exp>latest?exp:latest)+1;
+      }
+    });
+  });
+});
+
+</script>
+</body>
+</html>
