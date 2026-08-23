@@ -30,7 +30,8 @@ async function fetchRound(r) {
       var ok = nums.length === 6;
       for (var k = 0; k < 6; k++) if (!(nums[k] >= 1 && nums[k] <= 45)) ok = false;
       if (!ok) return null;
-      return [r].concat(nums).concat([it.bnsWnNo]);
+      // [회차, n1..n6, 보너스, 1등 당첨자수, 1등 1인당 당첨금] — 뒤 2개는 동행복권 공식 발표값
+      return [r].concat(nums).concat([it.bnsWnNo, it.rnk1WnNope || null, it.rnk1WnAmt || null]);
     }
   }
   return null;
@@ -38,6 +39,17 @@ async function fetchRound(r) {
 
 (async function () {
   var added = 0;
+  // 기존 행 중 당첨통계(9~10번째 요소)가 없는 행 백필 (1회성 — 이후엔 항상 수집됨)
+  for (var i = 0; i < cur.draws.length; i++) {
+    if (cur.draws[i].length >= 10) continue;
+    var rr = cur.draws[i][0], filled = null;
+    try { filled = await fetchRound(rr); } catch (e) { console.error('백필 실패:', rr, e.message); }
+    if (filled && filled.length >= 10 && filled[8] !== null) {
+      cur.draws[i] = filled;
+      added++;
+      console.log('통계 백필:', JSON.stringify(filled));
+    }
+  }
   for (var r = last + 1; r < last + 100; r++) {
     var row = null;
     try { row = await fetchRound(r); } catch (e) { console.error('요청 실패:', r, e.message); break; }
