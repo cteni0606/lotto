@@ -465,6 +465,10 @@ function renderAdm(){
     +sBox(typeof a.visToday==='number'?a.visToday:'-','오늘 방문(전체)','#38BDF8')
     +sBox(typeof a.guestToday==='number'?a.guestToday:'-','오늘 게스트','#8B98B8')
     +sBox(a.dauToday,'오늘 출석(회원)','#4ADE80')
+    +'</div><div style="display:flex;gap:7px;margin-bottom:7px">'
+    +sBox(typeof a.hitsToday==='number'?a.hitsToday:'-','오늘 조회수','#FBBF24')
+    +sBox((a.hitsToday&&a.visToday)?(a.hitsToday/a.visToday).toFixed(1):'-','인당 조회(오늘)','#C084FC')
+    +sBox(typeof a.hits30==='number'?a.hits30:'-','30일 조회수','#F97316')
     +'</div><div style="display:flex;gap:7px;margin-bottom:4px">'
     +sBox(a.totalUsers,'총 가입자','#FBBF24')
     +sBox(typeof a.visMau==='number'?a.visMau:'-','방문 MAU','#38BDF8')
@@ -480,16 +484,24 @@ function renderAdm(){
     var d=a.days[i];
     var hv=Math.max(2,Math.round((d.v||0)/mxd*70));
     var hn=Math.max(2,Math.round(d.n/mxd*70));
-    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:8px;color:#7080A0">'+(d.v||0)+'</span><div style="display:flex;gap:1px;align-items:flex-end"><div style="width:6px;height:'+hv+'px;background:#38BDF8;border-radius:2px 2px 0 0;opacity:.85"></div><div style="width:6px;height:'+hn+'px;background:#4ADE80;border-radius:2px 2px 0 0;opacity:.85"></div></div><span style="font-size:7px;color:#5A6A8E">'+d.day.slice(8)+'</span></div>';
+    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:8px;color:#FBBF24">'+(d.h||0)+'</span><div style="display:flex;gap:1px;align-items:flex-end"><div style="width:6px;height:'+hv+'px;background:#38BDF8;border-radius:2px 2px 0 0;opacity:.85"></div><div style="width:6px;height:'+hn+'px;background:#4ADE80;border-radius:2px 2px 0 0;opacity:.85"></div></div><span style="font-size:7px;color:#5A6A8E">'+d.day.slice(8)+'</span></div>';
   }
   var urows='';
   for(var i=0;i<a.users.length;i++){
     var u=a.users[i],li=lvInfo(u.level);
     urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td></tr>';
   }
+  var actRows='';
+  if(a.todayList&&a.todayList.length){
+    for(var i=0;i<a.todayList.length;i++){
+      var tv=a.todayList[i];
+      actRows+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:10px;color:'+(tv.member?'#C4CCEE':'#7080A0')+'">'+(tv.member?'👤 ':'👻 ')+tv.who+'</span><span class="rj" style="font-size:11px;color:'+(tv.hits>=5?'#F97316':'#9AA6C8')+'">'+tv.hits+'회</span></div>';
+    }
+  }else actRows='<div style="font-size:10px;color:#5A6A8E">오늘 방문 없음</div>';
+  var actCard='<div class="card"><div class="ttl">📱 오늘 활동 (방문자별 조회수)</div>'+actRows+'</div>';
   return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+boxes+'</div>'
-    +'<div class="card"><div class="ttl">최근 14일 <span style="color:#38BDF8">방문(전체)</span> · <span style="color:#4ADE80">출석(회원)</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
-    +'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th></tr></thead><tbody>'+urows+'</tbody></table></div><div style="font-size:9px;color:#5A6A8E;margin-top:8px">레벨 수동 변경: Supabase 대시보드 → Table Editor → profiles</div></div>';
+    +'<div class="card"><div class="ttl">최근 14일 — <span style="color:#FBBF24">숫자=조회수</span> · <span style="color:#38BDF8">파랑=방문자</span> · <span style="color:#4ADE80">초록=회원출석</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
+    +actCard+'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th></tr></thead><tbody>'+urows+'</tbody></table></div><div style="font-size:9px;color:#5A6A8E;margin-top:8px">레벨 수동 변경: Supabase 대시보드 → Table Editor → profiles</div></div>';
 }
 function loadAdmin(){
   state.admBusy=true;
@@ -633,10 +645,7 @@ function trackVisit(){
       vid='v'+Math.random().toString(36).slice(2,12)+Math.random().toString(36).slice(2,12);
       localStorage.setItem('lotto-vid',vid);
     }
-    var day=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
-    var row={day:day,visitor_id:vid};
-    if(state.session)row.user_id=state.session.user.id;
-    fetch(SB_URL+'/rest/v1/visits',{method:'POST',headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON),'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(row)}).catch(function(e){});
+    fetch(SB_URL+'/rest/v1/rpc/track_visit',{method:'POST',headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON),'Content-Type':'application/json'},body:JSON.stringify({vid:vid})}).catch(function(e){});
   }catch(e){}
 }
 function doCheckin(){
