@@ -17,16 +17,33 @@ const rows = extra.map((r) => {
     round: r[0], n1: nums[0], n2: nums[1], n3: nums[2], n4: nums[3], n5: nums[4], n6: nums[5],
     bonus: r[7],
     drawn_date: new Date(DRAW1 + (r[0] - 1) * 7 * 86400000).toISOString().slice(0, 10),
+    won1_count: r[8] ?? null,   // 1등 당첨자 수 (동행복권 공식)
+    won1_amount: r[9] ?? null,  // 1등 1인당 당첨금 (동행복권 공식)
   };
 });
+// merge-duplicates: 기존 회차에도 나중에 채워진 당첨통계가 반영되도록 갱신 upsert
 const res = await fetch(URL + '/rest/v1/draws?on_conflict=round', {
   method: 'POST',
   headers: {
     apikey: KEY, Authorization: 'Bearer ' + KEY,
     'Content-Type': 'application/json',
-    Prefer: 'resolution=ignore-duplicates,return=minimal',
+    Prefer: 'resolution=merge-duplicates,return=minimal',
   },
   body: JSON.stringify(rows),
 });
 if (!res.ok) { console.error('동기화 실패', res.status, await res.text()); process.exit(1); }
-console.log('DB 동기화 완료:', rows.length, '회차 (중복 무시)');
+console.log('DB 동기화 완료:', rows.length, '회차 (upsert)');
+
+// 저장 번호 채점 안전망 + 보관정책 정리 (draws 트리거가 기본 채점, 이건 멱등 백업 호출)
+async function rpc(name, args) {
+  const r = await fetch(URL + '/rest/v1/rpc/' + name, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args || {}),
+  });
+  const t = await r.text();
+  if (!r.ok) { console.error(name + ' 실패', r.status, t); return null; }
+  return t;
+}
+console.log('미채점 픽 채점:', await rpc('score_pending_picks'), '건');
+console.log('보관정책 정리(4주 초과 롤업·삭제):', await rpc('cleanup_saved_picks', { keep_weeks: 4 }), '건');
