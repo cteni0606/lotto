@@ -1,0 +1,39 @@
+name: QA/DEV 환경 배포
+
+on:
+  push:
+    branches: [dev, qa]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-env-${{ github.ref_name }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          path: srcbranch
+      - name: 환경 폴더로 발행
+        run: |
+          ENV=${{ github.ref_name }}
+          mkdir -p $ENV
+          sed "s/var APP_ENV='live'/var APP_ENV='$ENV'/" srcbranch/index.html > $ENV/index.html
+          rm -rf srcbranch
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add $ENV/index.html
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "$ENV 환경 배포 (${GITHUB_SHA::7})"
+            git pull --rebase
+            git push
+          fi
