@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.5.02';
+var APP_VERSION='2.0.5.03';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -645,13 +645,14 @@ function sdkPaintAround(which,i){
   for(key in touch)if(touch.hasOwnProperty(key))sdkPaintCell(which,parseInt(key,10));
   if(!state.sdk.celeb)state.sdk.celeb={m:{},b:{},c:{}};
   var celeb=state.sdk.celeb[which];
-  // 완성 판정은 전체 그룹 재점검(9×9 기준 최대 27그룹×9칸 — 무시할 수준):
-  // 다른 칸 수정으로 충돌이 풀려 뒤늦게 깨끗해진 그룹도 축하받도록. DOM 조작(sdkFlash)은 새로 완성된 그룹에만 발생
-  for(k=0;k<gs.length;k++){
-    g=gs[k];
+  // 완성 판정은 "편집한 칸이 속한 3개 그룹"만: 축하는 그 그룹을 직접 편집해 완성시켰을 때만.
+  // 다른 곳 편집으로 간접적으로 깨끗해진 그룹이 뒤늦게 축하받으면 안 됨(오너 피드백).
+  // 판정 자체는 sdkGroupClean(유일성 + 전역 충돌셋 무관)으로 유지 — 충돌 낀 그룹 오발동 방지.
+  for(k=0;k<3;k++){
+    var gi=gis[k];g=gs[gi];
     if(sdkGroupClean(which,g)){
-      if(!celeb[k]){celeb[k]=1;sdkFlash(which,g,'sdk-pop',750);}
-    }else if(celeb[k])delete celeb[k];
+      if(!celeb[gi]){celeb[gi]=1;sdkFlash(which,g,'sdk-pop',750);}
+    }else if(celeb[gi])delete celeb[gi];
   }
   if(sdkIsConf(which,i))sdkFlash(which,[i],'sdk-bad',480);
 }
