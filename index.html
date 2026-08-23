@@ -461,15 +461,26 @@ function renderAdm(){
     return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">관리 데이터 로딩 중...</div>';
   }
   var a=state.admin;
-  var boxes='<div style="display:flex;gap:7px;margin-bottom:4px">'
-    +'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:10px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+a.totalUsers+'</div><div class="sl">총 가입자</div></div>'
-    +'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:10px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#4ADE80">'+a.dauToday+'</div><div class="sl">오늘 DAU</div></div>'
-    +'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:10px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+a.mau+'</div><div class="sl">MAU (30일)</div></div></div>';
-  var mxd=1;for(var i=0;i<a.days.length;i++)if(a.days[i].n>mxd)mxd=a.days[i].n;
+  var boxes='<div style="display:flex;gap:7px;margin-bottom:7px">'
+    +sBox(typeof a.visToday==='number'?a.visToday:'-','오늘 방문(전체)','#38BDF8')
+    +sBox(typeof a.guestToday==='number'?a.guestToday:'-','오늘 게스트','#8B98B8')
+    +sBox(a.dauToday,'오늘 출석(회원)','#4ADE80')
+    +'</div><div style="display:flex;gap:7px;margin-bottom:4px">'
+    +sBox(a.totalUsers,'총 가입자','#FBBF24')
+    +sBox(typeof a.visMau==='number'?a.visMau:'-','방문 MAU','#38BDF8')
+    +sBox(a.mau,'회원 MAU','#4ADE80')
+    +'</div>';
+  var mxd=1;
+  for(var i=0;i<a.days.length;i++){
+    if(a.days[i].n>mxd)mxd=a.days[i].n;
+    if(a.days[i].v&&a.days[i].v>mxd)mxd=a.days[i].v;
+  }
   var bars='';
   for(var i=0;i<a.days.length;i++){
-    var d=a.days[i],h=Math.max(3,Math.round(d.n/mxd*70));
-    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:8px;color:#7080A0">'+d.n+'</span><div style="width:70%;height:'+h+'px;background:'+(i===a.days.length-1?'#4ADE80':'#38BDF8')+';border-radius:3px 3px 0 0;opacity:.85"></div><span style="font-size:7px;color:#5A6A8E">'+d.day.slice(8)+'</span></div>';
+    var d=a.days[i];
+    var hv=Math.max(2,Math.round((d.v||0)/mxd*70));
+    var hn=Math.max(2,Math.round(d.n/mxd*70));
+    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:8px;color:#7080A0">'+(d.v||0)+'</span><div style="display:flex;gap:1px;align-items:flex-end"><div style="width:6px;height:'+hv+'px;background:#38BDF8;border-radius:2px 2px 0 0;opacity:.85"></div><div style="width:6px;height:'+hn+'px;background:#4ADE80;border-radius:2px 2px 0 0;opacity:.85"></div></div><span style="font-size:7px;color:#5A6A8E">'+d.day.slice(8)+'</span></div>';
   }
   var urows='';
   for(var i=0;i<a.users.length;i++){
@@ -477,7 +488,7 @@ function renderAdm(){
     urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td></tr>';
   }
   return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+boxes+'</div>'
-    +'<div class="card"><div class="ttl">최근 14일 DAU</div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
+    +'<div class="card"><div class="ttl">최근 14일 <span style="color:#38BDF8">방문(전체)</span> · <span style="color:#4ADE80">출석(회원)</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
     +'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th></tr></thead><tbody>'+urows+'</tbody></table></div><div style="font-size:9px;color:#5A6A8E;margin-top:8px">레벨 수동 변경: Supabase 대시보드 → Table Editor → profiles</div></div>';
 }
 function loadAdmin(){
@@ -615,6 +626,19 @@ function loadProfile(cb){
       cb();
     });
 }
+function trackVisit(){
+  try{
+    var vid=localStorage.getItem('lotto-vid');
+    if(!vid){
+      vid='v'+Math.random().toString(36).slice(2,12)+Math.random().toString(36).slice(2,12);
+      localStorage.setItem('lotto-vid',vid);
+    }
+    var day=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
+    var row={day:day,visitor_id:vid};
+    if(state.session)row.user_id=state.session.user.id;
+    fetch(SB_URL+'/rest/v1/visits',{method:'POST',headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON),'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(row)}).catch(function(e){});
+  }catch(e){}
+}
 function doCheckin(){
   if(!state.session)return;
   fetch(SB_URL+'/functions/v1/checkin',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token}})
@@ -656,6 +680,7 @@ sb.auth.getSession().then(function(res){
   state.session=res.data?res.data.session:null;
   loadProfile(function(){
     refresh();
+    trackVisit();
     if(state.session)doCheckin();
     var exp=Math.floor((Date.now()-1039264200000)/604800000)+1;
     var eN=document.getElementById('h-next');if(eN)eN.textContent=exp+1;
