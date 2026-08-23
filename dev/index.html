@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.6.00';
+var APP_VERSION='2.0.6.01';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -145,6 +145,15 @@ function ballHTML(n,size,glow,delay){
 }
 function rdate(r){var d=new Date(1039264200000+(r-1)*7*864e5);return d.getFullYear()+'.'+(''+(d.getMonth()+1)).padStart(2,'0')+'.'+(''+d.getDate()).padStart(2,'0');}
 function fmtNum(x){return String(x).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function maskEmail(email){
+  if(!email)return '';
+  var s=String(email);
+  var at=s.indexOf('@');
+  var local=at>-1?s.slice(0,at):s;
+  var domain=at>-1?s.slice(at):'';
+  var keep=local.length>=6?3:local.length>=3?2:1;
+  return local.slice(0,keep)+'***'+domain;
+}
 function sBox(val,lbl,c){return '<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:'+c+'">'+val+'</div><div class="sl">'+lbl+'</div></div>';}
 
 // ── 상단 계정/탭 ──
@@ -153,7 +162,7 @@ function renderAcct(){
   if(state.session){
     var li=lvInfo(state.level);
     var streakStr=state.streak>0?'<span style="font-size:10px;color:#F97316;margin-right:6px">🔥 '+state.streak+'일</span>':'';
-    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level===99?'T':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
+    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+maskEmail(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level===99?'T':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
   }else{
     el.innerHTML='<span style="font-size:10px;font-weight:800;color:#6B7A9E;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:2px 9px;border-radius:9px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);padding:4px 14px;border-radius:9px">로그인</button>';
   }
@@ -1158,7 +1167,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div class="card" id="sdk-me-card" style="border-color:rgba(192,132,252,.2)">'+sdkMeCardHTML()+'</div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div class="card" id="sdk-me-card" style="border-color:rgba(192,132,252,.2)">'+sdkMeCardHTML()+'</div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
