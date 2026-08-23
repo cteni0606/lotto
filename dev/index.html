@@ -282,9 +282,13 @@ function deletePick(id){
   fetch(SB_URL+'/functions/v1/picks',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'delete',id:id})})
     .then(function(r){return r.json();})
     .then(function(j){
-      if(j&&j.ok){state.myPicks=null;loadPicks();}
+      if(j&&j.ok){
+        var mp=state.myPicks,i;
+        if(mp&&mp.picks){for(i=0;i<mp.picks.length;i++){if(mp.picks[i].id===id){mp.picks.splice(i,1);break;}}}
+        var wrap=document.getElementById('mypicks-wrap');
+        if(wrap)wrap.innerHTML=renderMyPicks();
+      }
       else pickToast('⚠ '+((j&&j.error)||'삭제 실패'));
-      if(state.tab==='me')doTab('me');
     })
     .catch(function(e){pickToast('⚠ 서버 연결 실패');});
 }
@@ -686,7 +690,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>'+renderMyPicks();
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
