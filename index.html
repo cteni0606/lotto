@@ -47,9 +47,9 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .bt-table th{padding:6px 5px 8px;color:#5A6A8E;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
 .bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.05);}
 .duo-row{background:rgba(255,255,255,.025);border-radius:14px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(251,191,36,.12);}
-.sdkc{width:56px;height:56px;border-radius:12px;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;}
-.sdk6{width:40px;height:40px;border-radius:10px;font-size:18px;}
-.sdk9{width:28px;height:28px;border-radius:7px;font-size:14px;}
+.sdkc{width:56px;height:56px;border-radius:0;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;}
+.sdk6{width:40px;height:40px;font-size:18px;}
+.sdk9{width:28px;height:28px;font-size:14px;}
 @keyframes sdk-pop-kf{0%{transform:scale(1)}30%{transform:scale(1.1);box-shadow:0 0 12px rgba(74,222,128,.8);background:rgba(74,222,128,.28)}100%{transform:scale(1)}}
 .sdk-pop{animation:sdk-pop-kf .7s ease;}
 @keyframes sdk-bad-kf{0%,100%{transform:scale(1)}40%{transform:scale(1.06);box-shadow:0 0 10px rgba(248,113,113,.7)}}
@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.5.00';
+var APP_VERSION='2.0.5.01';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -317,12 +317,13 @@ function pickRank(m,b){
 // 퍼즐: sudoku_bank*.json(클루만, 정답 없음)에서 날짜 해시로 결정적 선택 (전 유저 공용)
 // 채점: 클라 검증(행·열·블록 유일성) → 서버 sudoku 함수에 스탬프 제출
 // 티어 3종: m=메인 4×4(스트릭 인정) · b=보너스1 6×6 · c=보너스2 9×9 (보너스는 누적만 +1)
-// SDK_CFG: size=한 변, bw/bh=블록 가로/세로, xgap=블록 경계 추가 여백(px), gap=셀 간격
-//   (셀 크기: 최소 뷰포트 320px → 카드 내부폭 278px 기준. 9×9: 28*9+2*8+3*2=274px)
+// SDK_CFG: size=한 변, bw/bh=블록 가로/세로, pgap=숫자패드 버튼 간격
+// 격자: 셀 간 여백 없이 테두리로 구분 — 일반 칸 1px, 블록 경계·외곽 3px (정통 수도쿠 스타일)
+//   (셀 크기: 최소 뷰포트 320px → 카드 내부폭 278px 기준. 9×9: 28*9+3*2=258px, border-box라 셀 안쪽으로 선이 그려짐)
 var SDK_CFG={
-  m:{size:4,bw:2,bh:2,tier:'main',cls:'sdkc',pcls:'sdkp',gap:3,xgap:6,rgap:3,rgapB:9,pgap:6,blockTxt:'2×2칸'},
-  b:{size:6,bw:2,bh:3,tier:'bonus1',cls:'sdkc sdk6',pcls:'sdkp sdkp6',gap:3,xgap:4,rgap:3,rgapB:7,pgap:4,blockTxt:'2×3칸'},
-  c:{size:9,bw:3,bh:3,tier:'bonus2',cls:'sdkc sdk9',pcls:'sdkp sdkp9',gap:2,xgap:3,rgap:2,rgapB:5,pgap:5,blockTxt:'3×3칸'}
+  m:{size:4,bw:2,bh:2,tier:'main',cls:'sdkc',pcls:'sdkp',pgap:6,blockTxt:'2×2칸'},
+  b:{size:6,bw:2,bh:3,tier:'bonus1',cls:'sdkc sdk6',pcls:'sdkp sdkp6',pgap:4,blockTxt:'2×3칸'},
+  c:{size:9,bw:3,bh:3,tier:'bonus2',cls:'sdkc sdk9',pcls:'sdkp sdkp9',pgap:5,blockTxt:'3×3칸'}
 };
 var SDK_WHICHES=['m','b','c'];
 var SDK_BADGES=[
@@ -511,7 +512,10 @@ function sdkGroupOk(which,g){
   for(j=0;j<g.length;j++){v=cells[g[j]];if(!v||seen[v])return false;seen[v]=1;}
   return true;
 }
-// 스타일 우선순위: 선택됨 > 충돌 > 기본 · 블록 경계선은 항상 유지
+// 스타일 우선순위: 선택됨 > 충돌 > 기본 (강조는 배경+inset 링으로)
+// 격자선은 별개 레이어로 항상 적용: 모든 칸 1px, 블록 경계 3px (외곽선은 sdkGridHTML 컨테이너가 닫음)
+var SDK_LINE='1px solid rgba(148,163,184,.45)';
+var SDK_LINE_B='3px solid rgba(226,232,240,.8)';
 function sdkCellStyle(which,i){
   var cfg=SDK_CFG[which],n=cfg.size,col=i%n,row=Math.floor(i/n);
   var given=state.sdk.given[which][i];
@@ -519,28 +523,29 @@ function sdkCellStyle(which,i){
   var conf=sdkIsConf(which,i);
   var bR=(col+1)%cfg.bw===0&&col!==n-1;
   var bB=(row+1)%cfg.bh===0&&row!==n-1;
-  var s=bR?'margin-right:'+cfg.xgap+'px;':'';
-  if(given)s+='background:rgba(255,255,255,.12);color:#DDE3F5;border:1.5px solid rgba(255,255,255,.14);';
-  else s+='background:rgba(56,189,248,.06);color:#38BDF8;border:1.5px solid rgba(56,189,248,.3);';
-  if(conf)s+='background:rgba(248,113,113,.13);color:'+(given?'#FCA5A5':'#F87171')+';border-color:rgba(248,113,113,.65);';
-  if(sel)s+='border-color:#FBBF24;box-shadow:0 0 8px rgba(251,191,36,.4);';
-  // 블록 경계: 여백만으론 흐릿해서 경계 셀에 실제 선을 그림 (border-box라 레이아웃 안 흔들림)
-  if(bR)s+='border-right:2px solid rgba(226,232,240,.5);';
-  if(bB)s+='border-bottom:2px solid rgba(226,232,240,.5);';
+  var s='border:0;';
+  if(given)s+='background:rgba(255,255,255,.10);color:#DDE3F5;';
+  else s+='background:rgba(56,189,248,.05);color:#38BDF8;';
+  if(conf)s+='background:rgba(248,113,113,.16);color:'+(given?'#FCA5A5':'#F87171')+';box-shadow:inset 0 0 0 1.5px rgba(248,113,113,.7);';
+  if(sel)s+=(conf?'':'background:rgba(251,191,36,.10);')+'box-shadow:inset 0 0 0 2px #FBBF24;';
+  if(col!==n-1)s+='border-right:'+(bR?SDK_LINE_B:SDK_LINE)+';';
+  if(row!==n-1)s+='border-bottom:'+(bB?SDK_LINE_B:SDK_LINE)+';';
   return s;
 }
 function sdkGridHTML(which){
   var cfg=SDK_CFG[which],n=cfg.size,html='',r,c;
   sdkRecalcConf(which);
+  // 컨테이너 외곽 테두리(3px)가 격자의 바깥 경계를 닫고, 셀 border-right/bottom이 안쪽 선을 그림
+  html+='<div style="text-align:center"><div style="display:inline-block;vertical-align:top;border:'+SDK_LINE_B+';border-radius:8px;overflow:hidden">';
   for(r=0;r<n;r++){
-    var rowGap=((r+1)%cfg.bh===0&&r!==n-1)?cfg.rgapB:cfg.rgap;
-    html+='<div style="display:flex;gap:'+cfg.gap+'px;justify-content:center;margin-bottom:'+rowGap+'px">';
+    html+='<div style="display:flex">';
     for(c=0;c<n;c++){
       var i=r*n+c;
       html+='<button class="'+cfg.cls+'" id="sdk-c-'+which+'-'+i+'" onclick="sdkSel(\''+which+'\','+i+')" style="'+sdkCellStyle(which,i)+'">'+(state.sdk.cells[which][i]||'')+'</button>';
     }
     html+='</div>';
   }
+  html+='</div></div>';
   return html;
 }
 function sdkPadHTML(which){
