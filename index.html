@@ -47,6 +47,16 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .bt-table th{padding:6px 5px 8px;color:#5A6A8E;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
 .bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.05);}
 .duo-row{background:rgba(255,255,255,.025);border-radius:14px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(251,191,36,.12);}
+.sdkc{width:56px;height:56px;border-radius:0;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;}
+.sdk6{width:40px;height:40px;font-size:18px;}
+.sdk9{width:28px;height:28px;font-size:14px;}
+@keyframes sdk-pop-kf{0%{transform:scale(1)}30%{transform:scale(1.1);box-shadow:0 0 12px rgba(74,222,128,.8);background:rgba(74,222,128,.28)}100%{transform:scale(1)}}
+.sdk-pop{animation:sdk-pop-kf .7s ease;}
+@keyframes sdk-bad-kf{0%,100%{transform:scale(1)}40%{transform:scale(1.06);box-shadow:0 0 10px rgba(248,113,113,.7)}}
+.sdk-bad{animation:sdk-bad-kf .45s ease;}
+.sdkp{width:54px;height:46px;border-radius:12px;font-size:18px;font-weight:800;}
+.sdkp6{width:34px;height:44px;border-radius:10px;font-size:15px;}
+.sdkp9{width:46px;height:42px;border-radius:10px;font-size:15px;}
 .footer{text-align:center;font-size:9px;color:#3A4460;line-height:1.9;padding:4px 8px 20px;}
 #err-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:#fff;padding:12px 14px;z-index:9999;font-size:11px;line-height:1.7;word-break:break-all;}
 </style>
@@ -91,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.2.01';
+var APP_VERSION='2.0.6.00';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -112,6 +122,7 @@ var TABS=[
   {id:'hist',label:'📋 기록',min:1},
   {id:'hot',label:'🔥 핫&콜드',min:2},
   {id:'prem',label:'🔮 프리미엄',min:3},
+  {id:'sudoku',label:'🧩 수도쿠',min:0},
   {id:'adm',label:'🛠 관리',min:100},
   {id:'me',label:'👤 내정보',min:0}
 ];
@@ -124,7 +135,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -218,6 +229,7 @@ function renderRec(){
   }else{
     html+='<div class="card" style="text-align:center"><button onclick="getRec()" style="padding:14px 30px;border-radius:13px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:800;font-size:15px;min-height:52px">🎲 번호 받기</button><div style="font-size:10px;color:#5A6A8E;margin-top:10px">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
   }
+  html+=sdkBannerHTML();
   return html;
 }
 function getRec(){
@@ -299,6 +311,462 @@ function pickRank(m,b){
   if(m===4)return['4등','#4ADE80'];
   if(m===3)return['5등','#38BDF8'];
   return[m+'개 일치','#5A6A8E'];
+}
+
+// ── 일일 수도쿠 스트릭 (Phase 2) — 로또 출석(🔥)과 완전 별개 ──
+// 퍼즐: sudoku_bank*.json(클루만, 정답 없음)에서 날짜 해시로 결정적 선택 (전 유저 공용)
+// 채점: 클라 검증(행·열·블록 유일성) → 서버 sudoku 함수에 스탬프 제출
+// 티어 3종: m=메인 4×4(스트릭 인정) · b=보너스1 6×6 · c=보너스2 9×9 (보너스는 누적만 +1)
+// SDK_CFG: size=한 변, bw/bh=블록 가로/세로, pgap=숫자패드 버튼 간격
+// 격자: 셀 간 여백 없이 테두리로 구분 — 일반 칸 1px, 블록 경계·외곽 3px (정통 수도쿠 스타일)
+//   (셀 크기: 최소 뷰포트 320px → 카드 내부폭 278px 기준. 9×9: 28*9+3*2=258px, border-box라 셀 안쪽으로 선이 그려짐)
+var SDK_CFG={
+  m:{size:4,bw:2,bh:2,tier:'main',cls:'sdkc',pcls:'sdkp',pgap:6,blockTxt:'2×2칸'},
+  b:{size:6,bw:2,bh:3,tier:'bonus1',cls:'sdkc sdk6',pcls:'sdkp sdkp6',pgap:4,blockTxt:'2×3칸'},
+  c:{size:9,bw:3,bh:3,tier:'bonus2',cls:'sdkc sdk9',pcls:'sdkp sdkp9',pgap:5,blockTxt:'3×3칸'}
+};
+var SDK_WHICHES=['m','b','c'];
+var SDK_BADGES=[
+  {kind:'streak_1',icon:'🥉',label:'첫 퍼즐'},
+  {kind:'streak_3',icon:'🥈',label:'3일 연속'},
+  {kind:'streak_7',icon:'🥇',label:'7일 연속'},
+  {kind:'trial_1d',icon:'🎟️',label:'14일 연속 · 프리미엄 1일 체험권'},
+  {kind:'trial_3d',icon:'🏆',label:'30일 연속 · 프리미엄 3일 체험권'},
+  {kind:'total_100',icon:'💯',label:'누적 100문제'}
+];
+function sdkToday(){return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);}
+function sdkHash(s){var h=5381,i;for(i=0;i<s.length;i++){h=(h*33+s.charCodeAt(i))%1000000007;}return h;}
+function sdkGroupList(which){
+  var cfg=SDK_CFG[which],n=cfg.size,gs=[],r,c,br,bc,i,j,g;
+  for(r=0;r<n;r++){g=[];for(c=0;c<n;c++)g.push(r*n+c);gs.push(g);}
+  for(c=0;c<n;c++){g=[];for(r=0;r<n;r++)g.push(r*n+c);gs.push(g);}
+  for(br=0;br<n;br+=cfg.bh)for(bc=0;bc<n;bc+=cfg.bw){
+    g=[];for(i=0;i<cfg.bh;i++)for(j=0;j<cfg.bw;j++)g.push((br+i)*n+bc+j);gs.push(g);
+  }
+  return gs;
+}
+function sdkCheck(cells,which){
+  var cfg=SDK_CFG[which],n=cfg.size,n2=n*n,i,j;
+  if(!cells||cells.length!==n2)return false;
+  for(i=0;i<n2;i++)if(!cells[i]||cells[i]<1||cells[i]>n)return false;
+  var gs=sdkGroupList(which);
+  for(i=0;i<gs.length;i++){
+    var seen={},g=gs[i];
+    for(j=0;j<g.length;j++){var v=cells[g[j]];if(seen[v])return false;seen[v]=1;}
+  }
+  return true;
+}
+function sdkBankOf(which){
+  if(which==='m')return state.sdk.bank;
+  if(which==='b')return state.sdk.bank6;
+  return state.sdk.bank9;
+}
+function sdkPuzzleIdx(which){
+  var bank=sdkBankOf(which);
+  if(!bank||!bank.puzzles||!bank.puzzles.length)return -1;
+  var n=bank.puzzles.length,d=sdkToday();
+  var salt=which==='m'?'':(which==='b'?'B1':'B2');
+  return sdkHash(d+salt)%n;
+}
+function sdkPuzzleStr(which){
+  var bank=sdkBankOf(which),idx=sdkPuzzleIdx(which);
+  return idx<0?null:bank.puzzles[idx];
+}
+// 뱅크의 인코딩 정답(sols) 복호화 — 생성기(gen-sudoku-bank*.mjs)와 동일 스킴:
+//   enc[i]=((s[i]-1+ks(i))%n)+1, ks(i)=sdkHash(p+'K'+i)%n (p=클루 문자열이 곧 시드 — 별도 키 불필요)
+// 역연산: s[i]=((e[i]-1-ks(i)+n)%n)+1. 실패(길이·범위 이상) 시 null.
+function sdkDecodeSol(p,enc,n){
+  if(!p||!enc||enc.length!==p.length)return null;
+  var out=[],i,ks,v;
+  for(i=0;i<p.length;i++){
+    ks=sdkHash(p+'K'+i)%n;
+    v=enc.charCodeAt(i)-48;
+    if(v<1||v>n)return null;
+    out.push(((v-1-ks+n)%n)+1);
+  }
+  return out;
+}
+function sdkDoneLocal(){var f='';try{f=localStorage.getItem('lotto-sdk-done-'+sdkToday())||'';}catch(e){}return f;}
+function sdkMarkDoneLocal(which){try{var f=sdkDoneLocal();if(f.indexOf(which)<0)localStorage.setItem('lotto-sdk-done-'+sdkToday(),f+which);}catch(e){}}
+function sdkSaveLocal(){try{localStorage.setItem('lotto-sdk-'+state.sdk.date,JSON.stringify({m:state.sdk.cells.m,b:state.sdk.cells.b,c:state.sdk.cells.c}));}catch(e){}}
+// 날짜 바뀌면 전체 초기화, 같은 날엔 아직 뱅크가 안 온 티어만 증분 초기화
+function sdkInit(){
+  var d=sdkToday();
+  if(state.sdk.date!==d||!state.sdk.cells){
+    state.sdk.date=d;state.sdk.cells={};state.sdk.given={};state.sdk.solution={};state.sdk.done={m:false,b:false,c:false};state.sdk.sel=null;state.sdk.startMs={m:0,b:0,c:0};state.sdk.conf={};state.sdk.celeb={m:{},b:{},c:{}};
+  }
+  var saved=null;
+  try{saved=JSON.parse(localStorage.getItem('lotto-sdk-'+d)||'null');}catch(e){saved=null;}
+  var w,i;
+  for(w=0;w<SDK_WHICHES.length;w++){
+    var which=SDK_WHICHES[w];
+    if(state.sdk.cells[which])continue;
+    var pz=sdkPuzzleStr(which);
+    if(!pz)continue;
+    var n2=SDK_CFG[which].size*SDK_CFG[which].size,nmax=SDK_CFG[which].size,cells=[],given=[];
+    if(pz.length!==n2)continue;
+    for(i=0;i<n2;i++){var ch=pz.charAt(i),v=ch==='0'?0:parseInt(ch,10);cells.push(v);given.push(v>0);}
+    if(saved&&saved[which]&&saved[which].length===n2){
+      for(i=0;i<n2;i++){var sv=saved[which][i];if(!given[i]&&sv>=1&&sv<=nmax)cells[i]=sv;}
+    }
+    state.sdk.cells[which]=cells;state.sdk.given[which]=given;
+    // 인코딩 정답 복호화해 보관 — 그룹 완성(축하) 판정은 이 배열과의 정확 일치로만 한다
+    if(!state.sdk.solution)state.sdk.solution={};
+    var bank=sdkBankOf(which),pidx=sdkPuzzleIdx(which);
+    state.sdk.solution[which]=(bank&&bank.sols&&bank.sols[pidx])?sdkDecodeSol(pz,bank.sols[pidx],nmax):null;
+  }
+  var df=sdkDoneLocal();
+  if(df.indexOf('m')>=0)state.sdk.done.m=true;
+  if(df.indexOf('b')>=0)state.sdk.done.b=true;
+  if(df.indexOf('c')>=0)state.sdk.done.c=true;
+  if(state.sdk.st){
+    if(state.sdk.st.todayMain)state.sdk.done.m=true;
+    if(state.sdk.st.todayBonus1)state.sdk.done.b=true;
+    if(state.sdk.st.todayBonus2)state.sdk.done.c=true;
+  }
+}
+// key: 'bank'(4×4)|'bank6'|'bank9' — 실패해도 해당 티어만 영향 (메인은 bank)
+function sdkLoadBankFile(key,file){
+  if(state.sdk[key]||state.sdk[key+'Busy']||state.sdk[key+'Err'])return;
+  state.sdk[key+'Busy']=true;
+  fetch(file+'?v='+APP_VERSION)
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.sdk[key+'Busy']=false;
+      if(j&&j.puzzles&&j.puzzles.length)state.sdk[key]=j;
+      else state.sdk[key+'Err']=true;
+      if(state.tab==='sudoku')doTab('sudoku');
+    })
+    .catch(function(e){state.sdk[key+'Err']=true;state.sdk[key+'Busy']=false;if(state.tab==='sudoku')doTab('sudoku');});
+}
+function sdkLoadBank(){sdkLoadBankFile('bank','sudoku_bank.json');}
+function loadSdkStatus(){
+  if(!state.session||state.sdk.stBusy)return;
+  state.sdk.stBusy=true;
+  fetch(SB_URL+'/functions/v1/sudoku',{headers:{'Authorization':'Bearer '+state.session.access_token}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.sdk.stBusy=false;
+      if(j&&j.ok){
+        state.sdk.st=sdkStFromRes(j);
+        sdkApplyStatus();
+      }
+    })
+    .catch(function(e){state.sdk.stBusy=false;});
+}
+// 서버 응답 → st 객체 (todayBonus1 없던 구버전 서버 응답은 todayBonus로 폴백)
+function sdkStFromRes(j){
+  var b1=j.todayBonus1!==undefined?j.todayBonus1:j.todayBonus;
+  return {current:j.current,best:j.best,total:j.total_solved,last:j.last_solved,todayMain:!!j.todayMain,todayBonus1:!!b1,todayBonus2:!!j.todayBonus2,rewards:j.rewards||[]};
+}
+// 서버 현황 도착 시 국소 DOM 갱신 (전체 탭 재렌더 없음)
+function sdkApplyStatus(){
+  var st=state.sdk.st;
+  if(!st)return;
+  if(state.sdk.done){
+    if(st.todayMain&&!state.sdk.done.m){state.sdk.done.m=true;var bm=document.getElementById('sdk-body-m');if(bm)bm.innerHTML=sdkDoneBodyHTML('m');}
+    if(st.todayBonus1&&!state.sdk.done.b){state.sdk.done.b=true;var bb=document.getElementById('sdk-body-b');if(bb)bb.innerHTML=sdkDoneBodyHTML('b');}
+    if(st.todayBonus2&&!state.sdk.done.c){state.sdk.done.c=true;var bc=document.getElementById('sdk-body-c');if(bc)bc.innerHTML=sdkDoneBodyHTML('c');}
+  }
+  var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
+  var mc=document.getElementById('sdk-me-card');if(mc)mc.innerHTML=sdkMeCardHTML();
+  var bn=document.getElementById('sdk-rec-banner');if(bn&&st.todayMain)bn.style.display='none';
+  sdkMaybeResubmit();
+}
+// 게스트로 풀고 나서 로그인한 경우 등 — 로컬 완료분을 서버에 재제출
+// (구 4×4 보너스 완료 플래그 'b'는 6×6 셀 검증에 실패하므로 자동 무시됨)
+function sdkMaybeResubmit(){
+  var st=state.sdk.st;
+  if(!st||!state.session||!state.sdk.cells||!state.sdk.done)return;
+  if(state.sdk.done.m&&!st.todayMain&&!state.sdk.busy.m&&sdkCheck(state.sdk.cells.m,'m'))sdkSubmit('m',null);
+  if(state.sdk.done.b&&!st.todayBonus1&&!state.sdk.busy.b&&sdkCheck(state.sdk.cells.b,'b'))sdkSubmit('b',null);
+  if(state.sdk.done.c&&!st.todayBonus2&&!state.sdk.busy.c&&sdkCheck(state.sdk.cells.c,'c'))sdkSubmit('c',null);
+}
+function sdkBadgeChipsHTML(){
+  var st=state.sdk.st;
+  if(!st)return '';
+  var owned={},i;
+  for(i=0;i<st.rewards.length;i++)owned[st.rewards[i].kind]=st.rewards[i];
+  var chips='';
+  for(i=0;i<SDK_BADGES.length;i++){
+    var b=SDK_BADGES[i],has=!!owned[b.kind];
+    chips+='<span class="tag" style="margin:2px 3px 2px 0;display:inline-block;'+(has?'color:#FBBF24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3)':'color:#4A5570;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)')+'">'+b.icon+' '+b.label+'</span>';
+  }
+  var trialNote='';
+  if(owned['trial_1d']||owned['trial_3d'])trialNote='<div style="font-size:9px;color:#7080A0;margin-top:6px">🎟️ 체험권은 프리미엄 탭 적용 기능을 준비 중이에요 — 획득 기록은 안전하게 보관됩니다.</div>';
+  return '<div style="line-height:1.9">'+chips+'</div>'+trialNote;
+}
+function sdkStreakCardHTML(){
+  var st=state.sdk.st;
+  var inner='<div class="ttl" style="margin-bottom:8px;color:#C084FC">🧩 수도쿠 스트릭 <span style="font-size:9px;color:#5A6A8E;font-weight:400">로또 출석(🔥)과는 별개예요</span></div>';
+  if(!state.session){
+    inner+='<div style="font-size:11px;color:#7080A0;line-height:1.7">게스트도 퍼즐은 풀 수 있어요. <b onclick="openAuth()" style="color:#38BDF8;text-decoration:underline;cursor:pointer">로그인</b>하면 연속 기록·배지가 저장됩니다.</div>';
+    return inner;
+  }
+  if(!st){inner+='<div style="font-size:11px;color:#6B7A9E">기록 불러오는 중...</div>';return inner;}
+  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML();
+  return inner;
+}
+// 셀 i가 속한 행·열·블록의 그룹 인덱스 3개 (sdkGroupList 순서: 행들→열들→블록들)
+function sdkGroupsOf(which,i){
+  var cfg=SDK_CFG[which],n=cfg.size,r=Math.floor(i/n),c=i%n;
+  var bi=Math.floor(r/cfg.bh)*Math.floor(n/cfg.bw)+Math.floor(c/cfg.bw);
+  return[r,n+c,2*n+bi];
+}
+// 현재 충돌(같은 행·열·블록 안에 동일 숫자) 상태인 셀 인덱스 집합
+function sdkConflictSet(which){
+  var gs=sdkGroupList(which),cells=state.sdk.cells[which],set={},gi,j,v,cnt,g;
+  for(gi=0;gi<gs.length;gi++){
+    g=gs[gi];cnt={};
+    for(j=0;j<g.length;j++){v=cells[g[j]];if(v)cnt[v]=(cnt[v]||0)+1;}
+    for(j=0;j<g.length;j++){v=cells[g[j]];if(v&&cnt[v]>1)set[g[j]]=1;}
+  }
+  return set;
+}
+function sdkRecalcConf(which){
+  if(!state.sdk.conf)state.sdk.conf={};
+  state.sdk.conf[which]=(state.sdk.cells&&state.sdk.cells[which])?sdkConflictSet(which):{};
+}
+function sdkIsConf(which,i){var m=state.sdk.conf&&state.sdk.conf[which];return !!(m&&m[i]);}
+// 그룹이 완성(전부 채워지고 1~n이 한 번씩)인지
+function sdkGroupOk(which,g){
+  var cells=state.sdk.cells[which],seen={},j,v;
+  for(j=0;j<g.length;j++){v=cells[g[j]];if(!v||seen[v])return false;seen[v]=1;}
+  return true;
+}
+// 스타일 우선순위: 선택됨 > 충돌 > 기본 (강조는 배경+inset 링으로)
+// 격자선은 별개 레이어로 항상 적용: 모든 칸 1px, 블록 경계 3px (외곽선은 sdkGridHTML 컨테이너가 닫음)
+var SDK_LINE='1px solid rgba(148,163,184,.45)';
+var SDK_LINE_B='3px solid rgba(226,232,240,.8)';
+function sdkCellStyle(which,i){
+  var cfg=SDK_CFG[which],n=cfg.size,col=i%n,row=Math.floor(i/n);
+  var given=state.sdk.given[which][i];
+  var sel=state.sdk.sel&&state.sdk.sel.w===which&&state.sdk.sel.i===i;
+  var conf=sdkIsConf(which,i);
+  var bR=(col+1)%cfg.bw===0&&col!==n-1;
+  var bB=(row+1)%cfg.bh===0&&row!==n-1;
+  var s='border:0;';
+  if(given)s+='background:rgba(255,255,255,.10);color:#DDE3F5;';
+  else s+='background:rgba(56,189,248,.05);color:#38BDF8;';
+  if(conf)s+='background:rgba(248,113,113,.16);color:'+(given?'#FCA5A5':'#F87171')+';box-shadow:inset 0 0 0 1.5px rgba(248,113,113,.7);';
+  if(sel)s+=(conf?'':'background:rgba(251,191,36,.10);')+'box-shadow:inset 0 0 0 2px #FBBF24;';
+  if(col!==n-1)s+='border-right:'+(bR?SDK_LINE_B:SDK_LINE)+';';
+  if(row!==n-1)s+='border-bottom:'+(bB?SDK_LINE_B:SDK_LINE)+';';
+  return s;
+}
+function sdkGridHTML(which){
+  var cfg=SDK_CFG[which],n=cfg.size,html='',r,c;
+  sdkRecalcConf(which);
+  // 컨테이너 외곽 테두리(3px)가 격자의 바깥 경계를 닫고, 셀 border-right/bottom이 안쪽 선을 그림
+  html+='<div style="text-align:center"><div style="display:inline-block;vertical-align:top;border:'+SDK_LINE_B+';border-radius:8px;overflow:hidden">';
+  for(r=0;r<n;r++){
+    html+='<div style="display:flex">';
+    for(c=0;c<n;c++){
+      var i=r*n+c;
+      html+='<button class="'+cfg.cls+'" id="sdk-c-'+which+'-'+i+'" onclick="sdkSel(\''+which+'\','+i+')" style="'+sdkCellStyle(which,i)+'">'+(state.sdk.cells[which][i]||'')+'</button>';
+    }
+    html+='</div>';
+  }
+  html+='</div></div>';
+  return html;
+}
+function sdkPadHTML(which){
+  var cfg=SDK_CFG[which],n=cfg.size,html='',v;
+  // 9×9는 두 줄(1~5 / 6~9+지움), 그 외 한 줄(1~n+지움)
+  var split=n===9?5:n;
+  html+='<div style="display:flex;gap:'+cfg.pgap+'px;justify-content:center;margin-top:11px">';
+  for(v=1;v<=split;v++)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\','+v+')" style="background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.35);color:#38BDF8">'+v+'</button>';
+  if(split>=n)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.14);color:#7080A0;font-size:13px">지움</button>';
+  html+='</div>';
+  if(split<n){
+    html+='<div style="display:flex;gap:'+cfg.pgap+'px;justify-content:center;margin-top:'+cfg.pgap+'px">';
+    for(v=split+1;v<=n;v++)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\','+v+')" style="background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.35);color:#38BDF8">'+v+'</button>';
+    html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.14);color:#7080A0;font-size:13px">지움</button></div>';
+  }
+  return html;
+}
+function sdkDoneBodyHTML(which){
+  var msg=which==='m'?'오늘의 퍼즐 완료!':(which==='b'?'보너스 6×6 완료!':'정통 수도쿠 9×9 완료!');
+  var extra='';
+  if(!state.session)extra='<div style="font-size:10px;color:#7080A0;margin-top:8px;line-height:1.7">지금 <b onclick="openAuth()" style="color:#38BDF8;text-decoration:underline;cursor:pointer">로그인</b>하면 오늘 기록부터 스트릭이 쌓여요</div>';
+  return '<div style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+msg+'</div><div id="sdk-sub-'+which+'" style="font-size:10px;color:#5A6A8E;margin-top:6px"></div>'+extra+'</div>';
+}
+function sdkPuzzleCardHTML(which){
+  var main=which==='m';
+  var title,sub,accent;
+  if(main){title='🧩 오늘의 퍼즐 (4×4)';sub='매일 자정(KST) 새 퍼즐 · 완료하면 연속 기록 +1';accent='';}
+  else if(which==='b'){title='🎁 보너스 퍼즐 (6×6)';sub='스트릭과 무관 · 누적 기록만 +1 · 1~6이 행·열·2×3칸에 한 번씩';accent=';color:#C084FC';}
+  else{title='🏆 정통 수도쿠 (9×9)';sub='스트릭과 무관 · 누적 기록만 +1 · 시간 여유 있을 때 도전!';accent=';color:#FBBF24';}
+  var body;
+  if(!state.sdk.cells[which]){
+    var bkey=which==='b'?'bank6':'bank9';
+    if(state.sdk[bkey+'Err'])body='<div style="text-align:center;padding:14px 0"><div style="font-size:11px;color:#F87171;margin-bottom:8px">퍼즐을 불러오지 못했어요</div><button onclick="state.sdk.'+bkey+'Err=false;doTab(\'sudoku\')" style="padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:11px">다시 시도</button></div>';
+    else body='<div style="text-align:center;padding:14px 0;font-size:11px;color:#6B7A9E">불러오는 중...</div>';
+  }
+  else body=state.sdk.done[which]?sdkDoneBodyHTML(which):sdkGridHTML(which)+sdkPadHTML(which)+'<div id="sdk-msg-'+which+'" style="font-size:10px;color:#F87171;text-align:center;min-height:15px;margin-top:8px"></div>';
+  return '<div class="card"'+(main?'':' style="border-color:rgba(192,132,252,.25)"')+'><div class="ttl" style="margin-bottom:3px'+accent+'">'+title+'</div><div style="font-size:9px;color:#5A6A8E;margin-bottom:11px">'+sub+'</div><div id="sdk-body-'+which+'">'+body+'</div></div>';
+}
+function renderSudoku(){
+  if(!state.sdk.bank){
+    if(state.sdk.bankErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:12px;color:#F87171;margin-bottom:10px">퍼즐 데이터를 불러오지 못했어요</div><button onclick="state.sdk.bankErr=false;doTab(\'sudoku\')" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:12px">다시 시도</button></div>';
+    sdkLoadBank();
+    return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">퍼즐 불러오는 중...</div>';
+  }
+  sdkLoadBankFile('bank6','sudoku_bank6.json');
+  sdkLoadBankFile('bank9','sudoku_bank9.json');
+  sdkInit();
+  if(!state.sdk.cells||!state.sdk.cells.m)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">퍼즐 데이터 오류</div>';
+  if(state.session&&!state.sdk.st&&!state.sdk.stBusy)loadSdkStatus();
+  sdkMaybeResubmit();
+  return '<div class="card" id="sdk-streak-card" style="border-color:rgba(192,132,252,.2)">'+sdkStreakCardHTML()+'</div>'
+    +sdkPuzzleCardHTML('m')
+    +sdkPuzzleCardHTML('b')
+    +sdkPuzzleCardHTML('c')
+    +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">모든 행·열·블록에 숫자가 한 번씩 들어가면 완성!<br>메인 4×4를 매일 완료하면 🧩 연속 기록이 쌓이고, 연속 14일·30일엔 프리미엄 체험권을 드려요.<br>보너스 6×6·9×9는 연속 기록과 무관 — 누적 완료 수에만 +1씩 쌓여요.</div>';
+}
+function sdkSel(which,i){
+  if(!state.sdk.cells||state.sdk.done[which])return;
+  if(state.sdk.given[which][i])return;
+  var prev=state.sdk.sel;
+  state.sdk.sel={w:which,i:i};
+  if(prev)sdkPaintCell(prev.w,prev.i);
+  sdkPaintCell(which,i);
+}
+function sdkPaintCell(which,i){
+  var el=document.getElementById('sdk-c-'+which+'-'+i);
+  if(!el)return;
+  var v=state.sdk.cells[which][i];
+  el.textContent=v?String(v):'';
+  el.setAttribute('style',sdkCellStyle(which,i));
+}
+function sdkMsg(which,t){var el=document.getElementById('sdk-msg-'+which);if(el)el.textContent=t||'';}
+function sdkNum(which,n){
+  if(!state.sdk.cells||state.sdk.done[which])return;
+  var s=state.sdk.sel;
+  if(!s||s.w!==which){sdkMsg(which,'숫자를 넣을 칸을 먼저 눌러주세요');return;}
+  if(!state.sdk.startMs[which])state.sdk.startMs[which]=Date.now();
+  state.sdk.cells[which][s.i]=n;
+  sdkRecalcConf(which);
+  sdkPaintAround(which,s.i);
+  sdkSaveLocal();
+  sdkAfterInput(which);
+}
+// 그룹 "진짜 완성" 판정: 그룹 자체가 유일성 만족(sdkGroupOk) + 그 그룹의 어떤 칸도
+// 다른 그룹과의 전역 충돌셋(sdkIsConf)에 걸려있지 않아야 함 — 충돌 빨간 배경 위에 초록 펄스가 덮이는 것 방지
+function sdkGroupClean(which,g){
+  if(!sdkGroupOk(which,g))return false;
+  var j;
+  for(j=0;j<g.length;j++)if(sdkIsConf(which,g[j]))return false;
+  return true;
+}
+// 그룹 완성(축하) 판정 v2: "중복 없음"이 아니라 "정답과 정확히 일치"여야 축하.
+// 중복 없이 채워도 정답과 다른 배치면 나중에 모순이 드러나 되돌려야 함(오너 실제 재현) — 그 경우 축하 금지.
+// 정답이 없을 때(구 뱅크 캐시 등)만 종전 sdkGroupClean으로 폴백.
+function sdkGroupMatchesSolution(which,g){
+  var sol=state.sdk.solution&&state.sdk.solution[which];
+  if(!sol)return sdkGroupClean(which,g);
+  var cells=state.sdk.cells[which],j;
+  for(j=0;j<g.length;j++)if(cells[g[j]]!==sol[g[j]])return false;
+  return true;
+}
+// 입력 셀이 속한 행·열·블록의 셀만 재페인트(4×4=8칸·6×6=13칸·9×9=21칸, 전체 재렌더 없음)
+// + 충돌 펄스 + "방금 완성된" 그룹 축하 효과
+function sdkPaintAround(which,i){
+  var gs=sdkGroupList(which),gis=sdkGroupsOf(which,i),touch={},k,j,g,key;
+  for(k=0;k<3;k++){g=gs[gis[k]];for(j=0;j<g.length;j++)touch[g[j]]=1;}
+  for(key in touch)if(touch.hasOwnProperty(key))sdkPaintCell(which,parseInt(key,10));
+  if(!state.sdk.celeb)state.sdk.celeb={m:{},b:{},c:{}};
+  var celeb=state.sdk.celeb[which];
+  // 완성 판정은 "편집한 칸이 속한 3개 그룹"만: 축하는 그 그룹을 직접 편집해 완성시켰을 때만.
+  // 다른 곳 편집으로 간접적으로 깨끗해진 그룹이 뒤늦게 축하받으면 안 됨(오너 피드백).
+  // 판정은 sdkGroupMatchesSolution — 복호화한 정답과 정확 일치해야 축하 (중복 없음만으론 오발동, 오너 재현).
+  for(k=0;k<3;k++){
+    var gi=gis[k];g=gs[gi];
+    if(sdkGroupMatchesSolution(which,g)){
+      if(!celeb[gi]){celeb[gi]=1;sdkFlash(which,g,'sdk-pop',750);}
+    }else if(celeb[gi])delete celeb[gi];
+  }
+  if(sdkIsConf(which,i))sdkFlash(which,[i],'sdk-bad',480);
+}
+// cls를 잠깐 붙였다 떼는 원샷 애니메이션 (setTimeout 콜백은 iOS 지침대로 try-catch)
+function sdkFlash(which,idxs,cls,ms){
+  var els=[],j,el;
+  for(j=0;j<idxs.length;j++){
+    el=document.getElementById('sdk-c-'+which+'-'+idxs[j]);
+    if(el){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);els.push(el);}
+  }
+  setTimeout(function(){try{var x;for(x=0;x<els.length;x++)els[x].classList.remove(cls);}catch(e){}},ms);
+}
+function sdkAfterInput(which){
+  var cfg=SDK_CFG[which],n2=cfg.size*cfg.size,cells=state.sdk.cells[which],i,filled=true;
+  for(i=0;i<n2;i++)if(!cells[i]){filled=false;break;}
+  if(!filled){sdkMsg(which,'');return;}
+  if(sdkCheck(cells,which))sdkComplete(which);
+  else sdkMsg(which,'⚠ 겹치는 숫자가 있어요 — 행·열·'+cfg.blockTxt+'을 다시 확인!');
+}
+function sdkComplete(which){
+  state.sdk.done[which]=true;state.sdk.sel=null;
+  sdkMarkDoneLocal(which);
+  var secs=null;
+  if(state.sdk.startMs[which])secs=Math.round((Date.now()-state.sdk.startMs[which])/1000);
+  var body=document.getElementById('sdk-body-'+which);
+  if(body)body.innerHTML=sdkDoneBodyHTML(which);
+  if(which==='m'){var bn=document.getElementById('sdk-rec-banner');if(bn)bn.style.display='none';}
+  if(state.session)sdkSubmit(which,secs);
+}
+function sdkSubmit(which,secs){
+  if(!state.session||state.sdk.busy[which])return;
+  state.sdk.busy[which]=true;
+  var sub=document.getElementById('sdk-sub-'+which);
+  if(sub)sub.textContent='기록 저장 중...';
+  var body={action:'submit',puzzle_id:'D'+sdkToday(),tier:SDK_CFG[which].tier,size:SDK_CFG[which].size,bonus:which!=='m'};
+  if(secs!==null&&secs!==undefined)body.seconds=secs;
+  fetch(SB_URL+'/functions/v1/sudoku',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.sdk.busy[which]=false;
+      var el=document.getElementById('sdk-sub-'+which);
+      if(j&&j.ok){
+        state.sdk.st=sdkStFromRes(j);
+        if(el)el.textContent=which==='m'?('🧩 연속 '+j.current+'일! 내일 또 만나요'):('누적 '+fmtNum(j.total_solved)+'문제 달성');
+        var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
+        var mc=document.getElementById('sdk-me-card');if(mc)mc.innerHTML=sdkMeCardHTML();
+        if(j.newRewards&&j.newRewards.length){
+          var names=[],k,x;
+          for(k=0;k<j.newRewards.length;k++){for(x=0;x<SDK_BADGES.length;x++){if(SDK_BADGES[x].kind===j.newRewards[k])names.push(SDK_BADGES[x].icon+' '+SDK_BADGES[x].label);}}
+          if(names.length)pickToast('🎉 배지 획득: '+names.join(', '));
+        }
+      }else{
+        if(el)el.textContent='⚠ 기록 저장 실패 — '+((j&&j.error)||'서버 오류');
+      }
+    })
+    .catch(function(e){
+      state.sdk.busy[which]=false;
+      var el2=document.getElementById('sdk-sub-'+which);
+      if(el2)el2.textContent='⚠ 서버 연결 실패 — 탭을 다시 열면 자동 재시도합니다';
+    });
+}
+// 추천 탭 하단 미니 배너 (오늘 메인 퍼즐 미완료 시에만)
+function sdkBannerHTML(){
+  var done=false;
+  if(state.sdk.st)done=state.sdk.st.todayMain;
+  else done=sdkDoneLocal().indexOf('m')>=0;
+  if(done)return '';
+  return '<div class="card" id="sdk-rec-banner" onclick="doTab(\'sudoku\')" style="cursor:pointer;border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#C084FC">🧩 오늘의 퍼즐 아직 안 풀었어요</span><span style="font-size:10px;color:#8B98B8">풀러 가기 →</span></div></div>';
+}
+// 내정보 탭 카드 (로또 출석 카드와 분리)
+function sdkMeCardHTML(){
+  var st=state.sdk.st;
+  var inner='<div class="ttl" style="margin-bottom:8px;color:#C084FC">🧩 수도쿠 기록 <span style="font-size:9px;color:#5A6A8E;font-weight:400">로또 출석(🔥)과 별개</span></div>';
+  if(!st){
+    if(state.session&&!state.sdk.stBusy)loadSdkStatus();
+    inner+='<div style="font-size:11px;color:#6B7A9E">불러오는 중...</div>';
+    return inner;
+  }
+  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML()
+    +'<div style="font-size:10px;color:#5A6A8E;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="doTab(\'sudoku\')" style="color:#C084FC;text-decoration:underline;cursor:pointer">풀러 가기</b>')
+    +' <span style="color:#4A5570">· 보너스</span> '+(st.todayBonus1?'<span style="color:#4ADE80">6×6 ✓</span>':'<span style="color:#4A5570">6×6 –</span>')+' '+(st.todayBonus2?'<span style="color:#4ADE80">9×9 ✓</span>':'<span style="color:#4A5570">9×9 –</span>')+'</div>';
+  return inner;
 }
 
 // ── 데이터 (공개 통계) ──
@@ -690,7 +1158,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div class="card" id="sdk-me-card" style="border-color:rgba(192,132,252,.2)">'+sdkMeCardHTML()+'</div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
@@ -715,6 +1183,7 @@ function doTab(id){
     else if(id==='hist')html=renderHist();
     else if(id==='hot')html=renderHot();
     else if(id==='prem')html=renderPrem();
+    else if(id==='sudoku')html=renderSudoku();
     else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
     var recCard='';
@@ -851,8 +1320,8 @@ function doCheckin(){
 function refresh(){renderAcct();renderTabs();doTab(state.tab);}
 sb.auth.onAuthStateChange(function(ev,session){
   if(ev==='PASSWORD_RECOVERY')state.recovery=true;
-  state.session=session;state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};
-  loadProfile(function(){refresh();if(session)doCheckin();});
+  state.session=session;state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;
+  loadProfile(function(){refresh();if(session){doCheckin();loadSdkStatus();}});
 });
 try{
   var _vb=document.getElementById('ver-badge');if(_vb)_vb.textContent='v'+APP_VERSION+(APP_ENV!=='live'?' · '+APP_ENV.toUpperCase():'');
@@ -887,7 +1356,7 @@ sb.auth.getSession().then(function(res){
   loadProfile(function(){
     refresh();
     trackVisit();
-    if(state.session)doCheckin();
+    if(state.session){doCheckin();loadSdkStatus();}
     var exp=Math.floor((Date.now()-1039264200000)/604800000)+1;
     var eN=document.getElementById('h-next');if(eN)eN.textContent=exp+1;
     loadDraws(function(){

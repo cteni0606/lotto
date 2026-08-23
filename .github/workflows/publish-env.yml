@@ -26,10 +26,13 @@ jobs:
           ENV=${{ github.ref_name }}
           mkdir -p $ENV
           sed "s/var APP_ENV='live'/var APP_ENV='$ENV'/" srcbranch/index.html > $ENV/index.html
+          if [ -f srcbranch/sudoku_bank.json ]; then cp srcbranch/sudoku_bank.json $ENV/sudoku_bank.json; fi
+          if [ -f srcbranch/sudoku_bank6.json ]; then cp srcbranch/sudoku_bank6.json $ENV/sudoku_bank6.json; fi
+          if [ -f srcbranch/sudoku_bank9.json ]; then cp srcbranch/sudoku_bank9.json $ENV/sudoku_bank9.json; fi
           rm -rf srcbranch
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $ENV/index.html
+          git add $ENV/
           if git diff --cached --quiet; then
             echo "변경 없음"
           else
