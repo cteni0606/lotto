@@ -263,7 +263,7 @@ function savePick(round,csv,source){
     .then(function(r){return r.json();})
     .then(function(j){
       state.saveBusy=false;
-      if(j&&j.ok){state.savedKeys[round+':'+csv]=true;state.myPicks=null;pickToast('✅ 제'+round+'회에 저장 ('+j.count+'/100) — 결과는 내정보 탭에서 자동 확인');}
+      if(j&&j.ok){state.savedKeys[round+':'+csv]=true;state.myPicks=null;pickToast('✅ 제'+round+'회에 저장 ('+j.count+'/50) — 결과는 내정보 탭에서 자동 확인');}
       else pickToast('⚠ '+((j&&j.error)||'저장 실패'));
       doTab(state.tab);
     })
@@ -678,7 +678,7 @@ function renderMyPicks(){
     }
   }
   html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="ttl" style="margin-bottom:0">💾 내 저장 번호</div><button onclick="state.myPicks=null;doTab(\'me\')" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+statRow+body
-    +'<div style="font-size:9px;color:#4A5570;line-height:1.7;margin-top:10px">회차당 최대 100개 저장 · 최근 12회차까지 보관되며 이전 기록은 누적 통계로 남습니다.<br>추첨 결과 반영 후 자동으로 당첨 대조됩니다.</div></div>';
+    +'<div style="font-size:9px;color:#4A5570;line-height:1.7;margin-top:10px">회차당 최대 50개 저장 · 최근 4회차(한 달)까지 보관되며 이전 기록은 누적 통계로 남습니다.<br>추첨 결과 반영 후 자동으로 당첨 대조됩니다.</div></div>';
   return html;
 }
 function renderMe(){

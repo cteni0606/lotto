@@ -46,4 +46,4 @@ async function rpc(name, args) {
   return t;
 }
 console.log('미채점 픽 채점:', await rpc('score_pending_picks'), '건');
-console.log('보관정책 정리(12주 초과 롤업·삭제):', await rpc('cleanup_saved_picks', { keep_weeks: 12 }), '건');
+console.log('보관정책 정리(4주 초과 롤업·삭제):', await rpc('cleanup_saved_picks', { keep_weeks: 4 }), '건');
