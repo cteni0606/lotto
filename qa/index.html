@@ -90,7 +90,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.0.02';
+var APP_VERSION='2.0.1.00';
 var APP_ENV='qa'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -495,7 +495,17 @@ function renderAdm(){
   var urows='';
   for(var i=0;i<a.users.length;i++){
     var u=a.users[i],li=lvInfo(u.level);
-    urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td></tr>';
+    var ctl='';
+    if(u.level===100||!u.id){
+      ctl='<span style="font-size:9px;color:#5A6A8E">—</span>';
+    }else{
+      var lvs=[1,2,3,99],opts='';
+      for(var k=0;k<lvs.length;k++){opts+='<option value="'+lvs[k]+'"'+(u.level===lvs[k]?' selected':'')+'>'+lvs[k]+'</option>';}
+      ctl='<select onchange="admSetLevel(\''+u.id+'\',this)" style="background:#141A2E;color:#C4CCEE;border:1px solid rgba(255,255,255,.15);border-radius:7px;font-size:9px;padding:3px 2px">'+opts+'</select>'
+        +'<button onclick="admResetAttend(\''+u.id+'\')" title="출석 초기화" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#38BDF8;font-size:10px;padding:3px 6px;margin-left:3px">↺</button>'
+        +'<button onclick="admDelUser(\''+u.id+'\')" title="삭제" style="background:none;border:1px solid rgba(248,113,113,.4);border-radius:7px;color:#F87171;font-size:10px;padding:3px 6px;margin-left:3px">🗑</button>';
+    }
+    urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td><td style="text-align:center;white-space:nowrap">'+ctl+'</td></tr>';
   }
   var actRows='';
   if(a.todayList&&a.todayList.length){
@@ -507,7 +517,43 @@ function renderAdm(){
   var actCard='<div class="card"><div class="ttl">📱 오늘 활동 (방문자별 조회수)</div>'+actRows+'</div>';
   return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+boxes+'</div>'
     +'<div class="card"><div class="ttl">최근 14일 — <span style="color:#FBBF24">숫자=조회수</span> · <span style="color:#38BDF8">파랑=방문자</span> · <span style="color:#4ADE80">초록=회원출석</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
-    +actCard+'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th></tr></thead><tbody>'+urows+'</tbody></table></div><div style="font-size:9px;color:#5A6A8E;margin-top:8px">레벨 수동 변경: Supabase 대시보드 → Table Editor → profiles</div></div>';
+    +actCard+'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th><th style="text-align:center">관리</th></tr></thead><tbody>'+urows+'</tbody></table></div></div>';
+}
+function admFindUser(id){
+  var us=(state.admin&&state.admin.users)||[];
+  for(var i=0;i<us.length;i++){if(us[i].id===id)return us[i];}
+  return null;
+}
+function admAct(action,targetId,value){
+  if(state.admActBusy)return;
+  state.admActBusy=true;
+  var body={action:action,targetId:targetId};
+  if(value!==undefined&&value!==null)body.value=value;
+  fetch(SB_URL+'/functions/v1/admin',{method:'POST',headers:{'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON),'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.admActBusy=false;
+      if(j&&j.ok){state.admin=null;loadAdmin();if(state.tab==='adm')doTab('adm');}
+      else{showErr((j&&j.error)||'처리 실패');if(state.tab==='adm')doTab('adm');}
+    })
+    .catch(function(e){state.admActBusy=false;showErr('서버 연결 실패: '+e.message);});
+}
+function admSetLevel(id,sel){
+  var u=admFindUser(id);
+  var v=parseInt(sel.value,10);
+  if(!u||!v||v===u.level)return;
+  if(window.confirm(u.email+' 레벨을 Lv.'+u.level+' → Lv.'+v+' 로 변경할까요?'))admAct('set_level',id,v);
+  else if(state.tab==='adm')doTab('adm');
+}
+function admResetAttend(id){
+  var u=admFindUser(id);
+  if(!u)return;
+  if(window.confirm(u.email+' 의 연속 출석을 초기화할까요? (레벨 유지)'))admAct('reset_attend',id);
+}
+function admDelUser(id){
+  var u=admFindUser(id);
+  if(!u)return;
+  if(window.confirm(u.email+' 계정을 정말 삭제할까요? 되돌릴 수 없습니다.'))admAct('delete_user',id);
 }
 function loadAdmin(){
   state.admBusy=true;
