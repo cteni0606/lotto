@@ -47,6 +47,8 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .bt-table th{padding:6px 5px 8px;color:#5A6A8E;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
 .bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.05);}
 .duo-row{background:rgba(255,255,255,.025);border-radius:14px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(251,191,36,.12);}
+.sdkc{width:56px;height:56px;border-radius:12px;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;}
+.sdkp{width:54px;height:46px;border-radius:12px;font-size:18px;font-weight:800;}
 .footer{text-align:center;font-size:9px;color:#3A4460;line-height:1.9;padding:4px 8px 20px;}
 #err-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:#fff;padding:12px 14px;z-index:9999;font-size:11px;line-height:1.7;word-break:break-all;}
 </style>
@@ -91,7 +93,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.2.01';
+var APP_VERSION='2.0.3.00';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -112,6 +114,7 @@ var TABS=[
   {id:'hist',label:'📋 기록',min:1},
   {id:'hot',label:'🔥 핫&콜드',min:2},
   {id:'prem',label:'🔮 프리미엄',min:3},
+  {id:'sudoku',label:'🧩 수도쿠',min:0},
   {id:'adm',label:'🛠 관리',min:100},
   {id:'me',label:'👤 내정보',min:0}
 ];
@@ -124,7 +127,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},sdk:{bank:null,bankBusy:false,bankErr:false,st:null,stBusy:false,date:null,cells:null,given:null,done:null,sel:null,startMs:{m:0,b:0},busy:{}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -218,6 +221,7 @@ function renderRec(){
   }else{
     html+='<div class="card" style="text-align:center"><button onclick="getRec()" style="padding:14px 30px;border-radius:13px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:800;font-size:15px;min-height:52px">🎲 번호 받기</button><div style="font-size:10px;color:#5A6A8E;margin-top:10px">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
   }
+  html+=sdkBannerHTML();
   return html;
 }
 function getRec(){
@@ -299,6 +303,295 @@ function pickRank(m,b){
   if(m===4)return['4등','#4ADE80'];
   if(m===3)return['5등','#38BDF8'];
   return[m+'개 일치','#5A6A8E'];
+}
+
+// ── 일일 수도쿠 스트릭 (Phase 2) — 로또 출석(🔥)과 완전 별개 ──
+// 퍼즐: sudoku_bank.json(클루만, 정답 없음)에서 날짜 해시로 결정적 선택 (전 유저 공용)
+// 채점: 클라 검증(행·열·2×2블록 유일성) → 서버 sudoku 함수에 스탬프 제출
+var SDK_BADGES=[
+  {kind:'streak_1',icon:'🥉',label:'첫 퍼즐'},
+  {kind:'streak_3',icon:'🥈',label:'3일 연속'},
+  {kind:'streak_7',icon:'🥇',label:'7일 연속'},
+  {kind:'trial_1d',icon:'🎟️',label:'14일 연속 · 프리미엄 1일 체험권'},
+  {kind:'trial_3d',icon:'🏆',label:'30일 연속 · 프리미엄 3일 체험권'},
+  {kind:'total_100',icon:'💯',label:'누적 100문제'}
+];
+function sdkToday(){return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);}
+function sdkHash(s){var h=5381,i;for(i=0;i<s.length;i++){h=(h*33+s.charCodeAt(i))%1000000007;}return h;}
+function sdkGroupList(){
+  var gs=[],r,c;
+  for(r=0;r<4;r++)gs.push([r*4,r*4+1,r*4+2,r*4+3]);
+  for(c=0;c<4;c++)gs.push([c,c+4,c+8,c+12]);
+  gs.push([0,1,4,5]);gs.push([2,3,6,7]);gs.push([8,9,12,13]);gs.push([10,11,14,15]);
+  return gs;
+}
+function sdkCheck(cells){
+  var i,j;
+  for(i=0;i<16;i++)if(!cells[i]||cells[i]<1||cells[i]>4)return false;
+  var gs=sdkGroupList();
+  for(i=0;i<gs.length;i++){
+    var seen={},g=gs[i];
+    for(j=0;j<4;j++){var v=cells[g[j]];if(seen[v])return false;seen[v]=1;}
+  }
+  return true;
+}
+function sdkPuzzleStr(which){
+  var bank=state.sdk.bank;
+  if(!bank||!bank.puzzles||!bank.puzzles.length)return null;
+  var n=bank.puzzles.length,d=sdkToday(),mi=sdkHash(d)%n;
+  if(which==='m')return bank.puzzles[mi];
+  var bi=sdkHash(d+'B')%n;
+  if(bi===mi)bi=(bi+1)%n;
+  return bank.puzzles[bi];
+}
+function sdkDoneLocal(){var f='';try{f=localStorage.getItem('lotto-sdk-done-'+sdkToday())||'';}catch(e){}return f;}
+function sdkMarkDoneLocal(which){try{var f=sdkDoneLocal();if(f.indexOf(which)<0)localStorage.setItem('lotto-sdk-done-'+sdkToday(),f+which);}catch(e){}}
+function sdkSaveLocal(){try{localStorage.setItem('lotto-sdk-'+state.sdk.date,JSON.stringify({m:state.sdk.cells.m,b:state.sdk.cells.b}));}catch(e){}}
+function sdkInit(){
+  var d=sdkToday();
+  if(state.sdk.date===d&&state.sdk.cells)return;
+  state.sdk.date=d;state.sdk.cells={};state.sdk.given={};state.sdk.done={m:false,b:false};state.sdk.sel=null;state.sdk.startMs={m:0,b:0};
+  var saved=null;
+  try{saved=JSON.parse(localStorage.getItem('lotto-sdk-'+d)||'null');}catch(e){saved=null;}
+  var ws=['m','b'],w,i;
+  for(w=0;w<2;w++){
+    var which=ws[w],pz=sdkPuzzleStr(which),cells=[],given=[];
+    if(!pz){state.sdk.cells=null;return;}
+    for(i=0;i<16;i++){var ch=pz.charAt(i),v=ch==='0'?0:parseInt(ch,10);cells.push(v);given.push(v>0);}
+    if(saved&&saved[which]&&saved[which].length===16){
+      for(i=0;i<16;i++){var sv=saved[which][i];if(!given[i]&&sv>=1&&sv<=4)cells[i]=sv;}
+    }
+    state.sdk.cells[which]=cells;state.sdk.given[which]=given;
+  }
+  var df=sdkDoneLocal();
+  if(df.indexOf('m')>=0)state.sdk.done.m=true;
+  if(df.indexOf('b')>=0)state.sdk.done.b=true;
+  if(state.sdk.st){
+    if(state.sdk.st.todayMain)state.sdk.done.m=true;
+    if(state.sdk.st.todayBonus)state.sdk.done.b=true;
+  }
+}
+function sdkLoadBank(){
+  if(state.sdk.bank||state.sdk.bankBusy)return;
+  state.sdk.bankBusy=true;
+  fetch('sudoku_bank.json?v='+APP_VERSION)
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.sdk.bankBusy=false;
+      if(j&&j.puzzles&&j.puzzles.length){state.sdk.bank=j;if(state.tab==='sudoku')doTab('sudoku');}
+      else{state.sdk.bankErr=true;if(state.tab==='sudoku')doTab('sudoku');}
+    })
+    .catch(function(e){state.sdk.bankErr=true;state.sdk.bankBusy=false;if(state.tab==='sudoku')doTab('sudoku');});
+}
+function loadSdkStatus(){
+  if(!state.session||state.sdk.stBusy)return;
+  state.sdk.stBusy=true;
+  fetch(SB_URL+'/functions/v1/sudoku',{headers:{'Authorization':'Bearer '+state.session.access_token}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.sdk.stBusy=false;
+      if(j&&j.ok){
+        state.sdk.st={current:j.current,best:j.best,total:j.total_solved,last:j.last_solved,todayMain:!!j.todayMain,todayBonus:!!j.todayBonus,rewards:j.rewards||[]};
+        sdkApplyStatus();
+      }
+    })
+    .catch(function(e){state.sdk.stBusy=false;});
+}
+// 서버 현황 도착 시 국소 DOM 갱신 (전체 탭 재렌더 없음)
+function sdkApplyStatus(){
+  var st=state.sdk.st;
+  if(!st)return;
+  if(state.sdk.done){
+    if(st.todayMain&&!state.sdk.done.m){state.sdk.done.m=true;var bm=document.getElementById('sdk-body-m');if(bm)bm.innerHTML=sdkDoneBodyHTML('m');}
+    if(st.todayBonus&&!state.sdk.done.b){state.sdk.done.b=true;var bb=document.getElementById('sdk-body-b');if(bb)bb.innerHTML=sdkDoneBodyHTML('b');}
+  }
+  var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
+  var mc=document.getElementById('sdk-me-card');if(mc)mc.innerHTML=sdkMeCardHTML();
+  var bn=document.getElementById('sdk-rec-banner');if(bn&&st.todayMain)bn.style.display='none';
+  sdkMaybeResubmit();
+}
+// 게스트로 풀고 나서 로그인한 경우 등 — 로컬 완료분을 서버에 재제출
+function sdkMaybeResubmit(){
+  var st=state.sdk.st;
+  if(!st||!state.session||!state.sdk.cells||!state.sdk.done)return;
+  if(state.sdk.done.m&&!st.todayMain&&!state.sdk.busy.m&&sdkCheck(state.sdk.cells.m))sdkSubmit('m',null);
+  if(state.sdk.done.b&&!st.todayBonus&&!state.sdk.busy.b&&sdkCheck(state.sdk.cells.b))sdkSubmit('b',null);
+}
+function sdkBadgeChipsHTML(){
+  var st=state.sdk.st;
+  if(!st)return '';
+  var owned={},i;
+  for(i=0;i<st.rewards.length;i++)owned[st.rewards[i].kind]=st.rewards[i];
+  var chips='';
+  for(i=0;i<SDK_BADGES.length;i++){
+    var b=SDK_BADGES[i],has=!!owned[b.kind];
+    chips+='<span class="tag" style="margin:2px 3px 2px 0;display:inline-block;'+(has?'color:#FBBF24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3)':'color:#4A5570;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)')+'">'+b.icon+' '+b.label+'</span>';
+  }
+  var trialNote='';
+  if(owned['trial_1d']||owned['trial_3d'])trialNote='<div style="font-size:9px;color:#7080A0;margin-top:6px">🎟️ 체험권은 프리미엄 탭 적용 기능을 준비 중이에요 — 획득 기록은 안전하게 보관됩니다.</div>';
+  return '<div style="line-height:1.9">'+chips+'</div>'+trialNote;
+}
+function sdkStreakCardHTML(){
+  var st=state.sdk.st;
+  var inner='<div class="ttl" style="margin-bottom:8px;color:#C084FC">🧩 수도쿠 스트릭 <span style="font-size:9px;color:#5A6A8E;font-weight:400">로또 출석(🔥)과는 별개예요</span></div>';
+  if(!state.session){
+    inner+='<div style="font-size:11px;color:#7080A0;line-height:1.7">게스트도 퍼즐은 풀 수 있어요. <b onclick="openAuth()" style="color:#38BDF8;text-decoration:underline;cursor:pointer">로그인</b>하면 연속 기록·배지가 저장됩니다.</div>';
+    return inner;
+  }
+  if(!st){inner+='<div style="font-size:11px;color:#6B7A9E">기록 불러오는 중...</div>';return inner;}
+  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML();
+  return inner;
+}
+function sdkCellStyle(which,i){
+  var given=state.sdk.given[which][i];
+  var sel=state.sdk.sel&&state.sdk.sel.w===which&&state.sdk.sel.i===i;
+  var s=(i%4===1)?'margin-right:6px;':'';
+  if(given)s+='background:rgba(255,255,255,.12);color:#DDE3F5;border:1.5px solid rgba(255,255,255,.14);';
+  else s+='background:rgba(56,189,248,.06);color:#38BDF8;border:1.5px solid '+(sel?'#FBBF24':'rgba(56,189,248,.3)')+';';
+  if(sel)s+='box-shadow:0 0 8px rgba(251,191,36,.4);';
+  return s;
+}
+function sdkGridHTML(which){
+  var html='',r,c;
+  for(r=0;r<4;r++){
+    html+='<div style="display:flex;gap:3px;justify-content:center;margin-bottom:'+(r===1?'9px':'3px')+'">';
+    for(c=0;c<4;c++){
+      var i=r*4+c;
+      html+='<button class="sdkc" id="sdk-c-'+which+'-'+i+'" onclick="sdkSel(\''+which+'\','+i+')" style="'+sdkCellStyle(which,i)+'">'+(state.sdk.cells[which][i]||'')+'</button>';
+    }
+    html+='</div>';
+  }
+  return html;
+}
+function sdkPadHTML(which){
+  var html='<div style="display:flex;gap:6px;justify-content:center;margin-top:11px">',n;
+  for(n=1;n<=4;n++)html+='<button class="sdkp" onclick="sdkNum(\''+which+'\','+n+')" style="background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.35);color:#38BDF8">'+n+'</button>';
+  html+='<button class="sdkp" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.14);color:#7080A0;font-size:13px">지움</button></div>';
+  return html;
+}
+function sdkDoneBodyHTML(which){
+  var msg=which==='m'?'오늘의 퍼즐 완료!':'보너스 퍼즐 완료!';
+  var extra='';
+  if(!state.session)extra='<div style="font-size:10px;color:#7080A0;margin-top:8px;line-height:1.7">지금 <b onclick="openAuth()" style="color:#38BDF8;text-decoration:underline;cursor:pointer">로그인</b>하면 오늘 기록부터 스트릭이 쌓여요</div>';
+  return '<div style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+msg+'</div><div id="sdk-sub-'+which+'" style="font-size:10px;color:#5A6A8E;margin-top:6px"></div>'+extra+'</div>';
+}
+function sdkPuzzleCardHTML(which){
+  var main=which==='m';
+  var title=main?'🧩 오늘의 퍼즐':'🎁 보너스 퍼즐';
+  var sub=main?'매일 자정(KST) 새 퍼즐 · 완료하면 연속 기록 +1':'스트릭과 무관 · 누적 기록만 +1';
+  var body=state.sdk.done[which]?sdkDoneBodyHTML(which):sdkGridHTML(which)+sdkPadHTML(which)+'<div id="sdk-msg-'+which+'" style="font-size:10px;color:#F87171;text-align:center;min-height:15px;margin-top:8px"></div>';
+  return '<div class="card"'+(main?'':' style="border-color:rgba(192,132,252,.25)"')+'><div class="ttl" style="margin-bottom:3px'+(main?'':';color:#C084FC')+'">'+title+'</div><div style="font-size:9px;color:#5A6A8E;margin-bottom:11px">'+sub+'</div><div id="sdk-body-'+which+'">'+body+'</div></div>';
+}
+function renderSudoku(){
+  if(!state.sdk.bank){
+    if(state.sdk.bankErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:12px;color:#F87171;margin-bottom:10px">퍼즐 데이터를 불러오지 못했어요</div><button onclick="state.sdk.bankErr=false;doTab(\'sudoku\')" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:12px">다시 시도</button></div>';
+    sdkLoadBank();
+    return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">퍼즐 불러오는 중...</div>';
+  }
+  sdkInit();
+  if(!state.sdk.cells)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">퍼즐 데이터 오류</div>';
+  if(state.session&&!state.sdk.st&&!state.sdk.stBusy)loadSdkStatus();
+  sdkMaybeResubmit();
+  return '<div class="card" id="sdk-streak-card" style="border-color:rgba(192,132,252,.2)">'+sdkStreakCardHTML()+'</div>'
+    +sdkPuzzleCardHTML('m')
+    +sdkPuzzleCardHTML('b')
+    +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">4×4 미니 수도쿠 — 모든 행·열·2×2칸에 1~4가 한 번씩 들어가면 완성!<br>메인 퍼즐을 매일 완료하면 🧩 연속 기록이 쌓이고, 연속 14일·30일엔 프리미엄 체험권을 드려요.</div>';
+}
+function sdkSel(which,i){
+  if(!state.sdk.cells||state.sdk.done[which])return;
+  if(state.sdk.given[which][i])return;
+  var prev=state.sdk.sel;
+  state.sdk.sel={w:which,i:i};
+  if(prev)sdkPaintCell(prev.w,prev.i);
+  sdkPaintCell(which,i);
+}
+function sdkPaintCell(which,i){
+  var el=document.getElementById('sdk-c-'+which+'-'+i);
+  if(!el)return;
+  var v=state.sdk.cells[which][i];
+  el.textContent=v?String(v):'';
+  el.setAttribute('style',sdkCellStyle(which,i));
+}
+function sdkMsg(which,t){var el=document.getElementById('sdk-msg-'+which);if(el)el.textContent=t||'';}
+function sdkNum(which,n){
+  if(!state.sdk.cells||state.sdk.done[which])return;
+  var s=state.sdk.sel;
+  if(!s||s.w!==which){sdkMsg(which,'숫자를 넣을 칸을 먼저 눌러주세요');return;}
+  if(!state.sdk.startMs[which])state.sdk.startMs[which]=Date.now();
+  state.sdk.cells[which][s.i]=n;
+  sdkPaintCell(which,s.i);
+  sdkSaveLocal();
+  sdkAfterInput(which);
+}
+function sdkAfterInput(which){
+  var cells=state.sdk.cells[which],i,filled=true;
+  for(i=0;i<16;i++)if(!cells[i]){filled=false;break;}
+  if(!filled){sdkMsg(which,'');return;}
+  if(sdkCheck(cells))sdkComplete(which);
+  else sdkMsg(which,'⚠ 겹치는 숫자가 있어요 — 행·열·2×2칸을 다시 확인!');
+}
+function sdkComplete(which){
+  state.sdk.done[which]=true;state.sdk.sel=null;
+  sdkMarkDoneLocal(which);
+  var secs=null;
+  if(state.sdk.startMs[which])secs=Math.round((Date.now()-state.sdk.startMs[which])/1000);
+  var body=document.getElementById('sdk-body-'+which);
+  if(body)body.innerHTML=sdkDoneBodyHTML(which);
+  if(which==='m'){var bn=document.getElementById('sdk-rec-banner');if(bn)bn.style.display='none';}
+  if(state.session)sdkSubmit(which,secs);
+}
+function sdkSubmit(which,secs){
+  if(!state.session||state.sdk.busy[which])return;
+  state.sdk.busy[which]=true;
+  var sub=document.getElementById('sdk-sub-'+which);
+  if(sub)sub.textContent='기록 저장 중...';
+  var body={action:'submit',puzzle_id:'D'+sdkToday(),bonus:which==='b'};
+  if(secs!==null&&secs!==undefined)body.seconds=secs;
+  fetch(SB_URL+'/functions/v1/sudoku',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.sdk.busy[which]=false;
+      var el=document.getElementById('sdk-sub-'+which);
+      if(j&&j.ok){
+        state.sdk.st={current:j.current,best:j.best,total:j.total_solved,last:j.last_solved,todayMain:!!j.todayMain,todayBonus:!!j.todayBonus,rewards:j.rewards||[]};
+        if(el)el.textContent=which==='m'?('🧩 연속 '+j.current+'일! 내일 또 만나요'):('누적 '+fmtNum(j.total_solved)+'문제 달성');
+        var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
+        var mc=document.getElementById('sdk-me-card');if(mc)mc.innerHTML=sdkMeCardHTML();
+        if(j.newRewards&&j.newRewards.length){
+          var names=[],k,x;
+          for(k=0;k<j.newRewards.length;k++){for(x=0;x<SDK_BADGES.length;x++){if(SDK_BADGES[x].kind===j.newRewards[k])names.push(SDK_BADGES[x].icon+' '+SDK_BADGES[x].label);}}
+          if(names.length)pickToast('🎉 배지 획득: '+names.join(', '));
+        }
+      }else{
+        if(el)el.textContent='⚠ 기록 저장 실패 — '+((j&&j.error)||'서버 오류');
+      }
+    })
+    .catch(function(e){
+      state.sdk.busy[which]=false;
+      var el2=document.getElementById('sdk-sub-'+which);
+      if(el2)el2.textContent='⚠ 서버 연결 실패 — 탭을 다시 열면 자동 재시도합니다';
+    });
+}
+// 추천 탭 하단 미니 배너 (오늘 메인 퍼즐 미완료 시에만)
+function sdkBannerHTML(){
+  var done=false;
+  if(state.sdk.st)done=state.sdk.st.todayMain;
+  else done=sdkDoneLocal().indexOf('m')>=0;
+  if(done)return '';
+  return '<div class="card" id="sdk-rec-banner" onclick="doTab(\'sudoku\')" style="cursor:pointer;border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#C084FC">🧩 오늘의 퍼즐 아직 안 풀었어요</span><span style="font-size:10px;color:#8B98B8">풀러 가기 →</span></div></div>';
+}
+// 내정보 탭 카드 (로또 출석 카드와 분리)
+function sdkMeCardHTML(){
+  var st=state.sdk.st;
+  var inner='<div class="ttl" style="margin-bottom:8px;color:#C084FC">🧩 수도쿠 기록 <span style="font-size:9px;color:#5A6A8E;font-weight:400">로또 출석(🔥)과 별개</span></div>';
+  if(!st){
+    if(state.session&&!state.sdk.stBusy)loadSdkStatus();
+    inner+='<div style="font-size:11px;color:#6B7A9E">불러오는 중...</div>';
+    return inner;
+  }
+  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML()
+    +'<div style="font-size:10px;color:#5A6A8E;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="doTab(\'sudoku\')" style="color:#C084FC;text-decoration:underline;cursor:pointer">풀러 가기</b>')+'</div>';
+  return inner;
 }
 
 // ── 데이터 (공개 통계) ──
@@ -690,7 +983,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div class="card" id="sdk-me-card" style="border-color:rgba(192,132,252,.2)">'+sdkMeCardHTML()+'</div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
@@ -715,6 +1008,7 @@ function doTab(id){
     else if(id==='hist')html=renderHist();
     else if(id==='hot')html=renderHot();
     else if(id==='prem')html=renderPrem();
+    else if(id==='sudoku')html=renderSudoku();
     else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
     var recCard='';
@@ -851,8 +1145,8 @@ function doCheckin(){
 function refresh(){renderAcct();renderTabs();doTab(state.tab);}
 sb.auth.onAuthStateChange(function(ev,session){
   if(ev==='PASSWORD_RECOVERY')state.recovery=true;
-  state.session=session;state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};
-  loadProfile(function(){refresh();if(session)doCheckin();});
+  state.session=session;state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;
+  loadProfile(function(){refresh();if(session){doCheckin();loadSdkStatus();}});
 });
 try{
   var _vb=document.getElementById('ver-badge');if(_vb)_vb.textContent='v'+APP_VERSION+(APP_ENV!=='live'?' · '+APP_ENV.toUpperCase():'');
@@ -887,7 +1181,7 @@ sb.auth.getSession().then(function(res){
   loadProfile(function(){
     refresh();
     trackVisit();
-    if(state.session)doCheckin();
+    if(state.session){doCheckin();loadSdkStatus();}
     var exp=Math.floor((Date.now()-1039264200000)/604800000)+1;
     var eN=document.getElementById('h-next');if(eN)eN.textContent=exp+1;
     loadDraws(function(){
