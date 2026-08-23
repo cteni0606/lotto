@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.5.01';
+var APP_VERSION='2.0.5.02';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -629,6 +629,14 @@ function sdkNum(which,n){
   sdkSaveLocal();
   sdkAfterInput(which);
 }
+// 그룹 "진짜 완성" 판정: 그룹 자체가 유일성 만족(sdkGroupOk) + 그 그룹의 어떤 칸도
+// 다른 그룹과의 전역 충돌셋(sdkIsConf)에 걸려있지 않아야 함 — 충돌 빨간 배경 위에 초록 펄스가 덮이는 것 방지
+function sdkGroupClean(which,g){
+  if(!sdkGroupOk(which,g))return false;
+  var j;
+  for(j=0;j<g.length;j++)if(sdkIsConf(which,g[j]))return false;
+  return true;
+}
 // 입력 셀이 속한 행·열·블록의 셀만 재페인트(4×4=8칸·6×6=13칸·9×9=21칸, 전체 재렌더 없음)
 // + 충돌 펄스 + "방금 완성된" 그룹 축하 효과
 function sdkPaintAround(which,i){
@@ -637,11 +645,13 @@ function sdkPaintAround(which,i){
   for(key in touch)if(touch.hasOwnProperty(key))sdkPaintCell(which,parseInt(key,10));
   if(!state.sdk.celeb)state.sdk.celeb={m:{},b:{},c:{}};
   var celeb=state.sdk.celeb[which];
-  for(k=0;k<3;k++){
-    var gi=gis[k];g=gs[gi];
-    if(sdkGroupOk(which,g)){
-      if(!celeb[gi]){celeb[gi]=1;sdkFlash(which,g,'sdk-pop',750);}
-    }else if(celeb[gi])delete celeb[gi];
+  // 완성 판정은 전체 그룹 재점검(9×9 기준 최대 27그룹×9칸 — 무시할 수준):
+  // 다른 칸 수정으로 충돌이 풀려 뒤늦게 깨끗해진 그룹도 축하받도록. DOM 조작(sdkFlash)은 새로 완성된 그룹에만 발생
+  for(k=0;k<gs.length;k++){
+    g=gs[k];
+    if(sdkGroupClean(which,g)){
+      if(!celeb[k]){celeb[k]=1;sdkFlash(which,g,'sdk-pop',750);}
+    }else if(celeb[k])delete celeb[k];
   }
   if(sdkIsConf(which,i))sdkFlash(which,[i],'sdk-bad',480);
 }
