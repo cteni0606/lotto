@@ -50,6 +50,10 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .sdkc{width:56px;height:56px;border-radius:12px;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;}
 .sdk6{width:40px;height:40px;border-radius:10px;font-size:18px;}
 .sdk9{width:28px;height:28px;border-radius:7px;font-size:14px;}
+@keyframes sdk-pop-kf{0%{transform:scale(1)}30%{transform:scale(1.1);box-shadow:0 0 12px rgba(74,222,128,.8);background:rgba(74,222,128,.28)}100%{transform:scale(1)}}
+.sdk-pop{animation:sdk-pop-kf .7s ease;}
+@keyframes sdk-bad-kf{0%,100%{transform:scale(1)}40%{transform:scale(1.06);box-shadow:0 0 10px rgba(248,113,113,.7)}}
+.sdk-bad{animation:sdk-bad-kf .45s ease;}
 .sdkp{width:54px;height:46px;border-radius:12px;font-size:18px;font-weight:800;}
 .sdkp6{width:34px;height:44px;border-radius:10px;font-size:15px;}
 .sdkp9{width:46px;height:42px;border-radius:10px;font-size:15px;}
@@ -97,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.4.00';
+var APP_VERSION='2.0.5.00';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -131,7 +135,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{}}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -370,7 +374,7 @@ function sdkSaveLocal(){try{localStorage.setItem('lotto-sdk-'+state.sdk.date,JSO
 function sdkInit(){
   var d=sdkToday();
   if(state.sdk.date!==d||!state.sdk.cells){
-    state.sdk.date=d;state.sdk.cells={};state.sdk.given={};state.sdk.done={m:false,b:false,c:false};state.sdk.sel=null;state.sdk.startMs={m:0,b:0,c:0};
+    state.sdk.date=d;state.sdk.cells={};state.sdk.given={};state.sdk.done={m:false,b:false,c:false};state.sdk.sel=null;state.sdk.startMs={m:0,b:0,c:0};state.sdk.conf={};state.sdk.celeb={m:{},b:{},c:{}};
   }
   var saved=null;
   try{saved=JSON.parse(localStorage.getItem('lotto-sdk-'+d)||'null');}catch(e){saved=null;}
@@ -480,18 +484,54 @@ function sdkStreakCardHTML(){
   inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML();
   return inner;
 }
+// 셀 i가 속한 행·열·블록의 그룹 인덱스 3개 (sdkGroupList 순서: 행들→열들→블록들)
+function sdkGroupsOf(which,i){
+  var cfg=SDK_CFG[which],n=cfg.size,r=Math.floor(i/n),c=i%n;
+  var bi=Math.floor(r/cfg.bh)*Math.floor(n/cfg.bw)+Math.floor(c/cfg.bw);
+  return[r,n+c,2*n+bi];
+}
+// 현재 충돌(같은 행·열·블록 안에 동일 숫자) 상태인 셀 인덱스 집합
+function sdkConflictSet(which){
+  var gs=sdkGroupList(which),cells=state.sdk.cells[which],set={},gi,j,v,cnt,g;
+  for(gi=0;gi<gs.length;gi++){
+    g=gs[gi];cnt={};
+    for(j=0;j<g.length;j++){v=cells[g[j]];if(v)cnt[v]=(cnt[v]||0)+1;}
+    for(j=0;j<g.length;j++){v=cells[g[j]];if(v&&cnt[v]>1)set[g[j]]=1;}
+  }
+  return set;
+}
+function sdkRecalcConf(which){
+  if(!state.sdk.conf)state.sdk.conf={};
+  state.sdk.conf[which]=(state.sdk.cells&&state.sdk.cells[which])?sdkConflictSet(which):{};
+}
+function sdkIsConf(which,i){var m=state.sdk.conf&&state.sdk.conf[which];return !!(m&&m[i]);}
+// 그룹이 완성(전부 채워지고 1~n이 한 번씩)인지
+function sdkGroupOk(which,g){
+  var cells=state.sdk.cells[which],seen={},j,v;
+  for(j=0;j<g.length;j++){v=cells[g[j]];if(!v||seen[v])return false;seen[v]=1;}
+  return true;
+}
+// 스타일 우선순위: 선택됨 > 충돌 > 기본 · 블록 경계선은 항상 유지
 function sdkCellStyle(which,i){
-  var cfg=SDK_CFG[which],n=cfg.size,col=i%n;
+  var cfg=SDK_CFG[which],n=cfg.size,col=i%n,row=Math.floor(i/n);
   var given=state.sdk.given[which][i];
   var sel=state.sdk.sel&&state.sdk.sel.w===which&&state.sdk.sel.i===i;
-  var s=((col+1)%cfg.bw===0&&col!==n-1)?'margin-right:'+cfg.xgap+'px;':'';
+  var conf=sdkIsConf(which,i);
+  var bR=(col+1)%cfg.bw===0&&col!==n-1;
+  var bB=(row+1)%cfg.bh===0&&row!==n-1;
+  var s=bR?'margin-right:'+cfg.xgap+'px;':'';
   if(given)s+='background:rgba(255,255,255,.12);color:#DDE3F5;border:1.5px solid rgba(255,255,255,.14);';
-  else s+='background:rgba(56,189,248,.06);color:#38BDF8;border:1.5px solid '+(sel?'#FBBF24':'rgba(56,189,248,.3)')+';';
-  if(sel)s+='box-shadow:0 0 8px rgba(251,191,36,.4);';
+  else s+='background:rgba(56,189,248,.06);color:#38BDF8;border:1.5px solid rgba(56,189,248,.3);';
+  if(conf)s+='background:rgba(248,113,113,.13);color:'+(given?'#FCA5A5':'#F87171')+';border-color:rgba(248,113,113,.65);';
+  if(sel)s+='border-color:#FBBF24;box-shadow:0 0 8px rgba(251,191,36,.4);';
+  // 블록 경계: 여백만으론 흐릿해서 경계 셀에 실제 선을 그림 (border-box라 레이아웃 안 흔들림)
+  if(bR)s+='border-right:2px solid rgba(226,232,240,.5);';
+  if(bB)s+='border-bottom:2px solid rgba(226,232,240,.5);';
   return s;
 }
 function sdkGridHTML(which){
   var cfg=SDK_CFG[which],n=cfg.size,html='',r,c;
+  sdkRecalcConf(which);
   for(r=0;r<n;r++){
     var rowGap=((r+1)%cfg.bh===0&&r!==n-1)?cfg.rgapB:cfg.rgap;
     html+='<div style="display:flex;gap:'+cfg.gap+'px;justify-content:center;margin-bottom:'+rowGap+'px">';
@@ -579,9 +619,35 @@ function sdkNum(which,n){
   if(!s||s.w!==which){sdkMsg(which,'숫자를 넣을 칸을 먼저 눌러주세요');return;}
   if(!state.sdk.startMs[which])state.sdk.startMs[which]=Date.now();
   state.sdk.cells[which][s.i]=n;
-  sdkPaintCell(which,s.i);
+  sdkRecalcConf(which);
+  sdkPaintAround(which,s.i);
   sdkSaveLocal();
   sdkAfterInput(which);
+}
+// 입력 셀이 속한 행·열·블록의 셀만 재페인트(4×4=8칸·6×6=13칸·9×9=21칸, 전체 재렌더 없음)
+// + 충돌 펄스 + "방금 완성된" 그룹 축하 효과
+function sdkPaintAround(which,i){
+  var gs=sdkGroupList(which),gis=sdkGroupsOf(which,i),touch={},k,j,g,key;
+  for(k=0;k<3;k++){g=gs[gis[k]];for(j=0;j<g.length;j++)touch[g[j]]=1;}
+  for(key in touch)if(touch.hasOwnProperty(key))sdkPaintCell(which,parseInt(key,10));
+  if(!state.sdk.celeb)state.sdk.celeb={m:{},b:{},c:{}};
+  var celeb=state.sdk.celeb[which];
+  for(k=0;k<3;k++){
+    var gi=gis[k];g=gs[gi];
+    if(sdkGroupOk(which,g)){
+      if(!celeb[gi]){celeb[gi]=1;sdkFlash(which,g,'sdk-pop',750);}
+    }else if(celeb[gi])delete celeb[gi];
+  }
+  if(sdkIsConf(which,i))sdkFlash(which,[i],'sdk-bad',480);
+}
+// cls를 잠깐 붙였다 떼는 원샷 애니메이션 (setTimeout 콜백은 iOS 지침대로 try-catch)
+function sdkFlash(which,idxs,cls,ms){
+  var els=[],j,el;
+  for(j=0;j<idxs.length;j++){
+    el=document.getElementById('sdk-c-'+which+'-'+idxs[j]);
+    if(el){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);els.push(el);}
+  }
+  setTimeout(function(){try{var x;for(x=0;x<els.length;x++)els[x].classList.remove(cls);}catch(e){}},ms);
 }
 function sdkAfterInput(which){
   var cfg=SDK_CFG[which],n2=cfg.size*cfg.size,cells=state.sdk.cells[which],i,filled=true;
