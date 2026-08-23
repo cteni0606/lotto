@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="로또 분석기">
+<title>🎱 로또 분석기 v4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;background:#07071a;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:linear-gradient(160deg,#07071a 0%,#0d0d25 50%,#100820 100%);color:#DDE3F5;min-height:100svh;padding-bottom:env(safe-area-inset-bottom,20px);}
+button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
+.rj{font-weight:800;letter-spacing:-.03em;}
+@keyframes popIn{0%{transform:scale(0);opacity:0}65%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+@keyframes spin2{0%,100%{opacity:1}50%{opacity:.3}}
+.ap{animation:popIn .35s cubic-bezier(.34,1.56,.64,1) both;}
+.as{animation:spin2 1.4s ease-in-out infinite;}
+#hdr{padding:max(env(safe-area-inset-top,14px),14px) 14px 12px;text-align:center;border-bottom:1px solid rgba(251,191,36,.12);background:linear-gradient(180deg,rgba(251,191,36,.06) 0%,transparent 100%);}
+#hdr h1{font-size:22px;font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#FBBF24,#FB923C,#FBBF24);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;}
+#hdr p{font-size:10px;color:#5A6A8E;margin-top:4px;}
+.zdots{display:flex;gap:8px;justify-content:center;margin-top:7px;flex-wrap:wrap;}
+.zdot{display:flex;align-items:center;gap:3px;font-size:9px;}
+.zd{width:7px;height:7px;border-radius:50%;}
+#stats{display:flex;gap:7px;padding:10px 9px 0;}
+.stat{flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06);}
+.sv{font-size:16px;font-weight:800;letter-spacing:-.03em;}
+.sl{font-size:9px;color:#6B7A9E;margin-top:2px;}
+#tab-nav{display:flex;gap:5px;overflow-x:auto;padding:10px 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+#tab-nav::-webkit-scrollbar{display:none;}
+.tb{padding:8px 11px;border-radius:18px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);color:#7080A0;font-size:11px;white-space:nowrap;flex-shrink:0;min-height:36px;transition:all .15s;}
+.tb.on{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.11);color:#FBBF24;font-weight:700;}
+#content{padding:0 9px;}
+.card{background:rgba(255,255,255,.035);border-radius:18px;border:1px solid rgba(255,255,255,.07);padding:14px 12px;margin-bottom:10px;}
+.cg{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.18);}
+.cd{background:rgba(255,255,255,.02);}
+.ttl{font-size:12px;font-weight:700;margin-bottom:11px;}
+.ball{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;user-select:none;flex-shrink:0;}
+.sb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:9px;font-weight:800;}
+.freq-bars{display:flex;gap:1px;align-items:flex-end;height:120px;overflow-x:auto;padding:0 0 4px;}
+.fb{width:7px;min-width:7px;border-radius:2px 2px 0 0;}
+.tag{font-size:9px;padding:2px 6px;border-radius:5px;}
+.set-tags{display:flex;gap:5px;margin-top:7px;margin-left:29px;}
+.bt-table{width:100%;font-size:10px;border-collapse:collapse;}
+.bt-table th{padding:6px 5px 8px;color:#5A6A8E;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
+.bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.05);}
+.duo-row{background:rgba(255,255,255,.025);border-radius:14px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(251,191,36,.12);}
+.footer{text-align:center;font-size:9px;color:#3A4460;line-height:1.9;padding:4px 8px 20px;}
+#err-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:#fff;padding:12px 14px;z-index:9999;font-size:11px;line-height:1.7;word-break:break-all;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<div id="err-banner"></div>
+<div id="hdr">
+  <h1>🎱 로또 번호 분석기 <span id="app-ver" style="font-size:12px;color:#818CF8;font-weight:800;vertical-align:middle">v4</span><span id="app-env" style="display:none;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;margin-left:6px;vertical-align:middle"></span></h1>
+  <p>제 <strong style="color:#FBBF24" id="h-next">…</strong>회 추천 &nbsp;·&nbsp; 전체 <strong style="color:#C084FC" id="h-total">…</strong>회</p>
+  <div id="acct" style="margin-top:8px"></div>
+</div>
+<div id="tab-nav"></div>
+<div id="content"><div style="text-align:center;padding:40px;color:#6B7A9E">불러오는 중...</div></div>
+
+<!-- 로그인 모달 -->
+<div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,10,.75);z-index:50;padding:20px;overflow-y:auto">
+  <div style="max-width:360px;margin:60px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div id="auth-title" style="font-size:16px;font-weight:800;color:#E8ECFF">로그인</div>
+      <button onclick="closeAuth()" style="background:none;border:none;color:#6B7A9E;font-size:20px;padding:4px 8px">✕</button>
+    </div>
+    <input id="auth-email" type="email" placeholder="이메일" autocomplete="email" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:9px">
+    <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:#7080A0;margin-bottom:8px"><input type="checkbox" id="auth-remember" checked style="width:16px;height:16px;accent-color:#2563EB"> 이메일 저장</label>
+    <div id="auth-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
+    <button id="auth-submit" onclick="doAuth()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">로그인</button>
+    <button onclick="toggleAuthMode()" id="auth-toggle" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#7080A0;font-size:12px;margin-bottom:14px">처음이신가요? 회원가입</button>
+    <button onclick="doRecover()" style="width:100%;padding:8px;background:none;border:none;color:#5A6A8E;font-size:11px;text-decoration:underline">비밀번호를 잊으셨나요?</button>
+  </div>
+</div>
+
+<script>
+// ── v4.1: 서버 분리 클라이언트 + 출석 레벨 시스템 (알고리즘 없음) ──
+function showErr(msg){
+  var b=document.getElementById('err-banner');
+  if(b){b.style.display='block';b.innerHTML='<b>오류:</b><br>'+msg;}
+}
+window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
+
+var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
+var APP_VERSION='2.0.0.01';
+var APP_ENV='qa'; // 배포 파이프라인이 dev/qa로 치환
+var sb=window.supabase.createClient(SB_URL,SB_ANON);
+
+var LEVELS=[
+  {lv:0,name:'게스트',c:'#6B7A9E',desc:'순수 랜덤 번호만',cond:'-'},
+  {lv:1,name:'회원',c:'#38BDF8',desc:'기본 필터 + 5개일치 회피 · 빈도/기록 열람',cond:'가입 즉시'},
+  {lv:2,name:'실버',c:'#C0C8D8',desc:'+ 독식지수(인기 회피) · 핫&콜드 열람',cond:'출석 +1일'},
+  {lv:3,name:'골드',c:'#FBBF24',desc:'+ 세트 구조 전략(분산/집중) · 프리미엄 정보',cond:'실버에서 +1일 더'}
+];
+var MASTER={lv:100,name:'마스터',c:'#F472B6',desc:'운영자',cond:'-'};
+var TESTER={lv:99,name:'테스터',c:'#4ADE80',desc:'테스트 계정',cond:'-'};
+function lvInfo(lv){if(lv===100)return MASTER;if(lv===99)return TESTER;return LEVELS[Math.max(0,Math.min(3,lv))];}
+function effLv(){return(state.level===100||state.level===99)?3:state.level;}
+
+var TABS=[
+  {id:'rec',label:'🎯 추천',min:0},
+  {id:'freq',label:'📊 빈도',min:1},
+  {id:'hist',label:'📋 기록',min:1},
+  {id:'hot',label:'🔥 핫&콜드',min:2},
+  {id:'prem',label:'🔮 프리미엄',min:3},
+  {id:'adm',label:'🛠 관리',min:100},
+  {id:'me',label:'👤 내정보',min:0}
+];
+
+var ZONES=[
+  {lo:1,hi:10,c:"#FBBF24",tc:"#1A1000"},{lo:11,hi:20,c:"#38BDF8",tc:"#001525"},
+  {lo:21,hi:30,c:"#F87171",tc:"#200000"},{lo:31,hi:40,c:"#C084FC",tc:"#120025"},
+  {lo:41,hi:45,c:"#4ADE80",tc:"#001A00"}
+];
+var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
+var SETL=["A","B","C","D","E"];
+
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false};
+
+function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
+function ballHTML(n,size,glow,delay){
+  var z=gz(n);
+  var sh=glow?'0 0 14px '+z.c+'BB,0 3px 10px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.5)':'0 3px 10px rgba(0,0,0,.45),inset 0 2px 4px rgba(255,255,255,.45)';
+  return '<div class="ball ap" style="width:'+size+'px;height:'+size+'px;background:radial-gradient(circle at 37% 32%,'+z.c+'FF 0%,'+z.c+'CC 55%,'+z.c+'99 100%);color:'+z.tc+';font-size:'+Math.round(size*.33)+'px;box-shadow:'+sh+';animation-delay:'+delay+'ms">'+n+'</div>';
+}
+function rdate(r){var d=new Date(1039264200000+(r-1)*7*864e5);return d.getFullYear()+'.'+(''+(d.getMonth()+1)).padStart(2,'0')+'.'+(''+d.getDate()).padStart(2,'0');}
+function fmtNum(x){return String(x).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function sBox(val,lbl,c){return '<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:'+c+'">'+val+'</div><div class="sl">'+lbl+'</div></div>';}
+
+// ── 상단 계정/탭 ──
+function renderAcct(){
+  var el=document.getElementById('acct');if(!el)return;
+  if(state.session){
+    var li=lvInfo(state.level);
+    var streakStr=state.streak>0?'<span style="font-size:10px;color:#F97316;margin-right:6px">🔥 '+state.streak+'일</span>':'';
+    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+(state.session.user.email||'')+'</span> <span style="font-size:10px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level===99?'T':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:10px;color:#6B7A9E;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
+  }else{
+    el.innerHTML='<span style="font-size:10px;font-weight:800;color:#6B7A9E;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:2px 9px;border-radius:9px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);padding:4px 14px;border-radius:9px">로그인</button>';
+  }
+}
+function renderTabs(){
+  var nav=document.getElementById('tab-nav');if(!nav)return;
+  var html='';
+  for(var i=0;i<TABS.length;i++){
+    var t=TABS[i];
+    if(t.min===100&&state.level!==100)continue; // 관리 탭은 마스터에게만 노출
+    var locked=state.level===100?false:(effLv()<t.min);
+    html+='<button class="tb'+(state.tab===t.id?' on':'')+'" onclick="doTab(\''+t.id+'\')" data-t="'+t.id+'" style="'+(locked?'opacity:.45':'')+'">'+(locked?'🔒 ':'')+t.label+'</button>';
+  }
+  nav.innerHTML=html;
+}
+
+// ── 추천 탭 ──
+function renderRec(){
+  var li=lvInfo(state.level);
+  var html='';
+  if(state.notice){
+    html+='<div class="card" style="border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)"><div style="font-size:13px;font-weight:700;color:#FBBF24;text-align:center">'+state.notice+'</div></div>';
+  }
+  var rows='';
+  for(var i=0;i<LEVELS.length;i++){
+    var L=LEVELS[i],mine=L.lv===state.level||((state.level===100||state.level===99)&&L.lv===3),locked=effLv()<L.lv;
+    rows+='<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:11px;margin-bottom:5px;background:'+(mine?L.c+'14':'rgba(255,255,255,.02)')+';border:1px solid '+(mine?L.c+'55':'rgba(255,255,255,.05)')+'">'
+      +'<span style="flex-shrink:0;font-size:10px;font-weight:800;color:'+(locked?'#4A5570':L.c)+';min-width:52px">'+(mine?'▶ ':'')+'Lv.'+L.lv+' '+L.name+'</span>'
+      +'<span style="font-size:10px;color:'+(locked?'#4A5570':'#9AA6C8')+';line-height:1.5;flex:1">'+(locked?'🔒 ':'')+L.desc+'</span>'
+      +'<span style="flex-shrink:0;font-size:9px;color:'+(locked?'#5A6A8E':'#4ADE80')+'">'+L.cond+'</span></div>';
+  }
+  var prog='';
+  if(state.session&&state.level>=1&&state.level<=2&&state.toNext!==null){
+    var need=1,done=need-state.toNext;
+    var pct=Math.round(done/need*100);
+    prog='<div style="margin-top:9px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#7080A0;margin-bottom:4px"><span>🔥 연속 출석 '+state.streak+'일</span><span>'+lvInfo(state.level+1).name+'까지 '+state.toNext+'일</span></div><div style="background:rgba(255,255,255,.08);border-radius:6px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#F97316,#FBBF24);border-radius:6px"></div></div></div>';
+  }
+  html+='<div class="card"><div class="ttl">🏅 내 레벨: <span style="color:'+li.c+'">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</span></div>'+rows+prog
+    +(state.level===0?'<div style="font-size:11px;color:#38BDF8;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:9px 12px;margin-top:8px">💡 무료 가입 시 분석 알고리즘 + 매일 접속만 해도 자동 승급됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
+    +'</div>';
+  if(effLv()>=3){
+    var wOn=state.mode==='wide';
+    var bw='flex:1;padding:11px 6px;border-radius:12px;font-size:12px;font-weight:700;min-height:52px;';
+    html+='<div class="card"><div class="ttl">🧭 세트 구조 전략</div><div style="display:flex;gap:8px">'
+      +'<button onclick="setMode(1)" style="'+bw+'border:1.5px solid '+(wOn?'#38BDF8':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(56,189,248,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#38BDF8':'#6B7A9E')+'">🌐 분산<br><span style="font-size:9px;font-weight:400">30개 완전 분리 · 3개+ 11.9%</span></button>'
+      +'<button onclick="setMode(0)" style="'+bw+'border:1.5px solid '+(!wOn?'#C084FC':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(192,132,252,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#C084FC':'#6B7A9E')+'">🎯 집중<br><span style="font-size:9px;font-weight:400">핵심 3개 공유 · 동반 적중형</span></button></div></div>';
+  }
+  if(state.recBusy){
+    html+='<div class="card" style="text-align:center"><div class="ttl">서버에서 생성 중...</div><div style="background:rgba(255,255,255,.08);border-radius:8px;height:6px;overflow:hidden;margin:12px 0"><div style="width:55%;height:100%;background:linear-gradient(90deg,#0EA5E9,#6366F1);animation:shimmer 1.4s linear infinite"></div></div></div>';
+  }else if(state.rec){
+    var r=state.rec,setsHTML='';
+    for(var idx=0;idx<r.sets.length;idx++){
+      var s=r.sets[idx],bls='';
+      for(var i=0;i<s.nums.length;i++)bls+=ballHTML(s.nums[i],36,true,(idx*6+i)*40);
+      var tags='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">짝 '+s.meta.even+'</span><span class="tag" style="color:#F87171;background:rgba(248,113,113,.1)">홀 '+(6-s.meta.even)+'</span>';
+      if(typeof s.meta.unpop!=='undefined'){
+        var upC=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#FBBF24':'#F87171';
+        tags+='<span class="tag" style="color:'+upC+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span>';
+        tags+='<span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span>';
+      }
+      if(s.meta.freshness){
+        var fL=s.meta.freshness==='fresh'?'신선 ✓':s.meta.freshness==='overlap4'?'4개 겹침':'⚠ 유사';
+        var fC=s.meta.freshness==='fresh'?'#4ADE80':s.meta.freshness==='overlap4'?'#FBBF24':'#F87171';
+        tags+='<span class="tag" style="color:'+fC+';background:rgba(255,255,255,.06)">'+fL+'</span>';
+      }
+      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:11px 10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div class="rj" style="font-size:13px;color:'+SETC[idx]+'">'+s.meta.sum+'</div><div style="font-size:8px;color:#5A6A8E">합계</div></div></div><div class="set-tags">'+tags+'</div></div>';
+    }
+    html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="ttl" style="margin-bottom:0">🎯 제 '+r.nextRound+'회 추천 5세트</div><button onclick="getRec()" style="padding:6px 11px;border-radius:12px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#FBBF24;font-size:11px;font-weight:600">🔄 재생성</button></div><div style="font-size:10px;color:#5A6A8E;margin-bottom:12px">적용: '+r.algo+'</div>'+setsHTML+'</div>';
+  }else{
+    html+='<div class="card" style="text-align:center"><button onclick="getRec()" style="padding:14px 30px;border-radius:13px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:800;font-size:15px;min-height:52px">🎲 번호 받기</button><div style="font-size:10px;color:#5A6A8E;margin-top:10px">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
+  }
+  return html;
+}
+function getRec(){
+  if(state.recBusy)return;
+  state.recBusy=true;doTab('rec');
+  var tok=state.session?state.session.access_token:SB_ANON;
+  fetch(SB_URL+'/functions/v1/recommend?mode='+state.mode,{headers:{'Authorization':'Bearer '+tok}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      state.recBusy=false;
+      if(j&&j.sets)state.rec=j;
+      else showErr((j&&j.error)||'추천 실패');
+      doTab('rec');
+    })
+    .catch(function(e){state.recBusy=false;showErr('서버 연결 실패: '+e.message);doTab('rec');});
+}
+function setMode(w){state.mode=w?'wide':'focus';state.rec=null;doTab('rec');}
+
+// ── 데이터 (공개 통계) ──
+function loadDraws(cb){
+  if(state.draws){cb();return;}
+  var all=[];
+  function page(from){
+    sb.from('draws').select('round,n1,n2,n3,n4,n5,n6,bonus,drawn_date').order('round',{ascending:false}).range(from,from+999)
+      .then(function(res){
+        if(res.error){showErr('데이터 조회 실패: '+res.error.message);return;}
+        all=all.concat(res.data||[]);
+        if(res.data&&res.data.length===1000)page(from+1000);
+        else{
+          state.draws=all;
+          var eT=document.getElementById('h-total');
+          if(eT&&all.length)eT.textContent=fmtNum(all.length);
+          cb();
+        }
+      });
+  }
+  page(0);
+}
+function drawNums(d){return[d.n1,d.n2,d.n3,d.n4,d.n5,d.n6];}
+function needDraws(id){
+  return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">데이터 로딩 중...</div>';
+}
+
+function renderFreq(){
+  if(!state.draws)return needDraws('freq');
+  var freq={};for(var n=1;n<=45;n++)freq[n]=0;
+  for(var i=0;i<state.draws.length;i++){var nn=drawNums(state.draws[i]);for(var j=0;j<6;j++)freq[nn[j]]++;}
+  var mx=0;for(var n=1;n<=45;n++)if(freq[n]>mx)mx=freq[n];
+  var bars='';for(var n=1;n<=45;n++){var z=gz(n),h=Math.round(freq[n]/mx*110);bars+='<div class="fb" style="height:'+h+'px;background:'+z.c+'"></div>';}
+  var sorted=[];for(var n=1;n<=45;n++)sorted.push([n,freq[n]]);
+  sorted.sort(function(a,b){return b[1]-a[1];});
+  var t10='';for(var i=0;i<10;i++)t10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:8px;color:#5A6A8E;width:11px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C4CCEE">'+sorted[i][1]+'회</span></div>';
+  sorted.sort(function(a,b){return a[1]-b[1];});
+  var b10='';for(var i=0;i<10;i++)b10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:8px;color:#5A6A8E;width:11px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C4CCEE">'+sorted[i][1]+'회</span></div>';
+  return '<div class="card"><div class="ttl">전체 출현 빈도 ('+state.draws.length+'회)</div><div class="freq-bars">'+bars+'</div><div style="display:flex;justify-content:space-between;font-size:8px;color:#5A6A8E;margin:2px 0 16px"><span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>45</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:8px">🔴 많이 나온 TOP 10</div>'+t10+'</div><div><div style="font-size:11px;color:#38BDF8;font-weight:700;margin-bottom:8px">🔵 적게 나온 TOP 10</div>'+b10+'</div></div></div>';
+}
+
+function renderHist(){
+  if(!state.draws)return needDraws('hist');
+  var html='';
+  for(var i=0;i<20&&i<state.draws.length;i++){
+    var d=state.draws[i],nn=drawNums(d),balls='';
+    for(var j=0;j<6;j++)balls+=ballHTML(nn[j],26,false,0);
+    var dt=d.drawn_date?d.drawn_date.replace(/-/g,'.'):rdate(d.round);
+    html+='<div style="border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:9px;margin-bottom:9px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span class="rj" style="font-size:11px;color:#FBBF24">제 '+d.round+'회</span><span style="font-size:9px;color:#5A6A8E">'+dt+'</span></div><div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">'+balls+'<span style="color:#5A6A8E;font-size:11px;margin:0 1px">+</span>'+ballHTML(d.bonus,26,false,0)+'<span style="font-size:8px;color:#445066">보너스</span></div></div>';
+  }
+  return '<div class="card"><div class="ttl">최근 20회 당첨 번호</div>'+html+'</div>';
+}
+
+function renderHot(){
+  if(!state.draws)return needDraws('hot');
+  var N=state.draws.length,rF={},ls={},sums=[],evenTot=0;
+  for(var n=1;n<=45;n++){rF[n]=0;ls[n]=N;}
+  for(var i=0;i<N;i++){
+    var nn=drawNums(state.draws[i]),sum=0;
+    for(var j=0;j<6;j++){
+      var n=nn[j];sum+=n;if(n%2===0)evenTot++;
+      if(i<10)rF[n]++;
+      if(ls[n]===N)ls[n]=i;
+    }
+    sums.push(sum);
+  }
+  var avgEven=evenTot/N,avgSum=0;for(var i=0;i<N;i++)avgSum+=sums[i];avgSum/=N;
+  var hot='',hs=[];
+  for(var n=1;n<=45;n++)if(rF[n]>=2)hs.push([n,rF[n]]);
+  hs.sort(function(a,b){return b[1]-a[1];});
+  for(var i=0;i<hs.length;i++)hot+='<div style="text-align:center">'+ballHTML(hs[i][0],38,true,0)+'<div style="font-size:9px;color:#F97316;margin-top:3px;font-weight:700">'+hs[i][1]+'회</div></div>';
+  if(!hot)hot='<div style="font-size:11px;color:#5A6A8E">해당 없음</div>';
+  var cold='',lsS=[];
+  for(var n=1;n<=45;n++)lsS.push([n,ls[n]]);
+  lsS.sort(function(a,b){return b[1]-a[1];});
+  for(var i=0;i<15;i++)cold+='<div style="text-align:center">'+ballHTML(lsS[i][0],36,false,0)+'<div style="font-size:9px;color:#38BDF8;margin-top:3px">'+lsS[i][1]+'회전</div></div>';
+  var mn=Math.min.apply(null,sums),mxs=Math.max.apply(null,sums);
+  return '<div class="card"><div class="ttl" style="color:#F97316">🔥 최근 10회 핫넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+hot+'</div></div>'
+    +'<div class="card"><div class="ttl" style="color:#38BDF8">🧊 장기 미출현 콜드넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+cold+'</div></div>'
+    +'<div class="card"><div class="ttl">홀짝 · 합계 분포</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+avgEven.toFixed(1)+'</div><div class="sl">짝수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#F87171">'+(6-avgEven).toFixed(1)+'</div><div class="sl">홀수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+Math.round(avgSum)+'</div><div class="sl">합계 평균</div></div></div><div style="font-size:10px;color:#5A6A8E;text-align:center">합계 범위: '+mn+' ~ '+mxs+'</div></div>';
+}
+
+function pickNum(n){
+  var i=state.pick.indexOf(n);
+  if(i>=0)state.pick.splice(i,1);
+  else{if(state.pick.length>=6)return;state.pick.push(n);}
+  state.diag=null;state.semi=null;
+  doTab('prem');
+}
+function clearPick(){state.pick=[];state.diag=null;state.semi=null;doTab('prem');}
+function doDiag(){
+  if(state.pick.length!==6||state.diagBusy)return;
+  state.diagBusy=true;doTab('prem');
+  fetch(SB_URL+'/functions/v1/diagnose',{method:'POST',headers:{'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON),'Content-Type':'application/json'},body:JSON.stringify({nums:state.pick})})
+    .then(function(r){return r.json();})
+    .then(function(j){state.diagBusy=false;if(j&&j.nums)state.diag=j;else showErr((j&&j.error)||'진단 실패');doTab('prem');})
+    .catch(function(e){state.diagBusy=false;showErr('서버 연결 실패: '+e.message);doTab('prem');});
+}
+function doSemi(){
+  if(state.pick.length<1||state.pick.length>5||state.semiBusy)return;
+  state.semiBusy=true;doTab('prem');
+  fetch(SB_URL+'/functions/v1/recommend?fixed='+state.pick.join(','),{headers:{'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON)}})
+    .then(function(r){return r.json();})
+    .then(function(j){state.semiBusy=false;if(j&&j.sets)state.semi=j;else showErr((j&&j.error)||'생성 실패');doTab('prem');})
+    .catch(function(e){state.semiBusy=false;showErr('서버 연결 실패: '+e.message);doTab('prem');});
+}
+function comb(n,k){var r=1;for(var i=0;i<k;i++)r=r*(n-i)/(i+1);return r;}
+function renderReport(){
+  if(!state.draws)return '';
+  var ds=state.draws,N=ds.length,i,j;
+  // 이월수 분포 (최신순 배열: ds[i] 직전 회차는 ds[i+1])
+  var obs=[0,0,0,0,0];
+  for(i=0;i+1<N;i++){
+    var a=drawNums(ds[i]),b=drawNums(ds[i+1]),c=0;
+    for(j=0;j<6;j++)if(b.indexOf(a[j])>=0)c++;
+    obs[Math.min(c,4)]++;
+  }
+  var T=N-1,tot456=comb(45,6);
+  var rows1='';
+  for(var k=0;k<=4;k++){
+    var p=comb(6,k)*comb(39,6-k)/tot456;if(k===4)p=1-(comb(6,0)*comb(39,6)+comb(6,1)*comb(39,5)+comb(6,2)*comb(39,4)+comb(6,3)*comb(39,3))/tot456;
+    var e=p*T,w1=Math.min(100,obs[k]/T*250),w2=Math.min(100,e/T*250);
+    rows1+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#9AA6C8"><span>'+k+(k===4?'개+':'개')+' 겹침</span><span>관측 '+obs[k]+' / 기대 '+e.toFixed(0)+'</span></div><div style="display:flex;gap:2px;align-items:center"><div style="height:7px;width:'+w1+'%;background:#38BDF8;border-radius:4px"></div></div><div style="display:flex;gap:2px;align-items:center;margin-top:1px"><div style="height:4px;width:'+w2+'%;background:rgba(251,191,36,.5);border-radius:4px"></div></div></div>';
+  }
+  // 미출현 구간별 출현율
+  var lastIdx={},bins={'1-2':[0,0],'3-5':[0,0],'6-10':[0,0],'11-20':[0,0],'21+':[0,0]};
+  for(i=N-1;i>=0;i--){ // 과거→현재
+    var nn=drawNums(ds[i]);
+    for(var n=1;n<=45;n++){
+      if(typeof lastIdx[n]!=='undefined'){
+        var gap=lastIdx[n]-i;
+        var g=gap<=2?'1-2':gap<=5?'3-5':gap<=10?'6-10':gap<=20?'11-20':'21+';
+        bins[g][1]++;
+        if(nn.indexOf(n)>=0)bins[g][0]++;
+      }
+    }
+    for(j=0;j<6;j++)lastIdx[nn[j]]=i;
+  }
+  var rows2='',keys=['1-2','3-5','6-10','11-20','21+'];
+  for(i=0;i<keys.length;i++){
+    var bb=bins[keys[i]],pr=bb[1]?bb[0]/bb[1]*100:0;
+    var dev=pr-13.33;
+    rows2+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-size:10px;color:#9AA6C8;width:70px">'+keys[i]+'회 쉼</span><div style="flex:1;background:rgba(255,255,255,.06);border-radius:5px;height:10px;overflow:hidden;position:relative"><div style="width:'+Math.min(100,pr*5)+'%;height:100%;background:'+(Math.abs(dev)<0.7?'#4ADE80':'#FBBF24')+'"></div></div><span class="rj" style="font-size:10px;color:#C4CCEE;width:48px;text-align:right">'+pr.toFixed(2)+'%</span></div>';
+  }
+  // 페어 TOP5
+  var pf={};
+  for(i=0;i<N;i++){var nn2=drawNums(ds[i]);for(var a2=0;a2<6;a2++)for(var b2=a2+1;b2<6;b2++){var key=nn2[a2]*100+nn2[b2];pf[key]=(pf[key]||0)+1;}}
+  var pl=[];var pk=Object.keys(pf);
+  for(i=0;i<pk.length;i++)pl.push([pk[i],pf[pk[i]]]);
+  pl.sort(function(x,y){return y[1]-x[1];});
+  var exp=N/66;
+  var rows3='';
+  for(i=0;i<5;i++){
+    var key2=+pl[i][0],n1=Math.floor(key2/100),n2=key2%100;
+    rows3+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+ballHTML(n1,24,false,0)+ballHTML(n2,24,false,0)+'<span style="font-size:11px;color:#C4CCEE;margin-left:4px">'+pl[i][1]+'회 동반</span><span style="font-size:9px;color:#5A6A8E">(기대 '+exp.toFixed(1)+'회 · 우연 범위)</span></div>';
+  }
+  // 패턴 헌팅 요약 (2026-08 분석, 훈련 101~800 / 검증 801~1238)
+  var hunt='<table class="bt-table"><thead><tr><th style="text-align:left">전략</th><th style="text-align:center">훈련</th><th style="text-align:center">검증</th></tr></thead><tbody>'
+    +'<tr><td style="color:#C4CCEE">모멘텀 (훈련 1위)</td><td style="text-align:center;color:#4ADE80" class="rj">0.850</td><td style="text-align:center;color:#F87171" class="rj">0.783</td></tr>'
+    +'<tr><td style="color:#C4CCEE">최근10 핫</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
+    +'<tr><td style="color:#C4CCEE">주기회귀 (훈련 꼴찌권)</td><td style="text-align:center;color:#F87171" class="rj">0.763</td><td style="text-align:center;color:#4ADE80" class="rj">0.815</td></tr>'
+    +'<tr><td style="color:#C4CCEE">가중치 256조합 훈련최적</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
+    +'<tr style="background:rgba(251,191,36,.05)"><td style="color:#FBBF24;font-weight:700">🎲 순수 랜덤</td><td style="text-align:center" class="rj">0.794</td><td style="text-align:center;color:#4ADE80;font-weight:700" class="rj">0.858</td></tr>'
+    +'</tbody></table>';
+  return '<div class="card"><div class="ttl" style="color:#818CF8">📊 심층 통계 리포트 <span style="font-size:9px;color:#5A6A8E">('+N+'회 · 매주 자동 갱신)</span></div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">① 직전 회차와 겹치는 개수 <span style="font-size:9px;color:#5A6A8E;font-weight:400">파랑=관측 · 노랑=이론</span></div>'+rows1
+    +'<div style="font-size:10px;color:#5A6A8E;margin-bottom:14px">→ 이론 분포와 일치 (χ²=3.4). 평균적으로 매주 0.8개가 재출현합니다.</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">② "나올 때가 됐다"는 진짜일까? <span style="font-size:9px;color:#5A6A8E;font-weight:400">쉰 기간별 다음 회차 출현율 (이론 13.33%)</span></div>'+rows2
+    +'<div style="font-size:10px;color:#5A6A8E;margin-bottom:14px">→ 오래 쉰 번호도 확률은 그대로입니다. 콜드넘버 전략은 근거가 없습니다.</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">③ 최다 동반출현 페어 TOP 5</div>'+rows3
+    +'<div style="font-size:10px;color:#5A6A8E;margin-bottom:14px">→ 990쌍 중 최다 페어도 통계 보정 후 우연 범위(z&lt;3.9)입니다.</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">④ 패턴 헌팅 실험 — 14개 전략 + 256개 가중치 조합</div>'+hunt
+    +'<div style="font-size:10px;color:#7080A0;line-height:1.7;margin-top:8px">과거(훈련)에서 1위였던 패턴이 미래(검증)에선 평균 이하로, 꼴찌가 상위로 — 심지어 순수 랜덤이 검증 1위. 순위 자체가 노이즈라는 증거입니다. <span style="color:#818CF8">그래서 이 서비스는 "맞출 확률"이 아니라, 수학적으로 유효한 두 가지 — 세트 구조(3개+ 확률 극대화)와 독식지수(당첨 시 나눠 갖지 않기) — 에 집중합니다.</span></div></div>';
+}
+function renderPrem(){
+  var html='';
+  // 번호 선택기
+  var grid='';
+  for(var n=1;n<=45;n++){
+    var sel=state.pick.indexOf(n)>=0,z=gz(n);
+    grid+='<button onclick="pickNum('+n+')" style="width:36px;height:36px;border-radius:50%;font-size:12px;font-weight:700;border:1.5px solid '+(sel?z.c:'rgba(255,255,255,.12)')+';background:'+(sel?z.c:'rgba(255,255,255,.04)')+';color:'+(sel?z.tc:'#8B98B8')+'">'+n+'</button>';
+  }
+  var cnt=state.pick.length;
+  var canDiag=cnt===6,canSemi=cnt>=1&&cnt<=5;
+  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="ttl" style="margin-bottom:0">🎛 번호 선택 <span style="color:#FBBF24">'+cnt+'</span>/6</div>'+(cnt>0?'<button onclick="clearPick()" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">초기화</button>':'')+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:12px">'+grid+'</div>'
+    +'<div style="display:flex;gap:8px"><button onclick="doDiag()" style="flex:1;padding:12px 6px;border-radius:12px;font-size:12px;font-weight:700;border:none;background:'+(canDiag?'linear-gradient(135deg,#7C3AED,#A855F7)':'rgba(255,255,255,.05)')+';color:'+(canDiag?'#fff':'#4A5570')+'">🔍 내 번호 진단<br><span style="font-size:9px;font-weight:400">6개 선택 시</span></button>'
+    +'<button onclick="doSemi()" style="flex:1;padding:12px 6px;border-radius:12px;font-size:12px;font-weight:700;border:none;background:'+(canSemi?'linear-gradient(135deg,#0EA5E9,#6366F1)':'rgba(255,255,255,.05)')+';color:'+(canSemi?'#fff':'#4A5570')+'">🎯 고정수 반자동<br><span style="font-size:9px;font-weight:400">1~5개 고정</span></button></div></div>';
+  if(state.diagBusy||state.semiBusy)html+='<div class="card" style="text-align:center;color:#818CF8;padding:20px">서버 분석 중...</div>';
+  // 진단 결과
+  if(state.diag){
+    var d=state.diag;
+    var upC=d.unpop.score>=80?'#4ADE80':d.unpop.score>=60?'#FBBF24':'#F87171';
+    var items='';
+    for(var i=0;i<d.unpop.items.length;i++){
+      var it=d.unpop.items[i];
+      items+='<div style="display:flex;justify-content:space-between;font-size:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:#9AA6C8">'+it.label+'</span><span class="rj" style="color:'+(it.penalty<0?'#F87171':'#4ADE80')+'">'+(it.penalty<0?it.penalty:'✓')+'</span></div>';
+    }
+    var bls='';for(var i=0;i<d.nums.length;i++)bls+=ballHTML(d.nums[i],34,true,i*50);
+    html+='<div class="card" style="border-color:rgba(168,85,247,.3)"><div class="ttl" style="color:#C084FC">🔍 진단 결과</div>'
+      +'<div style="display:flex;gap:5px;justify-content:center;margin-bottom:12px">'+bls+'</div>'
+      +'<div style="display:flex;gap:7px;margin-bottom:12px">'+sBox(d.unpop.score,'독식지수',upC)+sBox(d.sum,'합계','#FBBF24')+sBox(d.even+':'+(6-d.even),'짝:홀','#38BDF8')+sBox(d.zones+'/5','구간','#4ADE80')+'</div>'
+      +items
+      +'<div style="font-size:10px;color:#9AA6C8;line-height:1.8;margin-top:10px">역대 '+d.history.total+'회 대입: 3개+ 일치 <b style="color:#FBBF24">'+d.history.m3+'회</b> · 4개+ <b style="color:#FBBF24">'+d.history.m4+'회</b> · 5개+ <b>'+d.history.m5+'회</b> · 6개 <b>'+d.history.m6+'회</b><br>최고 기록: <b style="color:'+(d.freshness.best>=5?'#F87171':'#4ADE80')+'">'+d.freshness.best+'개 일치</b> (제'+d.freshness.round+'회)'+(d.freshness.best>=5?' — 이미 나온 조합과 매우 유사!':'')+'<br>'
+      +(d.valid?'<span style="color:#4ADE80">✓ 균형 필터(합계·홀짝·구간) 통과</span>':'<span style="color:#FBBF24">⚠ 균형 필터 미통과 — 당첨 확률은 동일하지만 통계적으로 드문 형태입니다</span>')
+      +(d.forbidden?'<br><span style="color:#F87171">⚠ 역대 5개 일치 금지 조합에 해당</span>':'')
+      +'</div></div>';
+  }
+  // 반자동 결과
+  if(state.semi){
+    var r=state.semi,setsHTML='';
+    for(var idx=0;idx<r.sets.length;idx++){
+      var s=r.sets[idx],bls2='';
+      for(var i=0;i<s.nums.length;i++){
+        var isFx=r.fixed.indexOf(s.nums[i])>=0;
+        bls2+='<div style="position:relative">'+ballHTML(s.nums[i],34,isFx,(idx*6+i)*35)+(isFx?'<div style="position:absolute;top:-4px;right:-3px;font-size:9px">📌</div>':'')+'</div>';
+      }
+      var upC2=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#FBBF24':'#F87171';
+      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:10px;margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls2+'</div></div><div class="set-tags"><span class="tag" style="color:'+upC2+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span><span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span>'+(s.meta.relaxed?'<span class="tag" style="color:#FBBF24;background:rgba(251,191,36,.1)">⚠ 고정수 제약으로 균형필터 완화</span>':'')+'</div></div>';
+    }
+    html+='<div class="card" style="border-color:rgba(56,189,248,.3)"><div class="ttl" style="color:#38BDF8">🎯 고정수 반자동 5세트 <span style="font-size:9px;color:#5A6A8E">📌 = 고정</span></div>'+setsHTML+'</div>';
+  }
+  // 심층 리포트
+  html+=state.draws?renderReport():'<div class="card" style="text-align:center;color:#6B7A9E;padding:20px">리포트 데이터 로딩 중...</div>';
+  return html;
+}
+
+// ── 관리자 ──
+function renderAdm(){
+  if(state.level!==100)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">권한이 없습니다</div>';
+  if(!state.admin){
+    if(!state.admBusy)loadAdmin();
+    return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">관리 데이터 로딩 중...</div>';
+  }
+  var a=state.admin;
+  var boxes='<div style="display:flex;gap:7px;margin-bottom:7px">'
+    +sBox(typeof a.visToday==='number'?a.visToday:'-','오늘 방문(전체)','#38BDF8')
+    +sBox(typeof a.guestToday==='number'?a.guestToday:'-','오늘 게스트','#8B98B8')
+    +sBox(a.dauToday,'오늘 출석(회원)','#4ADE80')
+    +'</div><div style="display:flex;gap:7px;margin-bottom:7px">'
+    +sBox(typeof a.hitsToday==='number'?a.hitsToday:'-','오늘 조회수','#FBBF24')
+    +sBox((a.hitsToday&&a.visToday)?(a.hitsToday/a.visToday).toFixed(1):'-','인당 조회(오늘)','#C084FC')
+    +sBox(typeof a.hits30==='number'?a.hits30:'-','30일 조회수','#F97316')
+    +'</div><div style="display:flex;gap:7px;margin-bottom:4px">'
+    +sBox(a.totalUsers,'총 가입자','#FBBF24')
+    +sBox(typeof a.visMau==='number'?a.visMau:'-','방문 MAU','#38BDF8')
+    +sBox(a.mau,'회원 MAU','#4ADE80')
+    +'</div>';
+  var mxd=1;
+  for(var i=0;i<a.days.length;i++){
+    if(a.days[i].n>mxd)mxd=a.days[i].n;
+    if(a.days[i].v&&a.days[i].v>mxd)mxd=a.days[i].v;
+  }
+  var bars='';
+  for(var i=0;i<a.days.length;i++){
+    var d=a.days[i];
+    var hv=Math.max(2,Math.round((d.v||0)/mxd*70));
+    var hn=Math.max(2,Math.round(d.n/mxd*70));
+    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:8px;color:#FBBF24">'+(d.h||0)+'</span><div style="display:flex;gap:1px;align-items:flex-end"><div style="width:6px;height:'+hv+'px;background:#38BDF8;border-radius:2px 2px 0 0;opacity:.85"></div><div style="width:6px;height:'+hn+'px;background:#4ADE80;border-radius:2px 2px 0 0;opacity:.85"></div></div><span style="font-size:7px;color:#5A6A8E">'+d.day.slice(8)+'</span></div>';
+  }
+  var urows='';
+  for(var i=0;i<a.users.length;i++){
+    var u=a.users[i],li=lvInfo(u.level);
+    urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td></tr>';
+  }
+  var actRows='';
+  if(a.todayList&&a.todayList.length){
+    for(var i=0;i<a.todayList.length;i++){
+      var tv=a.todayList[i];
+      actRows+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:10px;color:'+(tv.member?'#C4CCEE':'#7080A0')+'">'+(tv.member?'👤 ':'👻 ')+tv.who+'</span><span class="rj" style="font-size:11px;color:'+(tv.hits>=5?'#F97316':'#9AA6C8')+'">'+tv.hits+'회</span></div>';
+    }
+  }else actRows='<div style="font-size:10px;color:#5A6A8E">오늘 방문 없음</div>';
+  var actCard='<div class="card"><div class="ttl">📱 오늘 활동 (방문자별 조회수)</div>'+actRows+'</div>';
+  return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+boxes+'</div>'
+    +'<div class="card"><div class="ttl">최근 14일 — <span style="color:#FBBF24">숫자=조회수</span> · <span style="color:#38BDF8">파랑=방문자</span> · <span style="color:#4ADE80">초록=회원출석</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
+    +actCard+'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th></tr></thead><tbody>'+urows+'</tbody></table></div><div style="font-size:9px;color:#5A6A8E;margin-top:8px">레벨 수동 변경: Supabase 대시보드 → Table Editor → profiles</div></div>';
+}
+function loadAdmin(){
+  state.admBusy=true;
+  fetch(SB_URL+'/functions/v1/admin',{headers:{'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON)}})
+    .then(function(r){return r.json();})
+    .then(function(j){state.admBusy=false;if(j&&j.users)state.admin=j;if(state.tab==='adm')doTab('adm');})
+    .catch(function(e){state.admBusy=false;showErr('관리 데이터 실패: '+e.message);});
+}
+
+function renderMe(){
+  if(!state.session)return '<div class="card" style="text-align:center"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#7080A0;margin-bottom:14px">로그인하면 레벨·출석 현황을 볼 수 있습니다.</div><button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인 / 회원가입</button></div>';
+  var li=lvInfo(state.level);
+  var nextInfo='';
+  if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
+  else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.<br><span style="color:#445066">버전 v'+APP_VERSION+' ('+APP_ENV+')</span></div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>';
+}
+
+// ── 탭 라우팅 ──
+function lockedCard(t){
+  var li=lvInfo(t.min);
+  return '<div class="card" style="text-align:center;padding:34px 20px"><div style="font-size:32px;margin-bottom:10px">🔒</div><div class="ttl">'+t.label+' — Lv.'+t.min+' '+li.name+'부터</div><div style="font-size:11px;color:#7080A0;line-height:1.8">'+(state.session?('연속 출석으로 승급하세요! (현재 🔥 '+state.streak+'일)'):'가입 후 매일 접속하면 자동으로 승급됩니다.')+'</div>'+(state.session?'':'<button onclick="openAuth()" style="margin-top:12px;padding:11px 24px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">로그인 / 회원가입</button>')+'</div>';
+}
+function doTab(id){
+  try{
+    state.tab=id;
+    renderTabs();
+    var c=document.getElementById('content'),html='';
+    if(APP_ENV!=='live'&&!envAllowed()){
+      c.innerHTML='<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:34px;margin-bottom:12px">'+(APP_ENV==='qa'?'🧪':'🛠')+'</div><div class="ttl">'+APP_ENV.toUpperCase()+' 환경 — '+(APP_ENV==='qa'?'테스터/마스터':'마스터')+' 전용</div><div style="font-size:11px;color:#7080A0;line-height:1.8;margin-bottom:14px">이곳은 배포 전 테스트 환경입니다.<br>권한이 있는 계정으로 로그인해 주세요.</div>'+(state.session?'<div style="font-size:11px;color:#F87171">현재 계정은 열람 권한이 없습니다.</div>':'<button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인</button>')+'</div><div class="footer">v'+APP_VERSION+' · '+APP_ENV+'</div>';
+      return;
+    }
+    var tdef=null;for(var i=0;i<TABS.length;i++)if(TABS[i].id===id)tdef=TABS[i];
+    var locked=tdef?(state.level===100?false:(effLv()<tdef.min)):false;
+    if(locked)html=lockedCard(tdef);
+    else if(id==='rec')html=renderRec();
+    else if(id==='freq')html=renderFreq();
+    else if(id==='hist')html=renderHist();
+    else if(id==='hot')html=renderHot();
+    else if(id==='prem')html=renderPrem();
+    else if(id==='adm')html=renderAdm();
+    else if(id==='me')html=renderMe();
+    var recCard='';
+    if(state.recovery)recCard='<div class="card" style="border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.05)"><div class="ttl" style="color:#38BDF8">🔑 새 비밀번호 설정</div><input type="password" id="new-pw" placeholder="새 비밀번호 (6자 이상)" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:8px"><div id="new-pw-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px"></div><button onclick="setNewPw()" style="width:100%;padding:12px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;font-weight:700;font-size:13px">비밀번호 변경</button></div>';
+    c.innerHTML=recCard+html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
+    if(!locked&&(id==='freq'||id==='hist'||id==='hot'||id==='prem')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
+  }catch(e){showErr('렌더 오류: '+e.message);}
+}
+
+// ── 인증 ──
+function openAuth(){
+  state.authMode='login';syncAuthUI();
+  var saved='';try{saved=localStorage.getItem('lotto-last-email')||'';}catch(e){}
+  var em=document.getElementById('auth-email');if(em&&!em.value&&saved)em.value=saved;
+  syncOAuthButtons();
+  document.getElementById('auth-modal').style.display='block';
+}
+function syncOAuthButtons(){
+  var g=document.getElementById('oauth-google'),k=document.getElementById('oauth-kakao');
+  if(g){if(state.providers.google){g.style.opacity='1';g.innerHTML='G&nbsp; 구글로 계속하기';}else{g.style.opacity='.45';g.innerHTML='G&nbsp; 구글 로그인 (준비 중)';}}
+  if(k){if(state.providers.kakao){k.style.opacity='1';k.innerHTML='💬 카카오로 계속하기';}else{k.style.opacity='.45';k.innerHTML='💬 카카오 로그인 (준비 중)';}}
+}
+function closeAuth(){document.getElementById('auth-modal').style.display='none';document.getElementById('auth-msg').textContent='';}
+function toggleAuthMode(){state.authMode=state.authMode==='login'?'signup':'login';syncAuthUI();}
+function syncAuthUI(){
+  var lg=state.authMode==='login';
+  document.getElementById('auth-title').textContent=lg?'로그인':'회원가입';
+  document.getElementById('auth-submit').textContent=lg?'로그인':'가입하기';
+  document.getElementById('auth-toggle').textContent=lg?'처음이신가요? 회원가입':'이미 계정이 있나요? 로그인';
+  document.getElementById('auth-msg').textContent='';
+}
+function authErrKo(m){
+  if(!m)return '오류가 발생했습니다.';
+  if(m.indexOf('Invalid login credentials')>=0)return '이메일 또는 비밀번호가 올바르지 않습니다.';
+  if(m.indexOf('already registered')>=0)return '이미 가입된 이메일입니다. 로그인해 주세요.';
+  if(m.indexOf('at least 6')>=0)return '비밀번호는 6자 이상이어야 합니다.';
+  if(m.indexOf('valid email')>=0||m.indexOf('invalid format')>=0)return '올바른 이메일 주소를 입력해 주세요.';
+  if(m.indexOf('rate limit')>=0||m.indexOf('Too many')>=0)return '시도가 너무 잦습니다. 잠시 후 다시 시도해 주세요.';
+  return m;
+}
+function doAuth(){
+  var email=document.getElementById('auth-email').value.trim();
+  var pw=document.getElementById('auth-pw').value;
+  var msg=document.getElementById('auth-msg');
+  if(!email||pw.length<6){msg.textContent='이메일과 6자 이상 비밀번호를 입력하세요.';return;}
+  msg.style.color='#7080A0';msg.textContent='처리 중...';
+  var p=state.authMode==='login'?sb.auth.signInWithPassword({email:email,password:pw}):sb.auth.signUp({email:email,password:pw});
+  p.then(function(res){
+    if(res.error){msg.style.color='#F87171';msg.textContent=authErrKo(res.error.message);return;}
+    try{
+      var rm=document.getElementById('auth-remember');
+      if(rm&&rm.checked)localStorage.setItem('lotto-last-email',email);
+      else localStorage.removeItem('lotto-last-email');
+    }catch(e){}
+    closeAuth();
+  });
+}
+function doRecover(){
+  var email=document.getElementById('auth-email').value.trim();
+  var msg=document.getElementById('auth-msg');
+  if(!email){msg.style.color='#FBBF24';msg.textContent='가입한 이메일을 입력한 뒤 다시 눌러주세요.';return;}
+  msg.style.color='#7080A0';msg.textContent='재설정 메일 발송 중...';
+  sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname})
+    .then(function(res){
+      if(res.error){msg.style.color='#F87171';msg.textContent=authErrKo(res.error.message);return;}
+      msg.style.color='#4ADE80';msg.textContent='재설정 메일을 보냈습니다. 메일함(스팸함 포함)을 확인하세요.';
+    });
+}
+function setNewPw(){
+  var pw=document.getElementById('new-pw').value;
+  var msg=document.getElementById('new-pw-msg');
+  if(pw.length<6){if(msg)msg.textContent='6자 이상 입력하세요.';return;}
+  sb.auth.updateUser({password:pw}).then(function(res){
+    if(res.error){if(msg)msg.textContent=authErrKo(res.error.message);return;}
+    state.recovery=false;state.notice='✅ 비밀번호가 변경되었습니다. 다음부터 이메일+비밀번호로 로그인하세요.';
+    doTab('rec');
+  });
+}
+function doOAuth(provider){
+  var msg=document.getElementById('auth-msg');
+  if(!state.providers[provider]){
+    if(msg){msg.style.color='#FBBF24';msg.textContent=(provider==='google'?'구글':'카카오')+' 로그인은 준비 중입니다. 이메일로 가입해 주세요.';}
+    return;
+  }
+  sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:window.location.origin+window.location.pathname}})
+    .then(function(res){
+      if(res.error&&msg){msg.style.color='#F87171';msg.textContent='소셜 로그인 실패: '+res.error.message;}
+    });
+}
+function doLogout(){sb.auth.signOut();state.rec=null;state.admin=null;state.notice='';state.streak=0;state.toNext=null;}
+
+function loadProfile(cb){
+  if(!state.session){state.level=0;state.streak=0;state.toNext=null;cb();return;}
+  sb.from('profiles').select('level,streak').eq('id',state.session.user.id).single()
+    .then(function(res){
+      if(res.data){state.level=typeof res.data.level==='number'?res.data.level:1;state.streak=res.data.streak||0;}
+      else state.level=1;
+      cb();
+    });
+}
+function envAllowed(){
+  if(APP_ENV==='qa')return state.level===99||state.level===100;
+  if(APP_ENV==='dev')return state.level===100;
+  return true;
+}
+function trackVisit(){
+  if(APP_ENV!=='live')return;
+  try{
+    var vid=localStorage.getItem('lotto-vid');
+    if(!vid){
+      vid='v'+Math.random().toString(36).slice(2,12)+Math.random().toString(36).slice(2,12);
+      localStorage.setItem('lotto-vid',vid);
+    }
+    fetch(SB_URL+'/rest/v1/rpc/track_visit',{method:'POST',headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON),'Content-Type':'application/json'},body:JSON.stringify({vid:vid})}).catch(function(e){});
+  }catch(e){}
+}
+function doCheckin(){
+  if(APP_ENV!=='live')return;
+  if(!state.session)return;
+  fetch(SB_URL+'/functions/v1/checkin',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&typeof j.level==='number'){
+        state.level=j.level;state.streak=j.streak;state.toNext=j.toNext;
+        if(j.leveledUp)state.notice='🎉 레벨 업! '+(j.level===100?'마스터':'Lv.'+j.level+' '+lvInfo(j.level).name)+' 달성!';
+        else if(j.leveledDown)state.notice='😢 연속 출석이 끊겨 Lv.'+j.level+' '+lvInfo(j.level).name+'(으)로 조정됐어요. 다시 시작!';
+        renderAcct();doTab(state.tab);
+      }
+    })
+    .catch(function(e){});
+}
+
+// ── 부트스트랩 ──
+function refresh(){renderAcct();renderTabs();doTab(state.tab);}
+sb.auth.onAuthStateChange(function(ev,session){
+  if(ev==='PASSWORD_RECOVERY')state.recovery=true;
+  state.session=session;state.rec=null;state.mode='wide';state.admin=null;
+  loadProfile(function(){refresh();if(session)doCheckin();});
+});
+try{
+  var _vs=document.getElementById('app-ver');if(_vs)_vs.textContent='v'+APP_VERSION;
+  if(APP_ENV!=='live'){
+    var _es=document.getElementById('app-env');
+    if(_es){
+      _es.style.display='inline-block';
+      _es.textContent=APP_ENV.toUpperCase();
+      if(APP_ENV==='qa'){_es.style.color='#FBBF24';_es.style.background='rgba(251,191,36,.15)';_es.style.border='1px solid rgba(251,191,36,.4)';}
+      else{_es.style.color='#F87171';_es.style.background='rgba(248,113,113,.15)';_es.style.border='1px solid rgba(248,113,113,.4)';}
+    }
+    document.title='['+APP_ENV.toUpperCase()+'] '+document.title;
+  }
+}catch(e){}
+fetch(SB_URL+'/auth/v1/settings',{headers:{apikey:SB_ANON}})
+  .then(function(r){return r.json();})
+  .then(function(j){
+    if(j&&j.external){state.providers.google=!!j.external.google;state.providers.kakao=!!j.external.kakao;}
+    syncOAuthButtons();
+  }).catch(function(e){});
+try{
+  if(window.location.hash&&window.location.hash.indexOf('error')>=0){
+    var _hm=window.location.hash.match(/error_description=([^&]+)/);
+    openAuth();
+    var _am=document.getElementById('auth-msg');
+    if(_am){_am.style.color='#F87171';_am.textContent='소셜 로그인 실패: '+(_hm?decodeURIComponent(_hm[1].replace(/\+/g,' ')):'설정을 확인해 주세요');}
+    history.replaceState(null,'',window.location.pathname);
+  }
+}catch(e){}
+sb.auth.getSession().then(function(res){
+  state.session=res.data?res.data.session:null;
+  loadProfile(function(){
+    refresh();
+    trackVisit();
+    if(state.session)doCheckin();
+    var exp=Math.floor((Date.now()-1039264200000)/604800000)+1;
+    var eN=document.getElementById('h-next');if(eN)eN.textContent=exp+1;
+    loadDraws(function(){
+      var eN2=document.getElementById('h-next');
+      if(eN2&&state.draws&&state.draws.length){
+        var latest=state.draws[0].round;
+        eN2.textContent=(exp>latest?exp:latest)+1;
+      }
+      if(state.tab==='freq'||state.tab==='hist'||state.tab==='hot')doTab(state.tab);
+    });
+  });
+});
+</script>
+</body>
+</html>
