@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.9.05';
+var APP_VERSION='2.0.9.06';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -145,6 +145,14 @@ function ballHTML(n,size,glow,delay){
 }
 function rdate(r){var d=new Date(1039264200000+(r-1)*7*864e5);return d.getFullYear()+'.'+(''+(d.getMonth()+1)).padStart(2,'0')+'.'+(''+d.getDate()).padStart(2,'0');}
 function fmtNum(x){return String(x).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fmtWon(x){
+  var n=Number(x);
+  if(x===null||x===undefined||!isFinite(n)||n<=0)return '-';
+  if(n>=100000000){var e=Math.floor(n/100000000),m=Math.floor(n%100000000/10000);return fmtNum(e)+'억'+(m>0?fmtNum(m)+'만':'')+'원';}
+  if(n>=10000)return fmtNum(Math.floor(n/10000))+'만원';
+  if(n>=1000)return Math.floor(n/1000)+'천원';
+  return fmtNum(n)+'원';
+}
 function maskEmail(email){
   if(!email)return '';
   var s=String(email);
@@ -1177,7 +1185,7 @@ function loadDraws(cb){
   if(state.draws){cb();return;}
   var all=[];
   function page(from){
-    sb.from('draws').select('round,n1,n2,n3,n4,n5,n6,bonus,drawn_date').order('round',{ascending:false}).range(from,from+999)
+    sb.from('draws').select('round,n1,n2,n3,n4,n5,n6,bonus,drawn_date,won1_count,won1_amount,won2_count,won2_amount,won3_count,won3_amount,won4_count,won4_amount,won5_count,won5_amount').order('round',{ascending:false}).range(from,from+999)
       .then(function(res){
         if(res.error){showErr('데이터 조회 실패: '+res.error.message);return;}
         all=all.concat(res.data||[]);
@@ -1211,6 +1219,23 @@ function renderFreq(){
   return '<div class="card"><div class="ttl">전체 출현 빈도 ('+state.draws.length+'회)</div><div class="freq-bars">'+bars+'</div><div style="display:flex;justify-content:space-between;font-size:8px;color:#5A6A8E;margin:2px 0 16px"><span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>45</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:8px">🔴 많이 나온 TOP 10</div>'+t10+'</div><div><div style="font-size:11px;color:#38BDF8;font-weight:700;margin-bottom:8px">🔵 적게 나온 TOP 10</div>'+b10+'</div></div></div>';
 }
 
+function histWinHTML(d){
+  var lines='';
+  for(var t=1;t<=5;t++){
+    var c=d['won'+t+'_count'],a=d['won'+t+'_amount'];
+    if(c===null||c===undefined)continue;
+    lines+='<div style="display:flex;justify-content:space-between"><span>'+t+'등 <b style="color:#FBBF24">'+fmtNum(c)+'명</b></span><span style="color:#7DD3FC">'+fmtWon(a)+'</span></div>';
+  }
+  if(!lines)return '';
+  return lines+'<div style="font-size:8px;color:#5A6A8E;margin-top:4px;text-align:right">1인당 당첨금 · 동행복권 공식 발표 기준</div>';
+}
+function toggleWinDetail(r){
+  var el=document.getElementById('wd-'+r),btn=document.getElementById('wb-'+r);
+  if(!el)return;
+  var open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  if(btn)btn.textContent=open?'당첨정보 ▾':'당첨정보 ▴';
+}
 function renderHist(){
   if(!state.draws)return needDraws('hist');
   var html='';
@@ -1218,7 +1243,12 @@ function renderHist(){
     var d=state.draws[i],nn=drawNums(d),balls='';
     for(var j=0;j<6;j++)balls+=ballHTML(nn[j],26,false,0);
     var dt=d.drawn_date?d.drawn_date.replace(/-/g,'.'):rdate(d.round);
-    html+='<div style="border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:9px;margin-bottom:9px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span class="rj" style="font-size:11px;color:#FBBF24">제 '+d.round+'회</span><span style="font-size:9px;color:#5A6A8E">'+dt+'</span></div><div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">'+balls+'<span style="color:#5A6A8E;font-size:11px;margin:0 1px">+</span>'+ballHTML(d.bonus,26,false,0)+'<span style="font-size:8px;color:#445066">보너스</span></div></div>';
+    var win=histWinHTML(d),winBtn='',winBox='';
+    if(win){
+      winBtn='<button id="wb-'+d.round+'" onclick="toggleWinDetail('+d.round+')" style="font-size:9px;color:#7DD3FC;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:8px;padding:2px 8px">당첨정보 ▾</button>';
+      winBox='<div id="wd-'+d.round+'" style="display:none;margin-top:7px;font-size:10px;color:#C4CCEE;line-height:1.9;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 11px">'+win+'</div>';
+    }
+    html+='<div style="border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:9px;margin-bottom:9px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span class="rj" style="font-size:11px;color:#FBBF24">제 '+d.round+'회</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:#5A6A8E">'+dt+'</span>'+winBtn+'</span></div><div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">'+balls+'<span style="color:#5A6A8E;font-size:11px;margin:0 1px">+</span>'+ballHTML(d.bonus,26,false,0)+'<span style="font-size:8px;color:#445066">보너스</span></div>'+winBox+'</div>';
   }
   return '<div class="card"><div class="ttl">최근 20회 당첨 번호</div>'+html+'</div>';
 }
