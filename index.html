@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.9.03';
+var APP_VERSION='2.0.9.04';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -1706,8 +1706,9 @@ function envAllowed(){
 function trackVisit(){
   if(APP_ENV!=='live')return;
   var vd=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
-  if(state.vDay===vd)return;
-  state.vDay=vd;
+  var vk=vd+':'+(state.session?state.session.user.id:'guest');
+  if(state.vKey===vk)return;
+  state.vKey=vk;
   try{
     var vid=localStorage.getItem('lotto-vid');
     if(!vid){
