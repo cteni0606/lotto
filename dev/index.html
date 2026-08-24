@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.7.01';
+var APP_VERSION='2.0.7.02';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -863,7 +863,7 @@ function fwClick(i){
 }
 function renderFindWrong(){
   if(!state.fw||!state.fw.left||state.fw.done)fwNew(); // 완료했거나 처음이면 새 판 (진행 중이면 유지)
-  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:9px;color:#5A6A8E;margin-bottom:11px">왼쪽 원본과 다른 칸이 오른쪽에 '+state.fw.total+'개 숨어 있어요 — 오른쪽에서 찾아 누르세요!</div><div id="fw-body">'+fwBoardHTML()+'</div></div>'
+  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:9px;color:#5A6A8E;margin-bottom:11px">위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!</div><div id="fw-body">'+fwBoardHTML()+'</div></div>'
     +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">1~45 로또 번호로 만든 5×5 그리드 두 개를 비교하는 순발력 게임이에요.<br>정답이면 초록, 아니면 빨강 — 전부 찾으면 걸린 시간이 표시됩니다. 매 판 새로 생성!</div>';
 }
 
