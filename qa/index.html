@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.9.03';
+var APP_VERSION='2.0.9.05';
 var APP_ENV='qa'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -135,7 +135,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,latestWin:null,latestWinBusy:false,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -191,9 +191,14 @@ function renderLadder(){
   }
   return rows;
 }
+function latestWinCardHTML(){
+  var lw=state.latestWin;
+  if(!lw||typeof lw.won1_count!=='number'||typeof lw.won1_amount!=='number')return '';
+  return '<div class="card cd"><div style="font-size:11px;color:#C4CCEE;line-height:1.9;text-align:center">📋 제'+lw.round+'회 1등 당첨자 <b style="color:#FBBF24">'+fmtNum(lw.won1_count)+'명</b> · 1인당 당첨금 <b style="color:#FBBF24">'+fmtNum(lw.won1_amount)+'원</b><br><span style="font-size:9px;color:#5A6A8E">동행복권 공식 발표 기준</span></div></div>';
+}
 function renderRec(){
   var li=lvInfo(state.level);
-  var html='';
+  var html='<div id="rec-win-fact">'+latestWinCardHTML()+'</div>';
   if(state.notice){
     html+='<div class="card" style="border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)"><div style="font-size:13px;font-weight:700;color:#FBBF24;text-align:center">'+state.notice+'</div></div>';
   }
@@ -1157,6 +1162,17 @@ function gamesMeCardsHTML(){
 }
 
 // ── 데이터 (공개 통계) ──
+function loadLatestWin(cb){
+  if(state.latestWin!==null){if(cb)cb();return;}
+  if(state.latestWinBusy)return;
+  state.latestWinBusy=true;
+  sb.from('draws').select('round,won1_count,won1_amount').order('round',{ascending:false}).limit(1)
+    .then(function(res){
+      state.latestWinBusy=false;
+      state.latestWin=(res&&!res.error&&res.data&&res.data.length)?res.data[0]:{};
+      if(cb)cb();
+    });
+}
 function loadDraws(cb){
   if(state.draws){cb();return;}
   var all=[];
@@ -1604,6 +1620,13 @@ function doTab(id){
     if(state.recovery)recCard='<div class="card" style="border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.05)"><div class="ttl" style="color:#38BDF8">🔑 새 비밀번호 설정</div><input type="password" id="new-pw" placeholder="새 비밀번호 (6자 이상)" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:8px"><div id="new-pw-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px"></div><button onclick="setNewPw()" style="width:100%;padding:12px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;font-weight:700;font-size:13px">비밀번호 변경</button></div>';
     c.innerHTML=recCard+html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
     if(!locked&&(id==='freq'||id==='hist'||id==='hot'||id==='prem')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
+    if(!locked&&id==='rec'&&state.latestWin===null)loadLatestWin(function(){
+      try{
+        if(state.tab!=='rec')return;
+        var el=document.getElementById('rec-win-fact');
+        if(el)el.innerHTML=latestWinCardHTML();
+      }catch(e){}
+    });
   }catch(e){showErr('렌더 오류: '+e.message);}
 }
 
@@ -1706,8 +1729,9 @@ function envAllowed(){
 function trackVisit(){
   if(APP_ENV!=='live')return;
   var vd=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
-  if(state.vDay===vd)return;
-  state.vDay=vd;
+  var vk=vd+':'+(state.session?state.session.user.id:'guest');
+  if(state.vKey===vk)return;
+  state.vKey=vk;
   try{
     var vid=localStorage.getItem('lotto-vid');
     if(!vid){
