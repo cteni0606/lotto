@@ -118,7 +118,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.11.00';
+var APP_VERSION='2.0.12.00';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -155,10 +155,11 @@ var SETL=["A","B","C","D","E"];
 var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,latestWin:null,latestWinBusy:false,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
-function ballHTML(n,size,glow,delay){
+function ballHTML(n,size,glow,delay,forceColor){
   var z=gz(n);
+  var bc=forceColor||z.c;
   var sh=glow?'0 0 14px '+z.c+'BB,0 3px 10px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,255,255,.5)':'0 3px 10px rgba(0,0,0,.45),inset 0 2px 4px rgba(255,255,255,.45)';
-  return '<div class="ball ap" style="width:'+size+'px;height:'+size+'px;background:radial-gradient(circle at 37% 32%,'+z.c+'FF 0%,'+z.c+'CC 55%,'+z.c+'99 100%);color:'+z.tc+';font-size:'+Math.round(size*.33)+'px;box-shadow:'+sh+';animation-delay:'+delay+'ms">'+n+'</div>';
+  return '<div class="ball ap" style="width:'+size+'px;height:'+size+'px;background:radial-gradient(circle at 37% 32%,'+bc+'FF 0%,'+bc+'CC 55%,'+bc+'99 100%);color:'+z.tc+';font-size:'+Math.round(size*.33)+'px;box-shadow:'+sh+';animation-delay:'+delay+'ms">'+n+'</div>';
 }
 function rdate(r){var d=new Date(1039264200000+(r-1)*7*864e5);return d.getFullYear()+'.'+(''+(d.getMonth()+1)).padStart(2,'0')+'.'+(''+d.getDate()).padStart(2,'0');}
 function fmtNum(x){return String(x).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
@@ -460,7 +461,7 @@ function qrShowPastResult(parsed,draw){
       if(hit)m++;
       if(nums[k]===draw.bonus)b=true;
       if(hit)bls+=ballHTML(nums[k],24,true,0);
-      else bls+='<div style="flex-shrink:0;opacity:.38;filter:grayscale(.55)">'+ballHTML(nums[k],24,false,0)+'</div>';
+      else bls+=ballHTML(nums[k],24,false,0,'#8A97BC');
     }
     var rk=pickRank(m,b);
     var sub=(m>=3)?(m+'개 일치'+(m===5&&b?' + 보너스':'')):(m+'개 일치 — 5등(3개)에는 못 미쳐요');
