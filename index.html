@@ -61,6 +61,7 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 #err-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:#fff;padding:12px 14px;z-index:9999;font-size:11px;line-height:1.7;word-break:break-all;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
 </head>
 <body>
 <div id="err-banner"></div>
@@ -91,6 +92,22 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
   </div>
 </div>
 
+<!-- QR 스캔 모달 (번호 자동입력) -->
+<div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,10,.82);z-index:55;padding:20px;overflow-y:auto">
+  <div style="max-width:360px;margin:40px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:800;color:#E8ECFF">📷 QR로 번호 넣기</div>
+      <button onclick="closeQrScan()" style="background:none;border:none;color:#6B7A9E;font-size:20px;padding:4px 8px">✕</button>
+    </div>
+    <div id="qr-video-wrap" style="display:none">
+      <video id="qr-video" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000"></video>
+      <div id="qr-status" style="font-size:11px;color:#9AA6C8;text-align:center;margin-top:8px;line-height:1.6;min-height:16px"></div>
+    </div>
+    <canvas id="qr-canvas" style="display:none"></canvas>
+    <div id="qr-result"></div>
+  </div>
+</div>
+
 <script>
 // ── v4.1: 서버 분리 클라이언트 + 출석 레벨 시스템 (알고리즘 없음) ──
 function showErr(msg){
@@ -101,7 +118,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.9.06';
+var APP_VERSION='2.0.10.00';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -333,6 +350,111 @@ function pickRank(m,b){
   if(m===4)return['4등','#4ADE80'];
   if(m===3)return['5등','#38BDF8'];
   return[m+'개 일치','#5A6A8E'];
+}
+
+// ── QR로 번호 넣기 (Lv.2+) — 용지 QR을 클라이언트에서만 파싱해 기존 저장 흐름에 넘김 (외부 요청 없음) ──
+var qrStream=null,qrTimer=null,qrActive=false;
+function parseLottoQR(raw){
+  if(!raw)return null;
+  var m=String(raw).match(/[?&]v=([0-9a-zA-Z]+)/);
+  if(!m)return null;
+  var s=m[1];
+  if(s.length<17)return null;
+  var round=parseInt(s.slice(0,4),10);
+  if(!isFinite(round)||round<1)return null;
+  var rest=s.slice(4),games=[],re=/[a-zA-Z](\d{12})/g,g,skipped=0;
+  while((g=re.exec(rest))!==null&&games.length<5){
+    var d=g[1],nums=[],ok=true,seen={},i,n;
+    for(i=0;i<6;i++){
+      n=parseInt(d.slice(i*2,i*2+2),10);
+      if(!(n>=1&&n<=45)||seen[n]){ok=false;break;}
+      seen[n]=true;nums.push(n);
+    }
+    if(ok&&nums.length===6)games.push(nums);else skipped++;
+  }
+  if(!games.length)return null;
+  return {round:round,games:games,skipped:skipped};
+}
+function qrLevelLocked(){return state.level===100?false:(effLv()<2);}
+function openQrScan(){
+  if(!state.session){pickToast('로그인하면 QR로 번호를 넣을 수 있어요');openAuth();return;}
+  if(qrLevelLocked()){pickToast('🔒 Lv.2 실버부터 사용할 수 있어요 — 연속 출석으로 승급하세요!');return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){pickToast('⚠ 이 브라우저는 카메라를 지원하지 않습니다');return;}
+  if(!window.jsQR){pickToast('⚠ QR 인식 모듈을 아직 불러오는 중입니다. 잠시 후 다시 시도해 주세요');return;}
+  var md=document.getElementById('qr-modal');if(!md)return;
+  md.style.display='block';
+  document.getElementById('qr-result').innerHTML='';
+  document.getElementById('qr-video-wrap').style.display='block';
+  document.getElementById('qr-status').textContent='카메라 준비 중...';
+  qrActive=true;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(function(stream){
+      if(!qrActive){var ts=stream.getTracks();for(var i=0;i<ts.length;i++){try{ts[i].stop();}catch(e){}}return;}
+      qrStream=stream;
+      var v=document.getElementById('qr-video');
+      if(v){v.srcObject=stream;try{v.play();}catch(e2){}}
+      var st=document.getElementById('qr-status');
+      if(st)st.textContent='로또 용지 하단의 QR코드를 화면에 맞춰주세요';
+      qrTick();
+    })
+    .catch(function(e){
+      var st2=document.getElementById('qr-status');
+      if(st2)st2.textContent='⚠ 카메라를 열 수 없습니다. 브라우저 설정에서 카메라 권한을 허용한 뒤 다시 시도해 주세요.';
+    });
+}
+function qrTick(){
+  try{
+    if(!qrActive||!qrStream)return;
+    var v=document.getElementById('qr-video');
+    if(v&&v.readyState>=2&&v.videoWidth>0){
+      var cv=document.getElementById('qr-canvas');
+      cv.width=v.videoWidth;cv.height=v.videoHeight;
+      var ctx=cv.getContext('2d');
+      ctx.drawImage(v,0,0,cv.width,cv.height);
+      var img=ctx.getImageData(0,0,cv.width,cv.height);
+      var code=null;
+      try{code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});}catch(e1){}
+      if(code&&code.data){
+        var parsed=parseLottoQR(code.data);
+        if(parsed){qrFound(parsed);return;}
+        var st=document.getElementById('qr-status');
+        if(st)st.textContent='로또 용지 QR이 아닌 것 같아요 — 용지 하단의 QR코드를 비춰주세요';
+      }
+    }
+    qrTimer=setTimeout(qrTick,250);
+  }catch(e){try{qrTimer=setTimeout(qrTick,400);}catch(e2){}}
+}
+function qrFound(parsed){
+  stopQrStream();
+  var vw=document.getElementById('qr-video-wrap');
+  if(vw)vw.style.display='none';
+  var html='<div style="font-size:12px;font-weight:800;color:#FBBF24;margin-bottom:8px">✅ 제'+parsed.round+'회 · '+parsed.games.length+'게임 인식됨</div>';
+  if(parsed.skipped)html+='<div style="font-size:10px;color:#F97316;margin-bottom:8px">⚠ 일부 게임('+parsed.skipped+'개)은 번호를 읽지 못해 제외했어요</div>';
+  for(var i=0;i<parsed.games.length;i++){
+    var nums=parsed.games[i],bls='',k;
+    for(k=0;k<nums.length;k++)bls+=ballHTML(nums[k],24,false,0);
+    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0">'+saveBtnHTML(parsed.round,nums,'qr')+'</div></div>';
+  }
+  html+='<div style="font-size:9px;color:#5A6A8E;line-height:1.7;margin-top:10px">저장하면 추첨 후 결과가 자동으로 대조됩니다.<br>실제 당첨 확인은 동행복권 공식 채널에서도 가능합니다.</div>';
+  html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9AA6C8;font-size:12px">📷 다시 스캔</button>';
+  var res=document.getElementById('qr-result');
+  if(res)res.innerHTML=html;
+}
+function stopQrStream(){
+  qrActive=false;
+  if(qrTimer){try{clearTimeout(qrTimer);}catch(e){}qrTimer=null;}
+  if(qrStream){
+    var ts=qrStream.getTracks();
+    for(var i=0;i<ts.length;i++){try{ts[i].stop();}catch(e2){}}
+    qrStream=null;
+  }
+  var v=document.getElementById('qr-video');
+  if(v){try{v.srcObject=null;}catch(e3){}}
+}
+function closeQrScan(){
+  stopQrStream();
+  var md=document.getElementById('qr-modal');
+  if(md)md.style.display='none';
 }
 
 // ── 일일 수도쿠 스트릭 (Phase 2) — 로또 출석(🔥)과 완전 별개 ──
@@ -1608,7 +1730,8 @@ function renderMyPicks(){
       body+='<div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right;min-width:54px">'+res+'</div><button onclick="deletePick('+p2.id+')" style="flex-shrink:0;background:none;border:none;color:#5A6A8E;font-size:11px;padding:2px 4px">🗑</button></div>';
     }
   }
-  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="ttl" style="margin-bottom:0">💾 내 저장 번호</div><button onclick="state.myPicks=null;doTab(\'me\')" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+statRow+body
+  var qrBtn='<button onclick="openQrScan()" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#FBBF24;font-size:10px'+(qrLevelLocked()?';opacity:.5':'')+'">'+(qrLevelLocked()?'🔒 ':'')+'📷 QR로 번호 넣기</button>';
+  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:6px"><div class="ttl" style="margin-bottom:0">💾 내 저장 번호</div><div style="display:flex;gap:5px;flex-shrink:0">'+qrBtn+'<button onclick="state.myPicks=null;doTab(\'me\')" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div></div>'+statRow+body
     +'<div style="font-size:9px;color:#4A5570;line-height:1.7;margin-top:10px">회차당 최대 50개 저장 · 최근 4회차(한 달)까지 보관되며 이전 기록은 누적 통계로 남습니다.<br>추첨 결과 반영 후 자동으로 당첨 대조됩니다.</div></div>';
   return html;
 }
