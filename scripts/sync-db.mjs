@@ -19,6 +19,10 @@ const rows = extra.map((r) => {
     drawn_date: new Date(DRAW1 + (r[0] - 1) * 7 * 86400000).toISOString().slice(0, 10),
     won1_count: r[8] ?? null,   // 1등 당첨자 수 (동행복권 공식)
     won1_amount: r[9] ?? null,  // 1등 1인당 당첨금 (동행복권 공식)
+    won2_count: r[10] ?? null,  won2_amount: r[11] ?? null,
+    won3_count: r[12] ?? null,  won3_amount: r[13] ?? null,
+    won4_count: r[14] ?? null,  won4_amount: r[15] ?? null,
+    won5_count: r[16] ?? null,  won5_amount: r[17] ?? null,
   };
 });
 // merge-duplicates: 기존 회차에도 나중에 채워진 당첨통계가 반영되도록 갱신 upsert

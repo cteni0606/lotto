@@ -30,8 +30,15 @@ async function fetchRound(r) {
       var ok = nums.length === 6;
       for (var k = 0; k < 6; k++) if (!(nums[k] >= 1 && nums[k] <= 45)) ok = false;
       if (!ok) return null;
-      // [회차, n1..n6, 보너스, 1등 당첨자수, 1등 1인당 당첨금] — 뒤 2개는 동행복권 공식 발표값
-      return [r].concat(nums).concat([it.bnsWnNo, it.rnk1WnNope || null, it.rnk1WnAmt || null]);
+      // [회차, n1..n6, 보너스, 1등 당첨자수, 1등 1인당 당첨금, 2등수, 2등금, 3등수, 3등금, 4등수, 4등금, 5등수, 5등금] — 동행복권 공식 발표값
+      return [r].concat(nums).concat([
+        it.bnsWnNo,
+        it.rnk1WnNope || null, it.rnk1WnAmt || null,
+        it.rnk2WnNope || null, it.rnk2WnAmt || null,
+        it.rnk3WnNope || null, it.rnk3WnAmt || null,
+        it.rnk4WnNope || null, it.rnk4WnAmt || null,
+        it.rnk5WnNope || null, it.rnk5WnAmt || null
+      ]);
     }
   }
   return null;
@@ -39,12 +46,12 @@ async function fetchRound(r) {
 
 (async function () {
   var added = 0;
-  // 기존 행 중 당첨통계(9~10번째 요소)가 없는 행 백필 (1회성 — 이후엔 항상 수집됨)
+  // 기존 행 중 1~5등 당첨통계(9~18번째 요소)가 없는 행 백필 (1회성 — 이후엔 항상 수집됨)
   for (var i = 0; i < cur.draws.length; i++) {
-    if (cur.draws[i].length >= 10) continue;
+    if (cur.draws[i].length >= 18) continue;
     var rr = cur.draws[i][0], filled = null;
     try { filled = await fetchRound(rr); } catch (e) { console.error('백필 실패:', rr, e.message); }
-    if (filled && filled.length >= 10 && filled[8] !== null) {
+    if (filled && filled.length >= 18 && filled[8] !== null) {
       cur.draws[i] = filled;
       added++;
       console.log('통계 백필:', JSON.stringify(filled));
