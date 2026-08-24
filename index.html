@@ -118,7 +118,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.10.00';
+var APP_VERSION='2.0.10.01';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -299,14 +299,15 @@ function pickToast(msg){
   t.textContent=msg;t.style.display='block';
   try{setTimeout(function(){try{t.style.display='none';}catch(e){}},2600);}catch(e){}
 }
-function saveBtnHTML(round,nums,source){
+function saveBtnHTML(round,nums,source,btnId){
   var key=round+':'+nums.join(',');
   if(state.savedKeys[key])return '<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 저장됨</span>';
-  return '<button class="tag" onclick="savePick(this,'+round+',\''+nums.join(',')+'\',\''+source+'\')" style="color:#FBBF24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)">💾 저장</button>';
+  return '<button class="tag"'+(btnId?' id="'+btnId+'"':'')+' onclick="savePick(this,'+round+',\''+nums.join(',')+'\',\''+source+'\')" style="color:#FBBF24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)">💾 저장</button>';
 }
-function savePick(btn,round,csv,source){
-  if(!state.session){pickToast('로그인하면 번호를 저장하고 당첨 결과를 자동으로 확인할 수 있어요');openAuth();return;}
-  if(state.saveBusy)return;
+function savePick(btn,round,csv,source,cb){
+  // cb: 일괄 저장(qrSaveAll)용 완료 콜백(성공 여부 전달) — 인라인 onclick 호출 시엔 undefined
+  if(!state.session){pickToast('로그인하면 번호를 저장하고 당첨 결과를 자동으로 확인할 수 있어요');openAuth();if(cb){try{cb(false);}catch(e0){}}return;}
+  if(state.saveBusy){if(cb){try{cb(false);}catch(e0){}}return;}
   state.saveBusy=true;
   var parts=csv.split(','),nums=[];
   for(var i=0;i<parts.length;i++)nums.push(parseInt(parts[i],10));
@@ -314,10 +315,12 @@ function savePick(btn,round,csv,source){
     .then(function(r){return r.json();})
     .then(function(j){
       state.saveBusy=false;
-      if(j&&j.ok){state.savedKeys[round+':'+csv]=true;state.myPicks=null;btn.outerHTML='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 저장됨</span>';pickToast('✅ 제'+round+'회에 저장 ('+j.count+'/50) — 결과는 내정보 탭에서 자동 확인');}
+      var ok=!!(j&&j.ok);
+      if(ok){state.savedKeys[round+':'+csv]=true;state.myPicks=null;btn.outerHTML='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 저장됨</span>';pickToast('✅ 제'+round+'회에 저장 ('+j.count+'/50) — 결과는 내정보 탭에서 자동 확인');}
       else pickToast('⚠ '+((j&&j.error)||'저장 실패'));
+      if(cb){try{cb(ok);}catch(e1){}}
     })
-    .catch(function(e){state.saveBusy=false;pickToast('⚠ 서버 연결 실패: '+e.message);});
+    .catch(function(e){state.saveBusy=false;pickToast('⚠ 서버 연결 실패: '+e.message);if(cb){try{cb(false);}catch(e2){}}});
 }
 function loadPicks(){
   if(!state.session||state.picksBusy)return;
@@ -424,21 +427,100 @@ function qrTick(){
     qrTimer=setTimeout(qrTick,250);
   }catch(e){try{qrTimer=setTimeout(qrTick,400);}catch(e2){}}
 }
+var qrLastParsed=null,qrBatchBusy=false;
 function qrFound(parsed){
   stopQrStream();
+  qrLastParsed=parsed;
   var vw=document.getElementById('qr-video-wrap');
   if(vw)vw.style.display='none';
+  var st=document.getElementById('qr-status');
+  if(st)st.textContent='제'+parsed.round+'회 추첨 여부 확인 중...';
+  // 이미 추첨된(과거) 회차인지 단건 조회로 판단 — 있으면 즉시 결과 확인, 없으면(미래 회차) 기존 저장 흐름
+  sb.from('draws').select('round,n1,n2,n3,n4,n5,n6,bonus').eq('round',parsed.round).maybeSingle()
+    .then(function(res){
+      var draw=(res&&!res.error&&res.data)?res.data:null;
+      if(draw)qrShowPastResult(parsed,draw);
+      else qrShowSaveList(parsed);
+    },function(){qrShowSaveList(parsed);});
+}
+// 과거 회차: 저장 없이 당첨번호와 클라이언트에서 직접 대조해 즉시 결과 표시
+function qrShowPastResult(parsed,draw){
+  var st=document.getElementById('qr-status');
+  if(st)st.textContent='';
+  var wn=[draw.n1,draw.n2,draw.n3,draw.n4,draw.n5,draw.n6],wset={},i,k;
+  for(i=0;i<6;i++)wset[wn[i]]=true;
+  var html='<div style="font-size:12px;font-weight:800;color:#FBBF24;margin-bottom:6px">🏁 제'+parsed.round+'회는 이미 추첨이 끝났어요 — 결과 바로 확인!</div>';
+  if(parsed.skipped)html+='<div style="font-size:10px;color:#F97316;margin-bottom:6px">⚠ 일부 게임('+parsed.skipped+'개)은 번호를 읽지 못해 제외했어요</div>';
+  var wb='';for(i=0;i<6;i++)wb+=ballHTML(wn[i],22,false,0);
+  html+='<div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;padding:6px 0;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.1)"><span style="font-size:9px;color:#5A6A8E;margin-right:2px">당첨번호</span>'+wb+'<span style="color:#5A6A8E;font-size:11px;margin:0 1px">+</span>'+ballHTML(draw.bonus,22,false,0)+'</div>';
+  for(i=0;i<parsed.games.length;i++){
+    var nums=parsed.games[i],bls='',m=0,b=false;
+    for(k=0;k<nums.length;k++){
+      var hit=!!wset[nums[k]];
+      if(hit)m++;
+      if(nums[k]===draw.bonus)b=true;
+      bls+=ballHTML(nums[k],24,hit,0);
+    }
+    var rk=pickRank(m,b);
+    var sub=(m>=3)?(m+'개 일치'+(m===5&&b?' + 보너스':'')):(m+'개 일치 — 5등(3개)에는 못 미쳐요');
+    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div style="font-size:11px;font-weight:800;color:'+rk[1]+'">'+rk[0]+'</div><div style="font-size:8px;color:#5A6A8E">'+sub+'</div></div></div>';
+  }
+  html+='<div style="font-size:9px;color:#5A6A8E;line-height:1.7;margin-top:10px">이미 추첨된 회차라 저장 없이 결과만 보여드려요.<br>실제 당첨 확인·수령은 동행복권 공식 채널을 이용해 주세요.</div>';
+  html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9AA6C8;font-size:12px">📷 다시 스캔</button>';
+  var res=document.getElementById('qr-result');
+  if(res)res.innerHTML=html;
+}
+// 미래 회차: 기존 저장 흐름(게임별 저장 버튼) + 상단 전체 저장 버튼
+function qrShowSaveList(parsed){
+  var st=document.getElementById('qr-status');
+  if(st)st.textContent='';
   var html='<div style="font-size:12px;font-weight:800;color:#FBBF24;margin-bottom:8px">✅ 제'+parsed.round+'회 · '+parsed.games.length+'게임 인식됨</div>';
   if(parsed.skipped)html+='<div style="font-size:10px;color:#F97316;margin-bottom:8px">⚠ 일부 게임('+parsed.skipped+'개)은 번호를 읽지 못해 제외했어요</div>';
-  for(var i=0;i<parsed.games.length;i++){
-    var nums=parsed.games[i],bls='',k;
+  var unsaved=0,i,k;
+  for(i=0;i<parsed.games.length;i++)if(!state.savedKeys[parsed.round+':'+parsed.games[i].join(',')])unsaved++;
+  if(unsaved>0)html+='<div style="text-align:right;margin-bottom:4px"><button id="qr-saveall" class="tag" onclick="qrSaveAll()" style="color:#0B1024;background:linear-gradient(135deg,#FBBF24,#F59E0B);border:none;font-weight:800;padding:6px 14px">💾 전체 저장 ('+unsaved+'게임)</button></div>';
+  else if(parsed.games.length>1)html+='<div style="text-align:right;margin-bottom:4px"><span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 전체 저장됨</span></div>';
+  for(i=0;i<parsed.games.length;i++){
+    var nums=parsed.games[i],bls='';
     for(k=0;k<nums.length;k++)bls+=ballHTML(nums[k],24,false,0);
-    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0">'+saveBtnHTML(parsed.round,nums,'qr')+'</div></div>';
+    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0">'+saveBtnHTML(parsed.round,nums,'qr','qr-sv-'+i)+'</div></div>';
   }
   html+='<div style="font-size:9px;color:#5A6A8E;line-height:1.7;margin-top:10px">저장하면 추첨 후 결과가 자동으로 대조됩니다.<br>실제 당첨 확인은 동행복권 공식 채널에서도 가능합니다.</div>';
   html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9AA6C8;font-size:12px">📷 다시 스캔</button>';
   var res=document.getElementById('qr-result');
   if(res)res.innerHTML=html;
+}
+// 전체 저장 — 아직 저장 안 된 게임만 기존 savePick을 순차 호출(하나 실패해도 계속 진행)
+function qrSaveAll(){
+  if(qrBatchBusy||!qrLastParsed)return;
+  if(!state.session){pickToast('로그인하면 번호를 저장하고 당첨 결과를 자동으로 확인할 수 있어요');openAuth();return;}
+  var p=qrLastParsed,items=[],i;
+  for(i=0;i<p.games.length;i++)if(!state.savedKeys[p.round+':'+p.games[i].join(',')])items.push(i);
+  var allBtn=document.getElementById('qr-saveall');
+  if(!items.length){if(allBtn)allBtn.outerHTML='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 전체 저장됨</span>';return;}
+  qrBatchBusy=true;
+  if(allBtn)allBtn.disabled=true;
+  var total=items.length,okCnt=0,failCnt=0;
+  function step(idx){
+    var b=document.getElementById('qr-saveall');
+    if(idx>=total){
+      qrBatchBusy=false;
+      if(b){
+        if(failCnt===0)b.outerHTML='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 전체 저장됨</span>';
+        else{b.disabled=false;b.textContent='💾 다시 시도 ('+failCnt+'게임 실패)';}
+      }
+      pickToast(failCnt===0?('✅ '+okCnt+'게임 모두 저장됐어요 — 결과는 내정보 탭에서 자동 확인'):('⚠ '+okCnt+'게임 저장, '+failCnt+'게임 실패 — 실패한 게임은 개별 저장으로 다시 시도해 주세요'));
+      return;
+    }
+    if(b)b.textContent=(idx+1)+'/'+total+' 저장 중...';
+    var gi=items[idx],csv=p.games[gi].join(','),btn=document.getElementById('qr-sv-'+gi);
+    if(!btn||state.savedKeys[p.round+':'+csv]){step(idx+1);return;}
+    savePick(btn,p.round,csv,'qr',function(ok){
+      if(ok)okCnt++;else failCnt++;
+      step(idx+1);
+    });
+  }
+  step(0);
 }
 function stopQrStream(){
   qrActive=false;
