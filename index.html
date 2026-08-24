@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.6.02';
+var APP_VERSION='2.0.7.02';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -122,7 +122,7 @@ var TABS=[
   {id:'hist',label:'📋 기록',min:1},
   {id:'hot',label:'🔥 핫&콜드',min:2},
   {id:'prem',label:'🔮 프리미엄',min:3},
-  {id:'sudoku',label:'🧩 수도쿠',min:0},
+  {id:'games',label:'🎮 미니게임',min:0},
   {id:'adm',label:'🛠 관리',min:100},
   {id:'me',label:'👤 내정보',min:0}
 ];
@@ -135,7 +135,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -238,7 +238,7 @@ function renderRec(){
   }else{
     html+='<div class="card" style="text-align:center"><button onclick="getRec()" style="padding:14px 30px;border-radius:13px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:800;font-size:15px;min-height:52px">🎲 번호 받기</button><div style="font-size:10px;color:#5A6A8E;margin-top:10px">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
   }
-  html+=sdkBannerHTML();
+  html+=gamesBannerHTML();
   return html;
 }
 function getRec(){
@@ -444,11 +444,13 @@ function sdkLoadBankFile(key,file){
       state.sdk[key+'Busy']=false;
       if(j&&j.puzzles&&j.puzzles.length)state.sdk[key]=j;
       else state.sdk[key+'Err']=true;
-      if(state.tab==='sudoku')doTab('sudoku');
+      if(sdkVisible())doTab('games');
     })
-    .catch(function(e){state.sdk[key+'Err']=true;state.sdk[key+'Busy']=false;if(state.tab==='sudoku')doTab('sudoku');});
+    .catch(function(e){state.sdk[key+'Err']=true;state.sdk[key+'Busy']=false;if(sdkVisible())doTab('games');});
 }
 function sdkLoadBank(){sdkLoadBankFile('bank','sudoku_bank.json');}
+// 수도쿠가 화면에 떠 있는지 (미니게임 허브 안에서만 접근)
+function sdkVisible(){return state.tab==='games'&&state.game==='sudoku';}
 function loadSdkStatus(){
   if(!state.session||state.sdk.stBusy)return;
   state.sdk.stBusy=true;
@@ -478,8 +480,8 @@ function sdkApplyStatus(){
     if(st.todayBonus2&&!state.sdk.done.c){state.sdk.done.c=true;var bc=document.getElementById('sdk-body-c');if(bc)bc.innerHTML=sdkDoneBodyHTML('c');}
   }
   var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
-  var mc=document.getElementById('sdk-me-card');if(mc)mc.innerHTML=sdkMeCardHTML();
-  var bn=document.getElementById('sdk-rec-banner');if(bn&&st.todayMain)bn.style.display='none';
+  var mc=document.getElementById('game-me-sudoku');if(mc)mc.innerHTML=sdkMeCardHTML();
+  gamesBannerRefresh();
   sdkMaybeResubmit();
 }
 // 게스트로 풀고 나서 로그인한 경우 등 — 로컬 완료분을 서버에 재제출
@@ -609,7 +611,7 @@ function sdkPuzzleCardHTML(which){
   var body;
   if(!state.sdk.cells[which]){
     var bkey=which==='b'?'bank6':'bank9';
-    if(state.sdk[bkey+'Err'])body='<div style="text-align:center;padding:14px 0"><div style="font-size:11px;color:#F87171;margin-bottom:8px">퍼즐을 불러오지 못했어요</div><button onclick="state.sdk.'+bkey+'Err=false;doTab(\'sudoku\')" style="padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:11px">다시 시도</button></div>';
+    if(state.sdk[bkey+'Err'])body='<div style="text-align:center;padding:14px 0"><div style="font-size:11px;color:#F87171;margin-bottom:8px">퍼즐을 불러오지 못했어요</div><button onclick="state.sdk.'+bkey+'Err=false;doTab(\'games\')" style="padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:11px">다시 시도</button></div>';
     else body='<div style="text-align:center;padding:14px 0;font-size:11px;color:#6B7A9E">불러오는 중...</div>';
   }
   else body=state.sdk.done[which]?sdkDoneBodyHTML(which):sdkGridHTML(which)+sdkPadHTML(which)+'<div id="sdk-msg-'+which+'" style="font-size:10px;color:#F87171;text-align:center;min-height:15px;margin-top:8px"></div>';
@@ -617,7 +619,7 @@ function sdkPuzzleCardHTML(which){
 }
 function renderSudoku(){
   if(!state.sdk.bank){
-    if(state.sdk.bankErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:12px;color:#F87171;margin-bottom:10px">퍼즐 데이터를 불러오지 못했어요</div><button onclick="state.sdk.bankErr=false;doTab(\'sudoku\')" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:12px">다시 시도</button></div>';
+    if(state.sdk.bankErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:12px;color:#F87171;margin-bottom:10px">퍼즐 데이터를 불러오지 못했어요</div><button onclick="state.sdk.bankErr=false;doTab(\'games\')" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:12px">다시 시도</button></div>';
     sdkLoadBank();
     return '<div class="card" style="text-align:center;color:#6B7A9E;padding:30px">퍼즐 불러오는 중...</div>';
   }
@@ -720,7 +722,7 @@ function sdkComplete(which){
   if(state.sdk.startMs[which])secs=Math.round((Date.now()-state.sdk.startMs[which])/1000);
   var body=document.getElementById('sdk-body-'+which);
   if(body)body.innerHTML=sdkDoneBodyHTML(which);
-  if(which==='m'){var bn=document.getElementById('sdk-rec-banner');if(bn)bn.style.display='none';}
+  if(which==='m')gamesBannerRefresh();
   if(state.session)sdkSubmit(which,secs);
 }
 function sdkSubmit(which,secs){
@@ -739,7 +741,7 @@ function sdkSubmit(which,secs){
         state.sdk.st=sdkStFromRes(j);
         if(el)el.textContent=which==='m'?('🧩 연속 '+j.current+'일! 내일 또 만나요'):('누적 '+fmtNum(j.total_solved)+'문제 달성');
         var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
-        var mc=document.getElementById('sdk-me-card');if(mc)mc.innerHTML=sdkMeCardHTML();
+        var mc=document.getElementById('game-me-sudoku');if(mc)mc.innerHTML=sdkMeCardHTML();
         if(j.newRewards&&j.newRewards.length){
           var names=[],k,x;
           for(k=0;k<j.newRewards.length;k++){for(x=0;x<SDK_BADGES.length;x++){if(SDK_BADGES[x].kind===j.newRewards[k])names.push(SDK_BADGES[x].icon+' '+SDK_BADGES[x].label);}}
@@ -755,13 +757,10 @@ function sdkSubmit(which,secs){
       if(el2)el2.textContent='⚠ 서버 연결 실패 — 탭을 다시 열면 자동 재시도합니다';
     });
 }
-// 추천 탭 하단 미니 배너 (오늘 메인 퍼즐 미완료 시에만)
-function sdkBannerHTML(){
-  var done=false;
-  if(state.sdk.st)done=state.sdk.st.todayMain;
-  else done=sdkDoneLocal().indexOf('m')>=0;
-  if(done)return '';
-  return '<div class="card" id="sdk-rec-banner" onclick="doTab(\'sudoku\')" style="cursor:pointer;border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#C084FC">🧩 오늘의 퍼즐 아직 안 풀었어요</span><span style="font-size:10px;color:#8B98B8">풀러 가기 →</span></div></div>';
+// 오늘 메인 퍼즐 완료 여부 (서버 현황 우선, 없으면 로컬 플래그)
+function sdkTodayDone(){
+  if(state.sdk.st)return !!state.sdk.st.todayMain;
+  return sdkDoneLocal().indexOf('m')>=0;
 }
 // 내정보 탭 카드 (로또 출석 카드와 분리)
 function sdkMeCardHTML(){
@@ -773,9 +772,176 @@ function sdkMeCardHTML(){
     return inner;
   }
   inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML()
-    +'<div style="font-size:10px;color:#5A6A8E;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="doTab(\'sudoku\')" style="color:#C084FC;text-decoration:underline;cursor:pointer">풀러 가기</b>')
+    +'<div style="font-size:10px;color:#5A6A8E;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="openGame(\'sudoku\')" style="color:#C084FC;text-decoration:underline;cursor:pointer">풀러 가기</b>')
     +' <span style="color:#4A5570">· 보너스</span> '+(st.todayBonus1?'<span style="color:#4ADE80">6×6 ✓</span>':'<span style="color:#4A5570">6×6 –</span>')+' '+(st.todayBonus2?'<span style="color:#4ADE80">9×9 ✓</span>':'<span style="color:#4A5570">9×9 –</span>')+'</div>';
   return inner;
+}
+
+// ── 🔍 틀린 번호 찾기 (Phase 3) — 순수 클라이언트 게임 ──
+// 1~45 랜덤 5×5 그리드 2개(원본/비교) — 비교판의 3~5칸만 다른 숫자. 퍼즐뱅크·서버 저장 없음, 매 판 즉석 생성.
+var FW_N=5,FW_MAX=45;
+function fwNew(){
+  var n2=FW_N*FW_N,left=[],i,r,t;
+  for(i=0;i<n2;i++)left.push(1+Math.floor(Math.random()*FW_MAX));
+  var total=3+Math.floor(Math.random()*3); // 다른 칸 3~5개
+  var pool=[];
+  for(i=0;i<n2;i++)pool.push(i);
+  for(i=0;i<total;i++){r=i+Math.floor(Math.random()*(n2-i));t=pool[i];pool[i]=pool[r];pool[r]=t;}
+  var right=left.slice(),diff={};
+  for(i=0;i<total;i++){
+    var idx=pool[i],nv=left[idx];
+    while(nv===left[idx])nv=1+Math.floor(Math.random()*FW_MAX);
+    right[idx]=nv;diff[idx]=1;
+  }
+  state.fw={left:left,right:right,diff:diff,found:{},foundCnt:0,total:total,startMs:Date.now(),done:false,doneSecs:0};
+}
+function fwCellStyle(side,i){
+  var fw=state.fw,s='width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;padding:0;border:none;';
+  if(fw.found[i]){
+    if(side==='r')s+='background:rgba(74,222,128,.2);color:#4ADE80;box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.7);';
+    else s+='background:rgba(74,222,128,.08);color:#86EFAC;';
+  }
+  else if(side==='l')s+='background:rgba(255,255,255,.07);color:#AAB6D8;';
+  else s+='background:rgba(56,189,248,.07);color:#7DD3FC;';
+  return s;
+}
+function fwGridHTML(side){
+  var fw=state.fw,html='',r,c,i;
+  for(r=0;r<FW_N;r++){
+    html+='<div style="display:flex;gap:4px;justify-content:center;margin-top:'+(r?4:0)+'px">';
+    for(c=0;c<FW_N;c++){
+      i=r*FW_N+c;
+      if(side==='l')html+='<div id="fw-l-'+i+'" style="'+fwCellStyle('l',i)+'">'+fw.left[i]+'</div>';
+      else html+='<button id="fw-r-'+i+'" onclick="fwClick('+i+')" style="'+fwCellStyle('r',i)+'">'+fw.right[i]+'</button>';
+    }
+    html+='</div>';
+  }
+  return html;
+}
+function fwBoardHTML(){
+  var fw=state.fw;
+  return '<div><div style="font-size:10px;color:#8B98B8;text-align:center;margin-bottom:6px">원본</div>'+fwGridHTML('l')+'</div>'
+    +'<div style="margin-top:14px"><div style="font-size:10px;color:#38BDF8;text-align:center;margin-bottom:6px">비교 — 여기서 찾기!</div>'+fwGridHTML('r')+'</div>'
+    +'<div style="text-align:center;margin-top:11px;font-size:11px;color:#4ADE80;font-weight:800">찾음 <span id="fw-cnt">'+fw.foundCnt+'</span> / '+fw.total+'</div>'
+    +'<div id="fw-msg" style="font-size:10px;color:#F87171;text-align:center;min-height:15px;margin-top:6px"></div>';
+}
+function fwDoneHTML(){
+  var fw=state.fw;
+  return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+fw.total+'개 전부 찾았어요!</div><div style="font-size:11px;color:#9AA6C8;margin-top:6px">소요 시간 <b style="color:#FBBF24">'+fw.doneSecs+'초</b></div><button onclick="fwRestart()" style="margin-top:14px;padding:11px 24px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:700;font-size:13px;border:none">🔄 새 판 시작</button></div>';
+}
+function fwMsg(t){var el=document.getElementById('fw-msg');if(el)el.textContent=t||'';}
+function fwRestart(){
+  fwNew();
+  var body=document.getElementById('fw-body');
+  if(body)body.innerHTML=fwBoardHTML();
+  var sub=document.getElementById('fw-sub');
+  if(sub)sub.textContent='위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!';
+}
+// 클릭한 셀만 국소 갱신 (전체 재렌더 없음) — 정답=초록 고정, 오답=빨간 펄스 후 원복
+function fwClick(i){
+  var fw=state.fw;
+  if(!fw||fw.done||fw.found[i])return;
+  var el=document.getElementById('fw-r-'+i);
+  if(fw.diff[i]){
+    fw.found[i]=1;fw.foundCnt++;
+    if(el){el.setAttribute('style',fwCellStyle('r',i));el.classList.remove('sdk-pop');void el.offsetWidth;el.classList.add('sdk-pop');}
+    var lel=document.getElementById('fw-l-'+i);
+    if(lel)lel.setAttribute('style',fwCellStyle('l',i));
+    var cnt=document.getElementById('fw-cnt');
+    if(cnt)cnt.textContent=String(fw.foundCnt);
+    fwMsg('');
+    if(fw.foundCnt>=fw.total){
+      fw.done=true;fw.doneSecs=Math.round((Date.now()-fw.startMs)/1000);
+      var body=document.getElementById('fw-body');
+      if(body)body.innerHTML=fwDoneHTML();
+    }
+  }else{
+    if(el){el.classList.remove('sdk-bad');void el.offsetWidth;el.style.background='rgba(248,113,113,.22)';el.style.color='#F87171';el.classList.add('sdk-bad');}
+    fwMsg('⚠ 그 칸은 양쪽이 같아요');
+    setTimeout(function(){try{if(el){el.classList.remove('sdk-bad');el.setAttribute('style',fwCellStyle('r',i));}fwMsg('');}catch(e){}},480);
+  }
+}
+function renderFindWrong(){
+  if(!state.fw||!state.fw.left||state.fw.done)fwNew(); // 완료했거나 처음이면 새 판 (진행 중이면 유지)
+  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:9px;color:#5A6A8E;margin-bottom:11px">위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!</div><div id="fw-body">'+fwBoardHTML()+'</div></div>'
+    +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">1~45 로또 번호로 만든 5×5 그리드 두 개를 비교하는 순발력 게임이에요.<br>정답이면 초록, 아니면 빨강 — 전부 찾으면 걸린 시간이 표시됩니다. 매 판 새로 생성!</div>';
+}
+
+// ── 🎮 미니게임 허브 — 게임 추가는 GAMES 배열 등록 한 번이면 끝 (허브·추천배너·내정보 자동 반영) ──
+// 필드: id/icon/name/desc · min(레벨 게이팅, 생략=0 공개) · daily(매일형 — todayDone과 함께 배너·미완료 배지 대상)
+//       render(게임 화면 HTML) · todayDone(오늘 완료 여부, daily만) · meCard(내정보 기록 카드, 있는 게임만 나열)
+var GAMES=[
+  {id:'sudoku',icon:'🧩',name:'수도쿠',desc:'매일 새 퍼즐 · 연속 기록',min:0,daily:true,
+   render:renderSudoku,todayDone:sdkTodayDone,meCard:sdkMeCardHTML},
+  {id:'findwrong',icon:'🔍',name:'틀린 번호 찾기',desc:'5×5 위아래 비교 · 몇 초에 찾을까?',min:0,daily:false,
+   render:renderFindWrong}
+];
+function gameById(id){for(var i=0;i<GAMES.length;i++)if(GAMES[i].id===id)return GAMES[i];return null;}
+function gameLocked(g){return state.level===100?false:(effLv()<(g.min||0));}
+function openGame(id){
+  var g=gameById(id);
+  if(!g)return;
+  if(gameLocked(g)){pickToast('🔒 '+g.name+' — Lv.'+g.min+' '+lvInfo(g.min).name+'부터 이용할 수 있어요');return;}
+  state.game=id;
+  doTab('games');
+}
+function gamesHub(){state.game=null;doTab('games');}
+function renderGames(){
+  var g=state.game?gameById(state.game):null;
+  if(g&&gameLocked(g)){state.game=null;g=null;} // 레벨 강등 등으로 잠기면 허브로 복귀
+  if(g)return '<div style="margin-bottom:8px"><button onclick="gamesHub()" style="padding:7px 13px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#9AA6C8;font-size:11px;font-weight:700">← 미니게임</button></div>'+g.render();
+  var cards='',i;
+  for(i=0;i<GAMES.length;i++){
+    var gm=GAMES[i],locked=gameLocked(gm),badge='';
+    if(!locked&&gm.daily&&gm.todayDone){
+      if(gm.todayDone())badge='<span style="position:absolute;top:9px;right:9px;font-size:8px;font-weight:800;color:#4ADE80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.35);padding:2px 7px;border-radius:8px">오늘 완료 ✓</span>';
+      else badge='<span style="position:absolute;top:9px;right:9px;font-size:8px;font-weight:800;color:#FB923C;background:rgba(251,146,60,.14);border:1px solid rgba(251,146,60,.4);padding:2px 7px;border-radius:8px">오늘 미완료</span>';
+    }
+    cards+='<div onclick="openGame(\''+gm.id+'\')" style="position:relative;background:rgba(255,255,255,.035);border:1px solid '+(locked?'rgba(255,255,255,.06)':'rgba(192,132,252,.22)')+';border-radius:16px;padding:16px 10px;text-align:center;cursor:pointer'+(locked?';opacity:.5':'')+'">'+badge
+      +'<div style="font-size:30px;margin-bottom:7px">'+(locked?'🔒':gm.icon)+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#E8ECFF">'+gm.name+'</div>'
+      +'<div style="font-size:9px;color:#7080A0;margin-top:4px;line-height:1.5">'+(locked?('Lv.'+gm.min+' '+lvInfo(gm.min).name+'부터'):gm.desc)+'</div></div>';
+  }
+  return '<div class="card"><div class="ttl" style="color:#C084FC">🎮 미니게임 <span style="font-size:9px;color:#5A6A8E;font-weight:400">잠깐 쉬어가는 두뇌 게임</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cards+'</div></div>';
+}
+// 추천 탭 하단 배너 — daily 게임 중 오늘 미완료만 스캔 (1개=단일 배너, 2개+=칩 나열, 3개+는 "+N 더")
+function gamesBannerHTML(){
+  var pend=[],i,g;
+  for(i=0;i<GAMES.length;i++){
+    g=GAMES[i];
+    if(!g.daily||!g.todayDone||gameLocked(g))continue;
+    if(!g.todayDone())pend.push(g);
+  }
+  if(!pend.length)return '';
+  if(pend.length===1){
+    g=pend[0];
+    return '<div class="card" id="game-rec-banner" onclick="openGame(\''+g.id+'\')" style="cursor:pointer;border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#C084FC">'+g.icon+' 오늘의 '+g.name+' 아직 안 했어요</span><span style="font-size:10px;color:#8B98B8">하러 가기 →</span></div></div>';
+  }
+  var chips='',shown=pend.length>2?2:pend.length;
+  for(i=0;i<shown;i++){
+    g=pend[i];
+    chips+='<button onclick="openGame(\''+g.id+'\')" style="padding:7px 12px;border-radius:12px;border:1px solid rgba(192,132,252,.35);background:rgba(192,132,252,.1);color:#C084FC;font-size:11px;font-weight:700">'+g.icon+' '+g.name+'</button>';
+  }
+  if(pend.length>2)chips+='<button onclick="gamesHub()" style="padding:7px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#9AA6C8;font-size:11px;font-weight:700">+'+(pend.length-2)+' 더</button>';
+  return '<div class="card" id="game-rec-banner" style="border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="font-size:11px;font-weight:700;color:#C084FC;margin-bottom:8px">🎮 오늘의 게임 '+pend.length+'개 미완료</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+chips+'</div></div>';
+}
+// 게임 완료·서버 현황 도착 시 배너만 국소 갱신 (추천 탭에 떠 있을 때만 동작)
+function gamesBannerRefresh(){
+  var bn=document.getElementById('game-rec-banner');
+  if(!bn)return;
+  var h=gamesBannerHTML();
+  if(h)bn.outerHTML=h;
+  else bn.style.display='none';
+}
+// 내정보 "게임 기록" — meCard 가진 게임만 나열 (게임이 4개+ 되면 아코디언으로 확장 예정)
+function gamesMeCardsHTML(){
+  var html='',i,g;
+  for(i=0;i<GAMES.length;i++){
+    g=GAMES[i];
+    if(!g.meCard)continue;
+    html+='<div class="card" id="game-me-'+g.id+'" style="border-color:rgba(192,132,252,.2)">'+g.meCard()+'</div>';
+  }
+  return html;
 }
 
 // ── 데이터 (공개 통계) ──
@@ -1167,7 +1333,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div><div class="card" id="sdk-me-card" style="border-color:rgba(192,132,252,.2)">'+sdkMeCardHTML()+'</div><div id="mypicks-wrap">'+renderMyPicks()+'</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#7080A0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>'+gamesMeCardsHTML()+'<div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
@@ -1192,7 +1358,7 @@ function doTab(id){
     else if(id==='hist')html=renderHist();
     else if(id==='hot')html=renderHot();
     else if(id==='prem')html=renderPrem();
-    else if(id==='sudoku')html=renderSudoku();
+    else if(id==='games')html=renderGames();
     else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
     var recCard='';
