@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.7.00';
+var APP_VERSION='2.0.7.01';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -796,7 +796,7 @@ function fwNew(){
   state.fw={left:left,right:right,diff:diff,found:{},foundCnt:0,total:total,startMs:Date.now(),done:false,doneSecs:0};
 }
 function fwCellStyle(side,i){
-  var fw=state.fw,s='width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;padding:0;border:none;';
+  var fw=state.fw,s='width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;padding:0;border:none;';
   if(fw.found[i]){
     if(side==='r')s+='background:rgba(74,222,128,.2);color:#4ADE80;box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.7);';
     else s+='background:rgba(74,222,128,.08);color:#86EFAC;';
@@ -808,7 +808,7 @@ function fwCellStyle(side,i){
 function fwGridHTML(side){
   var fw=state.fw,html='',r,c,i;
   for(r=0;r<FW_N;r++){
-    html+='<div style="display:flex;gap:2px;margin-top:'+(r?2:0)+'px">';
+    html+='<div style="display:flex;gap:4px;justify-content:center;margin-top:'+(r?4:0)+'px">';
     for(c=0;c<FW_N;c++){
       i=r*FW_N+c;
       if(side==='l')html+='<div id="fw-l-'+i+'" style="'+fwCellStyle('l',i)+'">'+fw.left[i]+'</div>';
@@ -820,9 +820,8 @@ function fwGridHTML(side){
 }
 function fwBoardHTML(){
   var fw=state.fw;
-  return '<div style="display:flex;gap:10px;justify-content:center">'
-    +'<div><div style="font-size:9px;color:#8B98B8;text-align:center;margin-bottom:5px">원본</div>'+fwGridHTML('l')+'</div>'
-    +'<div><div style="font-size:9px;color:#38BDF8;text-align:center;margin-bottom:5px">비교 — 여기서 찾기!</div>'+fwGridHTML('r')+'</div></div>'
+  return '<div><div style="font-size:10px;color:#8B98B8;text-align:center;margin-bottom:6px">원본</div>'+fwGridHTML('l')+'</div>'
+    +'<div style="margin-top:14px"><div style="font-size:10px;color:#38BDF8;text-align:center;margin-bottom:6px">비교 — 여기서 찾기!</div>'+fwGridHTML('r')+'</div>'
     +'<div style="text-align:center;margin-top:11px;font-size:11px;color:#4ADE80;font-weight:800">찾음 <span id="fw-cnt">'+fw.foundCnt+'</span> / '+fw.total+'</div>'
     +'<div id="fw-msg" style="font-size:10px;color:#F87171;text-align:center;min-height:15px;margin-top:6px"></div>';
 }
@@ -836,7 +835,7 @@ function fwRestart(){
   var body=document.getElementById('fw-body');
   if(body)body.innerHTML=fwBoardHTML();
   var sub=document.getElementById('fw-sub');
-  if(sub)sub.textContent='왼쪽 원본과 다른 칸이 오른쪽에 '+state.fw.total+'개 숨어 있어요 — 오른쪽에서 찾아 누르세요!';
+  if(sub)sub.textContent='위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!';
 }
 // 클릭한 셀만 국소 갱신 (전체 재렌더 없음) — 정답=초록 고정, 오답=빨간 펄스 후 원복
 function fwClick(i){
@@ -874,7 +873,7 @@ function renderFindWrong(){
 var GAMES=[
   {id:'sudoku',icon:'🧩',name:'수도쿠',desc:'매일 새 퍼즐 · 연속 기록',min:0,daily:true,
    render:renderSudoku,todayDone:sdkTodayDone,meCard:sdkMeCardHTML},
-  {id:'findwrong',icon:'🔍',name:'틀린 번호 찾기',desc:'5×5 좌우 비교 · 몇 초에 찾을까?',min:0,daily:false,
+  {id:'findwrong',icon:'🔍',name:'틀린 번호 찾기',desc:'5×5 위아래 비교 · 몇 초에 찾을까?',min:0,daily:false,
    render:renderFindWrong}
 ];
 function gameById(id){for(var i=0;i<GAMES.length;i++)if(GAMES[i].id===id)return GAMES[i];return null;}
