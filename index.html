@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.8.02';
+var APP_VERSION='2.0.9.01';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -135,7 +135,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -615,7 +615,7 @@ function sdkPuzzleCardHTML(which){
     else body='<div style="text-align:center;padding:14px 0;font-size:11px;color:#6B7A9E">불러오는 중...</div>';
   }
   else body=state.sdk.done[which]?sdkDoneBodyHTML(which):sdkGridHTML(which)+sdkPadHTML(which)+'<div id="sdk-msg-'+which+'" style="font-size:10px;color:#F87171;text-align:center;min-height:15px;margin-top:8px"></div>';
-  return '<div class="card"'+(main?'':' style="border-color:rgba(192,132,252,.25)"')+'><div class="ttl" style="margin-bottom:3px'+accent+'">'+title+'</div><div style="font-size:9px;color:#5A6A8E;margin-bottom:11px">'+sub+'</div><div id="sdk-body-'+which+'">'+body+'</div></div>';
+  return '<div class="card"'+(main?'':' style="border-color:rgba(192,132,252,.25)"')+'><div class="ttl" style="margin-bottom:3px'+accent+'">'+title+'</div><div style="font-size:9px;color:#5A6A8E;margin-bottom:9px">'+sub+'</div>'+lbBoxHTML('sudoku',SDK_CFG[which].tier)+'<div id="sdk-body-'+which+'">'+body+'</div></div>';
 }
 function renderSudoku(){
   if(!state.sdk.bank){
@@ -742,6 +742,7 @@ function sdkSubmit(which,secs){
         if(el)el.textContent=which==='m'?('🧩 연속 '+j.current+'일! 내일 또 만나요'):('누적 '+fmtNum(j.total_solved)+'문제 달성');
         var sc=document.getElementById('sdk-streak-card');if(sc)sc.innerHTML=sdkStreakCardHTML();
         var mc=document.getElementById('game-me-sudoku');if(mc)mc.innerHTML=sdkMeCardHTML();
+        lbLoad('sudoku',SDK_CFG[which].tier,true); // 방금 기록이 반영된 주간 리더보드 재조회 (박스만 국소 갱신)
         if(j.newRewards&&j.newRewards.length){
           var names=[],k,x;
           for(k=0;k<j.newRewards.length;k++){for(x=0;x<SDK_BADGES.length;x++){if(SDK_BADGES[x].kind===j.newRewards[k])names.push(SDK_BADGES[x].icon+' '+SDK_BADGES[x].label);}}
@@ -775,6 +776,62 @@ function sdkMeCardHTML(){
     +'<div style="font-size:10px;color:#5A6A8E;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="openGame(\'sudoku\')" style="color:#C084FC;text-decoration:underline;cursor:pointer">풀러 가기</b>')
     +' <span style="color:#4A5570">· 보너스</span> '+(st.todayBonus1?'<span style="color:#4ADE80">6×6 ✓</span>':'<span style="color:#4A5570">6×6 –</span>')+' '+(st.todayBonus2?'<span style="color:#4ADE80">9×9 ✓</span>':'<span style="color:#4A5570">9×9 –</span>')+'</div>';
   return inner;
+}
+
+// ── 🏆 주간 리더보드 (scores Edge Function) — 일요일 00시(KST) 리셋, 게임·티어별 최단 기록 ──
+// week_start·마스킹은 전부 서버 계산 — 클라이언트는 표시와 제출만 담당 (원본 이메일 미수신)
+// 캐시: state.lb[key]에 보관, LB_TTL 지나면 재조회. 갱신은 해당 박스만 국소 페인트(전체 재렌더 없음)
+var LB_TTL=300000; // 5분
+var MM_TIER={e:'easy',m:'normal',h:'hard'};
+var LB_LABEL={'memory|easy':'쉬움 4×4','memory|normal':'보통 6×6','memory|hard':'어려움 9×9'};
+function lbKey(g,t){return g+'|'+(t||'');}
+function lbElId(g,t){return 'lb-'+g+(t?'-'+t:'');}
+function lbInnerHTML(g,t){
+  var e=state.lb[lbKey(g,t)];
+  var lab=LB_LABEL[lbKey(g,t)];
+  var head='🏆 이번 주 최단'+(lab?' · '+lab:'');
+  if(e&&e.err)return '<span style="color:#5A6A8E">'+head+' — 기록을 불러오지 못했어요</span>';
+  if(!e||!e.loaded)return '<span style="color:#5A6A8E">'+head+' — 불러오는 중...</span>';
+  if(!e.top)return '<span style="color:#7080A0">'+head+' — 아직 기록이 없어요, 첫 기록의 주인공이 되어보세요!</span>';
+  return '<span style="color:#FBBF24">'+head+': <b>'+e.top.name+'</b> '+fmtNum(e.top.seconds)+'초</span>';
+}
+function lbPaint(g,t){var el=document.getElementById(lbElId(g,t));if(el)el.innerHTML=lbInnerHTML(g,t);}
+function lbBoxHTML(g,t){
+  var e=state.lb[lbKey(g,t)];
+  if(!e||!e.loaded||(Date.now()-(e.ts||0)>LB_TTL))lbLoad(g,t,false);
+  return '<div id="'+lbElId(g,t)+'" style="font-size:10px;text-align:center;margin-bottom:9px;padding:7px 8px;border-radius:10px;background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.16)">'+lbInnerHTML(g,t)+'</div>';
+}
+function lbLoad(g,t,force){
+  var k=lbKey(g,t),e=state.lb[k];
+  if(e&&e.busy)return;
+  if(e&&e.loaded&&!force&&Date.now()-(e.ts||0)<=LB_TTL)return;
+  state.lb[k]={busy:true,loaded:e?e.loaded:false,top:e?e.top:null,ts:e?e.ts:0,err:false};
+  var tok=state.session?state.session.access_token:SB_ANON;
+  fetch(SB_URL+'/functions/v1/scores?game_id='+g+'&tier='+encodeURIComponent(t||''),{headers:{'Authorization':'Bearer '+tok}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      var e2=state.lb[k];
+      e2.busy=false;
+      if(j&&j.ok){e2.loaded=true;e2.top=j.top||null;e2.ts=Date.now();e2.err=false;}
+      else e2.err=true;
+      lbPaint(g,t);
+    })
+    .catch(function(err){var e3=state.lb[k];e3.busy=false;e3.err=true;lbPaint(g,t);});
+}
+// 완료 시 기록 제출 — 로그인 유저만 (게스트는 스킵). 응답의 top으로 박스만 국소 갱신
+function lbSubmit(g,t,secs){
+  if(!state.session)return;
+  var s=Math.round(secs||0);if(s<1)s=1;if(s>86400)s=86400;
+  fetch(SB_URL+'/functions/v1/scores',{method:'POST',headers:{'Authorization':'Bearer '+state.session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'submit',game_id:g,tier:t||'',seconds:s})})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(!j||!j.ok)return;
+      var k=lbKey(g,t);
+      state.lb[k]={busy:false,loaded:true,top:j.top||null,ts:Date.now(),err:false};
+      lbPaint(g,t);
+      if(j.improved)pickToast('🏆 이번 주 내 최고 기록 갱신! '+fmtNum(j.best)+'초');
+    })
+    .catch(function(e){});
 }
 
 // ── 🔍 틀린 번호 찾기 (Phase 3) — 순수 클라이언트 게임 ──
@@ -854,6 +911,7 @@ function fwClick(i){
       fw.done=true;fw.doneSecs=Math.round((Date.now()-fw.startMs)/1000);
       var body=document.getElementById('fw-body');
       if(body)body.innerHTML=fwDoneHTML();
+      if(state.session)lbSubmit('findwrong','',fw.doneSecs); // 게스트는 리더보드 제출 스킵
     }
   }else{
     if(el){el.classList.remove('sdk-bad');void el.offsetWidth;el.style.background='rgba(248,113,113,.22)';el.style.color='#F87171';el.classList.add('sdk-bad');}
@@ -863,7 +921,7 @@ function fwClick(i){
 }
 function renderFindWrong(){
   if(!state.fw||!state.fw.left||state.fw.done)fwNew(); // 완료했거나 처음이면 새 판 (진행 중이면 유지)
-  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:9px;color:#5A6A8E;margin-bottom:11px">위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!</div><div id="fw-body">'+fwBoardHTML()+'</div></div>'
+  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:9px;color:#5A6A8E;margin-bottom:9px">위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!</div>'+lbBoxHTML('findwrong','')+'<div id="fw-body">'+fwBoardHTML()+'</div></div>'
     +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">1~45 로또 번호로 만든 5×5 그리드 두 개를 비교하는 순발력 게임이에요.<br>정답이면 초록, 아니면 빨강 — 전부 찾으면 걸린 시간이 표시됩니다. 매 판 새로 생성!</div>';
 }
 
@@ -969,6 +1027,7 @@ function mmClick(i){
       mm.done=true;mm.doneSecs=Math.round((Date.now()-mm.startMs)/1000);
       var body=document.getElementById('mm-body');
       if(body)body.innerHTML=mmDoneHTML();
+      if(state.session)lbSubmit('memory',MM_TIER[mm.lvl],mm.doneSecs); // 게스트는 리더보드 제출 스킵
     }
   }else{
     mm.busy=true;
@@ -986,7 +1045,10 @@ function mmDoneHTML(){
   return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+cfg.label+' '+cfg.pairs+'쌍 전부 맞췄어요!</div><div style="font-size:11px;color:#9AA6C8;margin-top:6px">소요 시간 <b style="color:#FBBF24">'+mm.doneSecs+'초</b> · 시도 <b style="color:#38BDF8">'+mm.tries+'회</b></div><div style="display:flex;gap:8px;justify-content:center;margin-top:14px"><button onclick="mmStart(\''+mm.lvl+'\')" style="padding:11px 20px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:700;font-size:13px;border:none">🔄 같은 난이도</button><button onclick="mmMenu()" style="padding:11px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-weight:700;font-size:13px">난이도 선택</button></div></div>';
 }
 function mmMenuHTML(){
-  var keys=['e','m','h'],names={e:'🌱 쉬움',m:'🌿 보통',h:'🌳 어려움'},html='<div style="display:flex;flex-direction:column;gap:8px">',k,cfg;
+  var keys=['e','m','h'],names={e:'🌱 쉬움',m:'🌿 보통',h:'🌳 어려움'},html='',k,cfg;
+  // 난이도 선택 위 — 티어별 이번 주 최단 기록
+  for(k=0;k<3;k++)html+=lbBoxHTML('memory',MM_TIER[keys[k]]);
+  html+='<div style="display:flex;flex-direction:column;gap:8px">';
   for(k=0;k<3;k++){
     cfg=MM_CFG[keys[k]];
     html+='<button onclick="mmStart(\''+keys[k]+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-radius:13px;border:1px solid rgba(192,132,252,.25);background:rgba(192,132,252,.06);color:#E8ECFF"><span style="font-size:13px;font-weight:800">'+names[keys[k]]+' <span style="color:#C084FC">'+cfg.label+'</span></span><span style="font-size:10px;color:#8B98B8">'+cfg.sub+'</span></button>';
@@ -995,7 +1057,7 @@ function mmMenuHTML(){
 }
 function mmGameHTML(){
   var mm=state.mm,cfg=MM_CFG[mm.lvl];
-  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font-size:11px;font-weight:800;color:#C084FC">'+cfg.label+' · '+cfg.pairs+'쌍</span><button onclick="mmMenu()" style="padding:5px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#9AA6C8;font-size:10px;font-weight:700">난이도 변경</button></div><div id="mm-body">'+(mm.done?mmDoneHTML():mmBoardHTML())+'</div>';
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font-size:11px;font-weight:800;color:#C084FC">'+cfg.label+' · '+cfg.pairs+'쌍</span><button onclick="mmMenu()" style="padding:5px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#9AA6C8;font-size:10px;font-weight:700">난이도 변경</button></div>'+lbBoxHTML('memory',MM_TIER[mm.lvl])+'<div id="mm-body">'+(mm.done?mmDoneHTML():mmBoardHTML())+'</div>';
 }
 function mmStart(lvl){
   mmNew(lvl);
