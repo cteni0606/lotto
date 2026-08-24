@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.9.02';
+var APP_VERSION='2.0.9.04';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -792,8 +792,9 @@ function lbInnerHTML(g,t){
   var head='🏆 이번 주 최단'+(lab?' · '+lab:'');
   if(e&&e.err)return '<span style="color:#5A6A8E">'+head+' — 기록을 불러오지 못했어요</span>';
   if(!e||!e.loaded)return '<span style="color:#5A6A8E">'+head+' — 불러오는 중...</span>';
-  if(!e.top)return '<span style="color:#7080A0">'+head+' — 아직 기록이 없어요, 첫 기록의 주인공이 되어보세요!</span>';
-  return '<span style="color:#FBBF24">'+head+': <b>'+e.top.name+'</b> '+fmtNum(e.top.seconds)+'초</span>';
+  var mineLine=(typeof e.mine==='number')?'<br><span style="color:#7DD3FC">내 최단: '+fmtNum(e.mine)+'초</span>':'';
+  if(!e.top)return '<span style="color:#7080A0">'+head+' — 아직 기록이 없어요, 첫 기록의 주인공이 되어보세요!</span>'+mineLine;
+  return '<span style="color:#FBBF24">'+head+': <b>'+e.top.name+'</b> '+fmtNum(e.top.seconds)+'초</span>'+mineLine;
 }
 function lbPaint(g,t){var el=document.getElementById(lbElId(g,t));if(el)el.innerHTML=lbInnerHTML(g,t);}
 function lbBoxHTML(g,t){
@@ -805,14 +806,14 @@ function lbLoad(g,t,force){
   var k=lbKey(g,t),e=state.lb[k];
   if(e&&e.busy)return;
   if(e&&e.loaded&&!force&&Date.now()-(e.ts||0)<=LB_TTL)return;
-  state.lb[k]={busy:true,loaded:e?e.loaded:false,top:e?e.top:null,ts:e?e.ts:0,err:false};
+  state.lb[k]={busy:true,loaded:e?e.loaded:false,top:e?e.top:null,mine:e?e.mine:null,ts:e?e.ts:0,err:false};
   var tok=state.session?state.session.access_token:SB_ANON;
   fetch(SB_URL+'/functions/v1/scores?game_id='+g+'&tier='+encodeURIComponent(t||''),{headers:{'Authorization':'Bearer '+tok}})
     .then(function(r){return r.json();})
     .then(function(j){
       var e2=state.lb[k];
       e2.busy=false;
-      if(j&&j.ok){e2.loaded=true;e2.top=j.top||null;e2.ts=Date.now();e2.err=false;}
+      if(j&&j.ok){e2.loaded=true;e2.top=j.top||null;e2.mine=(typeof j.mine==='number')?j.mine:null;e2.ts=Date.now();e2.err=false;}
       else e2.err=true;
       lbPaint(g,t);
     })
@@ -827,7 +828,7 @@ function lbSubmit(g,t,secs){
     .then(function(j){
       if(!j||!j.ok)return;
       var k=lbKey(g,t);
-      state.lb[k]={busy:false,loaded:true,top:j.top||null,ts:Date.now(),err:false};
+      state.lb[k]={busy:false,loaded:true,top:j.top||null,mine:(typeof j.best==='number')?j.best:null,ts:Date.now(),err:false};
       lbPaint(g,t);
       if(j.improved)pickToast('🏆 이번 주 내 최고 기록 갱신! '+fmtNum(j.best)+'초');
     })
@@ -1381,6 +1382,30 @@ function renderPrem(){
 }
 
 // ── 관리자 ──
+// ── 오늘 활동 목록 — 유저(👤)/게스트(👻) 섹션 분리, 10개씩 "더보기" (국소 갱신: 행만 추가, 재렌더 없음) ──
+var ADM_ACT_PAGE=10;
+function admActRowHTML(tv){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:10px;color:'+(tv.member?'#C4CCEE':'#7080A0')+'">'+(tv.member?'👤 ':'👻 ')+tv.who+'</span><span class="rj" style="font-size:11px;color:'+(tv.hits>=5?'#F97316':'#9AA6C8')+'">'+tv.hits+'회</span></div>';
+}
+function admActSectionHTML(kind,list){
+  var html='<div style="font-size:10px;font-weight:800;color:'+(kind==='m'?'#4ADE80':'#8B98B8')+';margin:'+(kind==='g'?'12px':'2px')+' 0 3px">'+(kind==='m'?'👤 유저':'👻 게스트')+' <span style="font-weight:400;color:#5A6A8E">('+list.length+')</span></div>';
+  if(!list.length)return html+'<div style="font-size:10px;color:#5A6A8E;padding:3px 0">오늘 방문 없음</div>';
+  var rows='';
+  for(var i=0;i<list.length&&i<ADM_ACT_PAGE;i++)rows+=admActRowHTML(list[i]);
+  html+='<div id="adm-act-'+kind+'">'+rows+'</div>';
+  if(list.length>ADM_ACT_PAGE)html+='<button id="adm-act-more-'+kind+'" onclick="admActMore(\''+kind+'\')" style="width:100%;margin-top:6px;padding:6px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:none;color:#7080A0;font-size:10px">더보기 ('+(list.length-ADM_ACT_PAGE)+' 남음)</button>';
+  return html;
+}
+function admActMore(kind){
+  var list=(state.admAct&&state.admAct[kind])||[];
+  var box=document.getElementById('adm-act-'+kind);
+  if(!box)return;
+  var shown=box.children.length,htm='';
+  for(var i=shown;i<list.length&&i<shown+ADM_ACT_PAGE;i++)htm+=admActRowHTML(list[i]);
+  if(htm)box.insertAdjacentHTML('beforeend',htm);
+  var btn=document.getElementById('adm-act-more-'+kind),now=box.children.length;
+  if(btn){if(now>=list.length)btn.style.display='none';else btn.textContent='더보기 ('+(list.length-now)+' 남음)';}
+}
 function renderAdm(){
   if(state.level!==100)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">권한이 없습니다</div>';
   if(!state.admin){
@@ -1428,14 +1453,17 @@ function renderAdm(){
     }
     urows+='<tr><td style="color:#C4CCEE;font-size:10px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#7080A0;font-size:9px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#5A6A8E;font-size:9px">'+(u.created_at||'').slice(0,10)+'</td><td style="text-align:center;white-space:nowrap">'+ctl+'</td></tr>';
   }
-  var actRows='';
-  if(a.todayList&&a.todayList.length){
-    for(var i=0;i<a.todayList.length;i++){
-      var tv=a.todayList[i];
-      actRows+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:10px;color:'+(tv.member?'#C4CCEE':'#7080A0')+'">'+(tv.member?'👤 ':'👻 ')+tv.who+'</span><span class="rj" style="font-size:11px;color:'+(tv.hits>=5?'#F97316':'#9AA6C8')+'">'+tv.hits+'회</span></div>';
-    }
-  }else actRows='<div style="font-size:10px;color:#5A6A8E">오늘 방문 없음</div>';
-  var actCard='<div class="card"><div class="ttl">📱 오늘 활동 (방문자별 조회수)</div>'+actRows+'</div>';
+  // 오늘 활동 — 유저/게스트 분리 + 10개씩 페이지네이션. 구버전 서버(todayList 합본) 응답도 클라이언트에서 분리해 호환
+  var actM=a.todayMembers,actG=a.todayGuests;
+  if(!actM&&!actG&&a.todayList){
+    actM=[];actG=[];
+    for(var i=0;i<a.todayList.length;i++){if(a.todayList[i].member)actM.push(a.todayList[i]);else actG.push(a.todayList[i]);}
+  }
+  actM=actM||[];actG=actG||[];
+  state.admAct={m:actM,g:actG};
+  var actCard='<div class="card"><div class="ttl">📱 오늘 활동 (방문자별 조회수)</div>'
+    +((!actM.length&&!actG.length)?'<div style="font-size:10px;color:#5A6A8E">오늘 방문 없음</div>':admActSectionHTML('m',actM)+admActSectionHTML('g',actG))
+    +'</div>';
   return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#7080A0;font-size:10px">🔄 새로고침</button></div>'+boxes+'</div>'
     +'<div class="card"><div class="ttl">최근 14일 — <span style="color:#FBBF24">숫자=조회수</span> · <span style="color:#38BDF8">파랑=방문자</span> · <span style="color:#4ADE80">초록=회원출석</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
     +actCard+'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th><th style="text-align:center">관리</th></tr></thead><tbody>'+urows+'</tbody></table></div></div>';
@@ -1678,8 +1706,9 @@ function envAllowed(){
 function trackVisit(){
   if(APP_ENV!=='live')return;
   var vd=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
-  if(state.vDay===vd)return;
-  state.vDay=vd;
+  var vk=vd+':'+(state.session?state.session.user.id:'guest');
+  if(state.vKey===vk)return;
+  state.vKey=vk;
   try{
     var vid=localStorage.getItem('lotto-vid');
     if(!vid){
@@ -1715,7 +1744,7 @@ sb.auth.onAuthStateChange(function(ev,session){
   var identityChanged=(newUid!==_lastUid);
   state.session=session;_lastUid=newUid;
   if(identityChanged){
-    state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;
+    state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;state.lb={};
     loadProfile(function(){refresh();trackVisit();if(session){doCheckin();loadSdkStatus();}});
   }else if(session){
     doCheckin();loadSdkStatus();
