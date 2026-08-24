@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.8.01';
+var APP_VERSION='2.0.8.02';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -1645,10 +1645,18 @@ function doCheckin(){
 
 // ── 부트스트랩 ──
 function refresh(){renderAcct();renderTabs();doTab(state.tab);}
+var _lastUid=null;
 sb.auth.onAuthStateChange(function(ev,session){
   if(ev==='PASSWORD_RECOVERY')state.recovery=true;
-  state.session=session;state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;
-  loadProfile(function(){refresh();trackVisit();if(session){doCheckin();loadSdkStatus();}});
+  var newUid=session?session.user.id:null;
+  var identityChanged=(newUid!==_lastUid);
+  state.session=session;_lastUid=newUid;
+  if(identityChanged){
+    state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;
+    loadProfile(function(){refresh();trackVisit();if(session){doCheckin();loadSdkStatus();}});
+  }else if(session){
+    doCheckin();loadSdkStatus();
+  }
 });
 try{
   var _vb=document.getElementById('ver-badge');if(_vb)_vb.textContent='v'+APP_VERSION+(APP_ENV!=='live'?' · '+APP_ENV.toUpperCase():'');
