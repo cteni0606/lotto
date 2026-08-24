@@ -101,7 +101,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.7.02';
+var APP_VERSION='2.0.8.01';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -135,7 +135,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay){
@@ -867,6 +867,153 @@ function renderFindWrong(){
     +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">1~45 로또 번호로 만든 5×5 그리드 두 개를 비교하는 순발력 게임이에요.<br>정답이면 초록, 아니면 빨강 — 전부 찾으면 걸린 시간이 표시됩니다. 매 판 새로 생성!</div>';
 }
 
+// ── 🃏 기억력 짝맞추기 (Phase 4) — 순수 클라이언트 게임 (findwrong과 동일 패턴, 서버 저장 없음) ──
+// 1~45 로또 번호에서 난이도별 쌍 수만큼 뽑아 2장씩 섞어 배치 → 미리보기 후 전부 가리고 짝 찾기.
+// 9×9는 81칸이 홀수라 40쌍(80칸)+⭐ 장식 1칸(이미 완성 취급, 클릭 불가)으로 구성.
+var MM_CFG={
+  e:{n:4,pairs:8,prev:4,cell:56,gap:6,fs:20,label:'4×4',sub:'8쌍 · 미리보기 4초'},
+  m:{n:6,pairs:18,prev:6,cell:40,gap:4,fs:16,label:'6×6',sub:'18쌍 · 미리보기 6초'},
+  h:{n:9,pairs:40,prev:9,cell:28,gap:2,fs:12,label:'9×9',sub:'40쌍+⭐ · 미리보기 9초'}
+};
+var MM_GEN=0; // 판 세대 — 이전 판의 setTimeout이 새 판을 건드리지 못하게 하는 무효화 토큰
+function mmNew(lvl){
+  var cfg=MM_CFG[lvl],pool=[],vals=[],i,r,t;
+  for(i=1;i<=45;i++)pool.push(i);
+  for(i=0;i<cfg.pairs;i++){r=i+Math.floor(Math.random()*(45-i));t=pool[i];pool[i]=pool[r];pool[r]=t;}
+  for(i=0;i<cfg.pairs;i++){vals.push(pool[i]);vals.push(pool[i]);}
+  if(cfg.n*cfg.n>cfg.pairs*2)vals.push(0); // 홀수 보드 보정 — 0=⭐ 장식 칸
+  for(i=vals.length-1;i>0;i--){r=Math.floor(Math.random()*(i+1));t=vals[i];vals[i]=vals[r];vals[r]=t;}
+  MM_GEN++;
+  state.mm={lvl:lvl,cells:vals,matched:{},open:[],busy:false,preview:true,prevLeft:cfg.prev,matchedCnt:0,tries:0,startMs:0,done:false,doneSecs:0,gen:MM_GEN};
+  mmTick(MM_GEN);
+}
+// 미리보기 카운트다운 — 1초 체인. 세대가 바뀌면(새 판/메뉴 복귀) 조용히 소멸
+function mmTick(gen){
+  setTimeout(function(){try{
+    var mm=state.mm;
+    if(!mm||mm.gen!==gen||!mm.preview||mm.done)return;
+    mm.prevLeft--;
+    if(mm.prevLeft<=0){mmHideAll();return;}
+    var el=document.getElementById('mm-cd');
+    if(el)el.textContent=mm.prevLeft+'초';
+    mmTick(gen);
+  }catch(e){}},1000);
+}
+function mmHideAll(){
+  var mm=state.mm;
+  if(!mm)return;
+  mm.preview=false;mm.startMs=Date.now();
+  var i;
+  for(i=0;i<mm.cells.length;i++)mmPaint(i);
+  var st=document.getElementById('mm-status');
+  if(st)st.innerHTML=mmStatusHTML();
+}
+function mmOpenHas(i){var o=state.mm.open,j;for(j=0;j<o.length;j++)if(o[j]===i)return true;return false;}
+function mmCellTxt(i){
+  var mm=state.mm;
+  if(mm.cells[i]===0)return '⭐';
+  if(mm.preview||mm.matched[i]||mmOpenHas(i))return String(mm.cells[i]);
+  return '';
+}
+// 공개 상태는 ZONES 구간색으로 로또 느낌 — 맞춘 쌍=초록 고정, 가림=무지 회색
+function mmCellStyle(i){
+  var mm=state.mm,cfg=MM_CFG[mm.lvl];
+  var s='width:'+cfg.cell+'px;height:'+cfg.cell+'px;border-radius:'+(cfg.n===9?6:9)+'px;display:flex;align-items:center;justify-content:center;font-size:'+cfg.fs+'px;font-weight:800;padding:0;border:none;';
+  if(mm.cells[i]===0)return s+'background:rgba(251,191,36,.08);color:#FBBF24;box-shadow:inset 0 0 0 1px rgba(251,191,36,.3);';
+  if(mm.matched[i])return s+'background:rgba(74,222,128,.18);color:#4ADE80;box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.6);';
+  if(mm.preview||mmOpenHas(i)){var z=gz(mm.cells[i]);return s+'background:'+z.c+'26;color:'+z.c+';box-shadow:inset 0 0 0 1.5px '+z.c+'66;';}
+  return s+'background:rgba(255,255,255,.07);color:rgba(255,255,255,0);';
+}
+function mmPaint(i){
+  var el=document.getElementById('mm-c-'+i);
+  if(!el)return;
+  el.textContent=mmCellTxt(i);
+  el.setAttribute('style',mmCellStyle(i));
+}
+function mmFlash(i,cls){var el=document.getElementById('mm-c-'+i);if(el){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);}}
+function mmStatusHTML(){
+  var mm=state.mm,cfg=MM_CFG[mm.lvl];
+  if(mm.preview)return '<span style="color:#FBBF24">👀 숫자 위치를 기억하세요! <span id="mm-cd">'+mm.prevLeft+'초</span> 후 가려집니다</span>';
+  return '<span style="color:#4ADE80">맞춘 쌍 <span id="mm-cnt">'+mm.matchedCnt+'</span> / '+cfg.pairs+'</span> <span style="color:#5A6A8E;font-weight:400">· 시도 <span id="mm-try">'+mm.tries+'</span>회</span>';
+}
+function mmBoardHTML(){
+  var mm=state.mm,cfg=MM_CFG[mm.lvl],html='',r,c,i;
+  for(r=0;r<cfg.n;r++){
+    html+='<div style="display:flex;gap:'+cfg.gap+'px;justify-content:center;margin-top:'+(r?cfg.gap:0)+'px">';
+    for(c=0;c<cfg.n;c++){
+      i=r*cfg.n+c;
+      html+='<button id="mm-c-'+i+'" onclick="mmClick('+i+')" style="'+mmCellStyle(i)+'">'+mmCellTxt(i)+'</button>';
+    }
+    html+='</div>';
+  }
+  return html+'<div id="mm-status" style="text-align:center;margin-top:11px;font-size:11px;font-weight:800">'+mmStatusHTML()+'</div>';
+}
+// 클릭한 셀만 국소 갱신 — 두 장 공개 후 판정 중(busy)엔 세 번째 클릭 무시
+function mmClick(i){
+  var mm=state.mm;
+  if(!mm||mm.done||mm.busy||mm.preview)return;
+  if(mm.cells[i]===0||mm.matched[i]||mmOpenHas(i))return;
+  mm.open.push(i);
+  mmPaint(i);
+  if(mm.open.length<2)return;
+  mm.tries++;
+  var te=document.getElementById('mm-try');
+  if(te)te.textContent=String(mm.tries);
+  var a=mm.open[0],b=mm.open[1];
+  if(mm.cells[a]===mm.cells[b]){
+    mm.matched[a]=1;mm.matched[b]=1;mm.matchedCnt++;mm.open=[];
+    mmPaint(a);mmPaint(b);mmFlash(a,'sdk-pop');mmFlash(b,'sdk-pop');
+    var ce=document.getElementById('mm-cnt');
+    if(ce)ce.textContent=String(mm.matchedCnt);
+    if(mm.matchedCnt>=MM_CFG[mm.lvl].pairs){
+      mm.done=true;mm.doneSecs=Math.round((Date.now()-mm.startMs)/1000);
+      var body=document.getElementById('mm-body');
+      if(body)body.innerHTML=mmDoneHTML();
+    }
+  }else{
+    mm.busy=true;
+    mmFlash(a,'sdk-bad');mmFlash(b,'sdk-bad');
+    setTimeout(function(){try{
+      var m2=state.mm;
+      if(!m2||m2.gen!==mm.gen)return;
+      m2.busy=false;m2.open=[];
+      mmPaint(a);mmPaint(b);
+    }catch(e){}},800);
+  }
+}
+function mmDoneHTML(){
+  var mm=state.mm,cfg=MM_CFG[mm.lvl];
+  return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+cfg.label+' '+cfg.pairs+'쌍 전부 맞췄어요!</div><div style="font-size:11px;color:#9AA6C8;margin-top:6px">소요 시간 <b style="color:#FBBF24">'+mm.doneSecs+'초</b> · 시도 <b style="color:#38BDF8">'+mm.tries+'회</b></div><div style="display:flex;gap:8px;justify-content:center;margin-top:14px"><button onclick="mmStart(\''+mm.lvl+'\')" style="padding:11px 20px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:700;font-size:13px;border:none">🔄 같은 난이도</button><button onclick="mmMenu()" style="padding:11px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-weight:700;font-size:13px">난이도 선택</button></div></div>';
+}
+function mmMenuHTML(){
+  var keys=['e','m','h'],names={e:'🌱 쉬움',m:'🌿 보통',h:'🌳 어려움'},html='<div style="display:flex;flex-direction:column;gap:8px">',k,cfg;
+  for(k=0;k<3;k++){
+    cfg=MM_CFG[keys[k]];
+    html+='<button onclick="mmStart(\''+keys[k]+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-radius:13px;border:1px solid rgba(192,132,252,.25);background:rgba(192,132,252,.06);color:#E8ECFF"><span style="font-size:13px;font-weight:800">'+names[keys[k]]+' <span style="color:#C084FC">'+cfg.label+'</span></span><span style="font-size:10px;color:#8B98B8">'+cfg.sub+'</span></button>';
+  }
+  return html+'</div>';
+}
+function mmGameHTML(){
+  var mm=state.mm,cfg=MM_CFG[mm.lvl];
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font-size:11px;font-weight:800;color:#C084FC">'+cfg.label+' · '+cfg.pairs+'쌍</span><button onclick="mmMenu()" style="padding:5px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#9AA6C8;font-size:10px;font-weight:700">난이도 변경</button></div><div id="mm-body">'+(mm.done?mmDoneHTML():mmBoardHTML())+'</div>';
+}
+function mmStart(lvl){
+  mmNew(lvl);
+  var w=document.getElementById('mm-wrap');
+  if(w)w.innerHTML=mmGameHTML();
+}
+function mmMenu(){
+  MM_GEN++; // 진행 중 타이머·판정 콜백 무효화
+  state.mm=null;
+  var w=document.getElementById('mm-wrap');
+  if(w)w.innerHTML=mmMenuHTML();
+}
+function renderMemory(){
+  if(state.mm&&state.mm.done){MM_GEN++;state.mm=null;} // 완료판은 재진입 시 난이도 선택부터 (진행 중이면 유지)
+  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🃏 기억력 짝맞추기</div><div style="font-size:9px;color:#5A6A8E;margin-bottom:11px">같은 번호 두 장을 찾아 뒤집으세요 — 시작하면 잠깐 전체 공개!</div><div id="mm-wrap">'+(state.mm?mmGameHTML():mmMenuHTML())+'</div></div>'
+    +'<div class="card cd" style="font-size:10px;color:#5A6A8E;line-height:1.8">1~45 로또 번호가 두 장씩 숨어 있어요. 미리보기가 끝나면 전부 가려지고, 같은 번호 짝을 기억해서 찾는 게임!<br>서버 저장 없음 · 매 판 새로 섞임 · 9×9의 남는 한 칸은 ⭐ 보너스 칸(이미 완성 취급)이에요.</div>';
+}
+
 // ── 🎮 미니게임 허브 — 게임 추가는 GAMES 배열 등록 한 번이면 끝 (허브·추천배너·내정보 자동 반영) ──
 // 필드: id/icon/name/desc · min(레벨 게이팅, 생략=0 공개) · daily(매일형 — todayDone과 함께 배너·미완료 배지 대상)
 //       render(게임 화면 HTML) · todayDone(오늘 완료 여부, daily만) · meCard(내정보 기록 카드, 있는 게임만 나열)
@@ -874,7 +1021,9 @@ var GAMES=[
   {id:'sudoku',icon:'🧩',name:'수도쿠',desc:'매일 새 퍼즐 · 연속 기록',min:0,daily:true,
    render:renderSudoku,todayDone:sdkTodayDone,meCard:sdkMeCardHTML},
   {id:'findwrong',icon:'🔍',name:'틀린 번호 찾기',desc:'5×5 위아래 비교 · 몇 초에 찾을까?',min:0,daily:false,
-   render:renderFindWrong}
+   render:renderFindWrong},
+  {id:'memory',icon:'🃏',name:'기억력 짝맞추기',desc:'같은 번호 짝 찾기 · 3단계 난이도',min:0,daily:false,
+   render:renderMemory}
 ];
 function gameById(id){for(var i=0;i<GAMES.length;i++)if(GAMES[i].id===id)return GAMES[i];return null;}
 function gameLocked(g){return state.level===100?false:(effLv()<(g.min||0));}
