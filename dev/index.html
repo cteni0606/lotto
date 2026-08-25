@@ -52,6 +52,8 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .freq-bars{display:flex;gap:1px;align-items:flex-end;height:120px;overflow-x:auto;padding:0 0 4px;}
 .fb{width:7px;min-width:7px;border-radius:2px 2px 0 0;}
 .tag{font-size:11px;padding:2px 6px;border-radius:5px;}
+.info-chip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;font-size:10px;font-weight:700;color:#8A97BC;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);cursor:pointer;vertical-align:middle;margin-left:3px;}
+.help-inline{display:none;font-size:11px;color:#9DABD0;line-height:1.7;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:9px 11px;margin-top:6px;margin-bottom:2px;}
 .set-tags{display:flex;gap:5px;margin-top:7px;margin-left:29px;flex-wrap:wrap;}
 .bt-table{width:100%;font-size:11px;border-collapse:collapse;}
 .bt-table th{padding:6px 5px 8px;color:#8A97BC;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
@@ -141,7 +143,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.14.00';
+var APP_VERSION='2.0.15.00';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -262,10 +264,12 @@ function renderRec(){
     +'</div>';
   if(effLv()>=3){
     var wOn=state.mode==='wide';
-    var bw='flex:1;padding:11px 6px;border-radius:12px;font-size:12px;font-weight:700;min-height:52px;';
-    html+='<div class="card"><div class="ttl">🧭 세트 구조 전략</div><div style="display:flex;gap:8px">'
-      +'<button onclick="setMode(1)" style="'+bw+'border:1.5px solid '+(wOn?'#38BDF8':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(56,189,248,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#38BDF8':'#94A3C8')+'">🌐 분산<br><span style="font-size:11px;font-weight:400">30개 완전 분리 · 3개+ 11.9%</span></button>'
-      +'<button onclick="setMode(0)" style="'+bw+'border:1.5px solid '+(!wOn?'#C084FC':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(192,132,252,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#C084FC':'#94A3C8')+'">🎯 집중<br><span style="font-size:11px;font-weight:400">핵심 3개 공유 · 동반 적중형</span></button></div></div>';
+    var cbw='flex:1;padding:11px 9px;border-radius:12px;font-size:12px;font-weight:700;min-height:64px;text-align:left;line-height:1.4;';
+    html+='<div class="card"><div class="ttl">🧭 세트 구조 전략 <span class="info-chip" onclick="toggleHelp(\'h-setmode\')">ⓘ</span></div>'
+      +'<div id="h-setmode" class="help-inline"><b style="color:#38BDF8">🌐 분산</b> — 5게임에 번호 30개를 겹치지 않게 나눠 담아요. 한 게임이라도 3개 이상 맞을 가능성을 가장 넓게 벌려두는 방식이에요. (5게임 중 최소 1게임이 3개+ 맞을 확률 약 11.9%)<br><br><b style="color:#C084FC">🎯 집중</b> — 핵심 번호 3개를 5게임 모두에 공통으로 넣어요. 그 번호들이 당첨되면 여러 게임이 한꺼번에 맞는, 한 방을 노리는 방식이에요.</div>'
+      +'<div style="display:flex;gap:8px">'
+      +'<button onclick="setMode(1)" style="'+cbw+'border:1.5px solid '+(wOn?'#38BDF8':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(56,189,248,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#38BDF8':'#94A3C8')+'">🌐 분산<br><span style="font-size:11px;font-weight:400;color:'+(wOn?'#9AD8F5':'#8A97BC')+'">5게임을 서로 다른 번호로 · 넓게 노리기</span></button>'
+      +'<button onclick="setMode(0)" style="'+cbw+'border:1.5px solid '+(!wOn?'#C084FC':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(192,132,252,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#C084FC':'#94A3C8')+'">🎯 집중<br><span style="font-size:11px;font-weight:400;color:'+(!wOn?'#D6B8F7':'#8A97BC')+'">핵심 번호를 5게임에 공유 · 한 방 노리기</span></button></div></div>';
   }
   if(state.recBusy){
     html+='<div class="card" style="text-align:center"><div class="ttl">서버에서 생성 중...</div><div style="background:rgba(255,255,255,.08);border-radius:8px;height:6px;overflow:hidden;margin:12px 0"><div style="width:55%;height:100%;background:linear-gradient(90deg,#0EA5E9,#6366F1);animation:shimmer 1.4s linear infinite"></div></div></div>';
@@ -275,18 +279,22 @@ function renderRec(){
       var s=r.sets[idx],bls='';
       for(var i=0;i<s.nums.length;i++)bls+=ballHTML(s.nums[i],36,true,(idx*6+i)*40);
       var tags='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">짝 '+s.meta.even+'</span><span class="tag" style="color:#F87171;background:rgba(248,113,113,.1)">홀 '+(6-s.meta.even)+'</span>';
+      var helps='';
       if(typeof s.meta.unpop!=='undefined'){
         var upC=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#FBBF24':'#F87171';
-        tags+='<span class="tag" style="color:'+upC+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span>';
-        tags+='<span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span>';
+        tags+='<span class="tag" style="color:'+upC+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span><span class="info-chip" onclick="toggleHelp(\'h-unpop-'+idx+'\')">ⓘ</span>';
+        tags+='<span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span><span class="info-chip" onclick="toggleHelp(\'h-syn-'+idx+'\')">ⓘ</span>';
+        helps+='<div id="h-unpop-'+idx+'" class="help-inline"><b style="color:'+upC+'">독식</b> — 당첨됐을 때 다른 사람과 상금을 나눠 갖지 않을 가능성을 점수로 나타내요. 점수가 높을수록 남들이 잘 안 고르는 조합이라, 당첨 시 독식할 가능성이 커요. (당첨 확률 자체는 어떤 번호든 똑같아요)</div>';
+        helps+='<div id="h-syn-'+idx+'" class="help-inline"><b style="color:#818CF8">시너지</b> — 6개 번호가 한쪽으로 치우치지 않고 고르게 짜였는지를 보는 참고 점수예요. 당첨을 예측하는 값은 아니고, 조합의 \'모양\'이 역대 당첨 번호처럼 균형 잡혔는지 참고용으로만 봐요.</div>';
       }
       if(s.meta.freshness){
         var fL=s.meta.freshness==='fresh'?'신선 ✓':s.meta.freshness==='overlap4'?'4개 겹침':'⚠ 유사';
         var fC=s.meta.freshness==='fresh'?'#4ADE80':s.meta.freshness==='overlap4'?'#FBBF24':'#F87171';
-        tags+='<span class="tag" style="color:'+fC+';background:rgba(255,255,255,.06)">'+fL+'</span>';
+        tags+='<span class="tag" style="color:'+fC+';background:rgba(255,255,255,.06)">'+fL+'</span><span class="info-chip" onclick="toggleHelp(\'h-fresh-'+idx+'\')">ⓘ</span>';
+        helps+='<div id="h-fresh-'+idx+'" class="help-inline"><b style="color:'+fC+'">신선도</b> — 이 조합이 예전 1등 당첨 번호와 얼마나 닮았는지 보여줘요. \'신선\'은 겹침이 적은 새 조합, \'⚠ 유사\'는 예전 당첨 번호와 많이 겹친다는 뜻이에요. 당첨 확률에 영향을 주진 않지만, 이미 나온 번호를 그대로 다시 쓰는 걸 피하고 싶은 분을 위한 표시예요.</div>';
       }
       tags+='<span style="flex:1"></span>'+saveBtnHTML(r.nextRound,s.nums,'reco');
-      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:11px 10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div class="rj" style="font-size:13px;color:'+SETC[idx]+'">'+s.meta.sum+'</div><div style="font-size:10px;color:#8A97BC">합계</div></div></div><div class="set-tags">'+tags+'</div></div>';
+      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:11px 10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div class="rj" style="font-size:13px;color:'+SETC[idx]+'">'+s.meta.sum+'</div><div style="font-size:10px;color:#8A97BC">합계</div></div></div><div class="set-tags">'+tags+'</div>'+helps+'</div>';
     }
     html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="ttl" style="margin-bottom:0">🎯 제 '+r.nextRound+'회 추천 5세트</div><button onclick="getRec()" style="padding:6px 11px;border-radius:12px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#FBBF24;font-size:11px;font-weight:600">🔄 재생성</button></div><div style="font-size:11px;color:#8A97BC;margin-bottom:12px">적용: '+r.algo+'</div>'+setsHTML+'</div>';
   }else{
@@ -310,6 +318,11 @@ function getRec(){
     .catch(function(e){state.recBusy=false;showErr('서버 연결 실패: '+e.message);doTab('rec');});
 }
 function setMode(w){state.mode=w?'wide':'focus';state.rec=null;doTab('rec');}
+function toggleHelp(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';
+}
 
 // ── 번호 저장 → 결과 자동대조 (Phase 1) ──
 function calcNextRound(){
@@ -1508,7 +1521,7 @@ function renderHot(){
   var mn=Math.min.apply(null,sums),mxs=Math.max.apply(null,sums);
   return '<div class="card"><div class="ttl" style="color:#F97316">🔥 최근 10회 핫넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+hot+'</div></div>'
     +'<div class="card"><div class="ttl" style="color:#38BDF8">🧊 장기 미출현 콜드넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+cold+'</div></div>'
-    +'<div class="card"><div class="ttl">홀짝 · 합계 분포</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+avgEven.toFixed(1)+'</div><div class="sl">짝수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#F87171">'+(6-avgEven).toFixed(1)+'</div><div class="sl">홀수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+Math.round(avgSum)+'</div><div class="sl">합계 평균</div></div></div><div style="font-size:11px;color:#8A97BC;text-align:center">합계 범위: '+mn+' ~ '+mxs+'</div></div>';
+    +'<div class="card"><div class="ttl">홀짝 · 합계 분포 <span class="info-chip" onclick="toggleHelp(\'h-dist\')">ⓘ</span></div><div id="h-dist" class="help-inline"><b style="color:#38BDF8">홀짝 분포</b> — 뽑힌 번호 6개 중 홀수와 짝수가 각각 몇 개인지예요. 역대 당첨은 3:3, 4:2처럼 균형 잡힌 비율이 대부분이었어요.<br><br><b style="color:#FBBF24">합계 분포</b> — 번호 6개를 전부 더한 숫자예요. 역대 당첨 합계는 대개 100~175 사이에 몰려 있고, 너무 작거나 큰 합은 드물게 나왔어요.</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+avgEven.toFixed(1)+'</div><div class="sl">짝수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#F87171">'+(6-avgEven).toFixed(1)+'</div><div class="sl">홀수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+Math.round(avgSum)+'</div><div class="sl">합계 평균</div></div></div><div style="font-size:11px;color:#8A97BC;text-align:center">합계 범위: '+mn+' ~ '+mxs+'</div></div>';
 }
 
 function pickNum(n){
@@ -1593,15 +1606,17 @@ function renderReport(){
     +'<tr><td style="color:#C4CCEE">가중치 256조합 훈련최적</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
     +'<tr style="background:rgba(251,191,36,.05)"><td style="color:#FBBF24;font-weight:700">🎲 순수 랜덤</td><td style="text-align:center" class="rj">0.794</td><td style="text-align:center;color:#4ADE80;font-weight:700" class="rj">0.858</td></tr>'
     +'</tbody></table>';
-  return '<div class="card"><div class="ttl" style="color:#818CF8">📊 심층 통계 리포트 <span style="font-size:11px;color:#8A97BC">('+N+'회 · 매주 자동 갱신)</span></div>'
-    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">① 직전 회차와 겹치는 개수 <span style="font-size:11px;color:#8A97BC;font-weight:400">파랑=관측 · 노랑=이론</span></div>'+rows1
-    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 이론 분포와 일치 (χ²=3.4). 평균적으로 매주 0.8개가 재출현합니다.</div>'
+  return '<div class="card"><div class="ttl" style="color:#818CF8">📊 정직성 리포트 — 우리가 검증한 것들 <span style="font-size:11px;color:#8A97BC">('+N+'회 · 매주 자동 갱신)</span></div>'
+    +'<div style="background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.28);border-radius:12px;padding:12px 13px;margin-bottom:16px;font-size:12px;color:#C4CCEE;line-height:1.75"><b style="color:#A5B4FC">우리는 \'맞추는 법\'을 팔지 않습니다. 대신 이만큼 철저히 검증했습니다.</b> — 1,238회 전체를 다중비교보정으로 분석한 결과, 로또는 예측이 불가능하다는 것이 수학적으로 확정됐어요. 그래서 우리는 진짜 유효한 두 가지에만 집중합니다 — 세트 구조(3개+ 확률을 넓히기)와 독식지수(당첨 시 나눠 갖지 않기).</div>'
+    +'<div style="font-size:12px;font-weight:800;color:#818CF8;margin-bottom:12px">🔍 검증 근거 — 우리가 직접 확인한 것들</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">① 직전 회차와 겹치는 개수 <span style="font-size:11px;color:#8A97BC;font-weight:400">파랑=관측 · 노랑=이론</span> <span class="info-chip" onclick="toggleHelp(\'h-obs\')">ⓘ</span></div><div id="h-obs" class="help-inline">관측값은 지난 회차에서 실제로 나온 횟수, 이론 기대값은 순수 확률로 계산하면 이쯤 나와야 하는 값이에요. 둘이 비슷할수록 \'완전한 무작위\'라는 뜻이에요.</div>'+rows1
+    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 우리가 직접 확인했어요 — 직전 회차 재출현은 이론 분포와 정확히 맞아떨어졌어요 (χ²=3.4). 평균적으로 매주 0.8개가 자연스럽게 다시 나와요.</div>'
     +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">② "나올 때가 됐다"는 진짜일까? <span style="font-size:11px;color:#8A97BC;font-weight:400">쉰 기간별 다음 회차 출현율 (이론 13.33%)</span></div>'+rows2
-    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 오래 쉰 번호도 확률은 그대로입니다. 콜드넘버 전략은 근거가 없습니다.</div>'
+    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 우리가 직접 확인했어요 — 오래 쉰 번호든 방금 나온 번호든, 다음 회차 출현율은 이론값(13.33%)과 똑같았어요. \'나올 때가 됐다\'는 느낌은 통계로는 재현되지 않았어요.</div>'
     +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">③ 최다 동반출현 페어 TOP 5</div>'+rows3
-    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 990쌍 중 최다 페어도 통계 보정 후 우연 범위(z&lt;3.9)입니다.</div>'
+    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 우리가 직접 확인했어요 — 990쌍을 다중비교보정으로 검증했더니, 가장 많이 나온 페어조차 우연으로 설명되는 범위 안이었어요 (z&lt;3.9).</div>'
     +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">④ 패턴 헌팅 실험 — 14개 전략 + 256개 가중치 조합</div>'+hunt
-    +'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-top:8px">과거(훈련)에서 1위였던 패턴이 미래(검증)에선 평균 이하로, 꼴찌가 상위로 — 심지어 순수 랜덤이 검증 1위. 순위 자체가 노이즈라는 증거입니다. <span style="color:#818CF8">그래서 이 서비스는 "맞출 확률"이 아니라, 수학적으로 유효한 두 가지 — 세트 구조(3개+ 확률 극대화)와 독식지수(당첨 시 나눠 갖지 않기) — 에 집중합니다.</span></div></div>';
+    +'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-top:8px">→ 우리가 직접 실험했어요 — 과거(훈련)에서 1위였던 패턴이 미래(검증)에선 평균 이하로 내려앉고, 꼴찌였던 전략이 위로 올라왔어요. 심지어 순수 랜덤이 검증에서 1위였죠. 순위 자체가 노이즈라는 걸 우리 손으로 확인한 거예요. <span style="color:#818CF8">그래서 우리는 예측 대신, 확률이 정직하게 유효한 곳 — 세트 구조(3개+ 확률을 넓히기)와 독식지수(당첨 시 나눠 갖지 않기) — 에 힘을 씁니다.</span></div></div>';
 }
 function renderPrem(){
   var html='';
