@@ -92,6 +92,19 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
   </div>
 </div>
 
+<!-- 2단계 인증(MFA) 코드 입력 게이트 — 통과 전에는 앱 화면을 가림 (배경 불투명) -->
+<div id="mfa-gate" style="display:none;position:fixed;inset:0;background:#070714;z-index:70;padding:20px;overflow-y:auto">
+  <div style="max-width:360px;margin:80px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;text-align:center">
+    <div style="font-size:30px;margin-bottom:10px">🔐</div>
+    <div style="font-size:16px;font-weight:800;color:#E8ECFF;margin-bottom:6px">2단계 인증</div>
+    <div style="font-size:12px;color:#9DABD0;line-height:1.7;margin-bottom:14px">인증 앱(Google OTP 등)에 표시된<br>6자리 코드를 입력하세요.</div>
+    <input id="mfa-gate-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:20px;text-align:center;letter-spacing:6px;margin-bottom:10px">
+    <div id="mfa-gate-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
+    <button id="mfa-gate-btn" onclick="mfaGateVerify()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">확인</button>
+    <button onclick="mfaGateCancel()" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#9DABD0;font-size:12px">로그아웃</button>
+  </div>
+</div>
+
 <!-- QR 스캔 모달 (번호 자동입력) -->
 <div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,10,.82);z-index:55;padding:20px;overflow-y:auto">
   <div style="max-width:360px;margin:40px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px">
@@ -118,7 +131,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.12.00';
+var APP_VERSION='2.0.13.00';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -152,7 +165,7 @@ var ZONES=[
 var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
 var SETL=["A","B","C","D","E"];
 
-var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,latestWin:null,latestWinBusy:false,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,recovery:false,pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
+var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,latestWin:null,latestWinBusy:false,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,admErr:'',recovery:false,mfaOk:false,mfaBusy:false,mfaResume:[],mfaSet:{factors:null,busy:false,enroll:null,vbusy:false,msg:''},pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
 
 function gz(n){for(var i=0;i<5;i++)if(n>=ZONES[i].lo&&n<=ZONES[i].hi)return ZONES[i];return ZONES[0];}
 function ballHTML(n,size,glow,delay,forceColor){
@@ -1661,6 +1674,8 @@ function admActMore(kind){
 function renderAdm(){
   if(state.level!==100)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">권한이 없습니다</div>';
   if(!state.admin){
+    // 서버 거부(403 등) 시 재요청 루프 대신 사유 표시 — MFA(aal2) 미통과 안내 포함
+    if(state.admErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:26px;margin-bottom:8px">🔐</div><div style="font-size:12px;color:#F87171;line-height:1.7;margin-bottom:12px">'+state.admErr+'</div><button onclick="state.admErr=\'\';doTab(\'adm\')" style="padding:9px 18px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9DABD0;font-size:12px">다시 시도</button></div>';
     if(!state.admBusy)loadAdmin();
     return '<div class="card" style="text-align:center;color:#94A3C8;padding:30px">관리 데이터 로딩 중...</div>';
   }
@@ -1760,8 +1775,8 @@ function loadAdmin(){
   state.admBusy=true;
   fetch(SB_URL+'/functions/v1/admin',{headers:{'Authorization':'Bearer '+(state.session?state.session.access_token:SB_ANON)}})
     .then(function(r){return r.json();})
-    .then(function(j){state.admBusy=false;if(j&&j.users)state.admin=j;if(state.tab==='adm')doTab('adm');})
-    .catch(function(e){state.admBusy=false;showErr('관리 데이터 실패: '+e.message);});
+    .then(function(j){state.admBusy=false;if(j&&j.users){state.admErr='';state.admin=j;}else state.admErr=(j&&j.error)||'관리 데이터를 불러오지 못했습니다';if(state.tab==='adm')doTab('adm');})
+    .catch(function(e){state.admBusy=false;state.admErr='서버 연결 실패: '+e.message;if(state.tab==='adm')doTab('adm');});
 }
 
 function renderMyPicks(){
@@ -1825,7 +1840,7 @@ function renderMe(){
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>'+gamesMeCardsHTML()+'<div id="mypicks-wrap">'+renderMyPicks()+'</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>'+mfaSectionHTML()+gamesMeCardsHTML()+'<div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
@@ -1947,7 +1962,7 @@ function doOAuth(provider){
       if(res.error&&msg){msg.style.color='#F87171';msg.textContent='소셜 로그인 실패: '+res.error.message;}
     });
 }
-function doLogout(){sb.auth.signOut();state.rec=null;state.admin=null;state.notice='';state.streak=0;state.toNext=null;state.myPicks=null;state.savedKeys={};}
+function doLogout(){sb.auth.signOut();state.rec=null;state.admin=null;state.admErr='';state.notice='';state.streak=0;state.toNext=null;state.myPicks=null;state.savedKeys={};state.mfaOk=false;state.mfaSet.factors=null;state.mfaSet.enroll=null;state.mfaSet.msg='';}
 
 function loadProfile(cb){
   if(!state.session){state.level=0;state.streak=0;state.toNext=null;cb();return;}
@@ -1995,6 +2010,197 @@ function doCheckin(){
     .catch(function(e){});
 }
 
+// ── 2단계 인증(MFA) ──
+// AAL(인증 보증 수준) 확인: MFA를 등록한 계정만 currentLevel(aal1)!==nextLevel(aal2)이 되어 챌린지가 뜬다.
+// 미등록 계정은 currentLevel===nextLevel(aal1)이라 그대로 통과 → 등록 전 잠금(락아웃) 위험 없음.
+function ensureAal(cb){
+  if(!state.session){state.mfaOk=false;cb(true);return;}
+  if(state.mfaOk){cb(true);return;}
+  sb.auth.mfa.getAuthenticatorAssuranceLevel().then(function(res){
+    var d=res&&res.data?res.data:null;
+    if(d&&d.nextLevel==='aal2'&&d.currentLevel!==d.nextLevel){openMfaGate();cb(false);}
+    else{state.mfaOk=true;cb(true);}
+  }).catch(function(e){
+    // AAL 조회 실패 시 UI는 통과(락아웃 방지) — 관리 API는 서버가 aal2를 강제하므로 보안 경계는 유지됨
+    state.mfaOk=true;cb(true);
+  });
+}
+function openMfaGate(){
+  var g=document.getElementById('mfa-gate');if(!g)return;
+  var i=document.getElementById('mfa-gate-code');if(i)i.value='';
+  var m=document.getElementById('mfa-gate-msg');if(m)m.textContent='';
+  g.style.display='block';
+  setTimeout(function(){try{var i2=document.getElementById('mfa-gate-code');if(i2)i2.focus();}catch(e){}},80);
+}
+function closeMfaGate(){var g=document.getElementById('mfa-gate');if(g)g.style.display='none';}
+function mfaGateCancel(){state.mfaResume=[];closeMfaGate();doLogout();}
+function mfaResumeAll(){
+  var rs=state.mfaResume;state.mfaResume=[];
+  for(var i=0;i<rs.length;i++){try{rs[i]();}catch(e){}}
+}
+function mfaErrKo(msg){
+  var m=String(msg||'');
+  if(!m)return '오류가 발생했습니다.';
+  if(m.toLowerCase().indexOf('invalid totp')>=0||(m.toLowerCase().indexOf('code')>=0&&m.toLowerCase().indexOf('invalid')>=0))return '코드가 올바르지 않습니다. 인증 앱의 최신 코드를 다시 입력하세요.';
+  if(m.toLowerCase().indexOf('expired')>=0)return '코드가 만료됐습니다. 새 코드로 다시 시도하세요.';
+  if(m.indexOf('rate limit')>=0||m.indexOf('Too many')>=0)return '시도가 너무 잦습니다. 잠시 후 다시 시도해 주세요.';
+  return m;
+}
+// 로그인 게이트: 등록된 TOTP 팩터로 challenge→verify. 성공 시 세션이 aal2 토큰으로 교체·저장됨(supabase-js가 처리)
+function mfaGateVerify(){
+  var i=document.getElementById('mfa-gate-code'),m=document.getElementById('mfa-gate-msg'),b=document.getElementById('mfa-gate-btn');
+  var code=i?String(i.value).replace(/\D/g,''):'';
+  if(code.length!==6){if(m){m.style.color='#FBBF24';m.textContent='6자리 숫자 코드를 입력하세요.';}return;}
+  if(state.mfaBusy)return;
+  state.mfaBusy=true;
+  if(m){m.style.color='#9DABD0';m.textContent='확인 중...';}
+  if(b)b.disabled=true;
+  sb.auth.mfa.listFactors().then(function(res){
+    var f=(res&&res.data&&res.data.totp&&res.data.totp.length)?res.data.totp[0]:null;
+    if(!f)throw new Error('등록된 인증 수단을 찾지 못했습니다. 다시 로그인해 주세요.');
+    return sb.auth.mfa.challenge({factorId:f.id}).then(function(ch){
+      if(ch.error)throw ch.error;
+      return sb.auth.mfa.verify({factorId:f.id,challengeId:ch.data.id,code:code});
+    });
+  }).then(function(vr){
+    state.mfaBusy=false;if(b)b.disabled=false;
+    if(vr.error){if(m){m.style.color='#F87171';m.textContent=mfaErrKo(vr.error.message);}return;}
+    state.mfaOk=true;
+    closeMfaGate();
+    mfaResumeAll();
+  }).catch(function(e){
+    state.mfaBusy=false;if(b)b.disabled=false;
+    if(m){m.style.color='#F87171';m.textContent=mfaErrKo(e&&e.message?e.message:e);}
+  });
+}
+// ── 2단계 인증 설정 (내정보, 마스터 전용 노출) ──
+function loadMfaFactors(){
+  if(state.mfaSet.busy)return;
+  state.mfaSet.busy=true;
+  sb.auth.mfa.listFactors().then(function(res){
+    state.mfaSet.busy=false;
+    state.mfaSet.factors=(res&&res.data)?res.data:{totp:[],all:[]};
+    if(state.tab==='me')doTab('me');
+  }).catch(function(e){
+    state.mfaSet.busy=false;
+    state.mfaSet.factors={totp:[],all:[]};
+    if(state.tab==='me')doTab('me');
+  });
+}
+function mfaSectionHTML(){
+  if(state.level!==100)return '';
+  var f=state.mfaSet.factors,inner='';
+  if(!f){
+    if(!state.mfaSet.busy)setTimeout(function(){try{loadMfaFactors();}catch(e){}},0);
+    inner='<div style="font-size:11px;color:#9DABD0">상태 확인 중...</div>';
+  }else if(state.mfaSet.enroll){
+    var en=state.mfaSet.enroll;
+    // qr(data:image/svg+xml URL)은 따옴표 충돌을 피해 렌더 후 src를 프로퍼티로 주입
+    setTimeout(function(){try{var img=document.getElementById('mfa-qr-img');if(img&&state.mfaSet.enroll&&state.mfaSet.enroll.qr)img.src=state.mfaSet.enroll.qr;}catch(e){}},0);
+    inner='<div style="font-size:11px;color:#C4CCEE;line-height:1.7;margin-bottom:10px">① 인증 앱(Google OTP·Authy 등)으로 아래 QR을 스캔하거나 키를 수동 입력<br>② 앱에 표시된 6자리 코드를 입력해 등록을 완료하세요.</div>'
+      +(en.qr?'<div style="background:#fff;border-radius:12px;padding:10px;width:190px;margin:0 auto 10px"><img id="mfa-qr-img" alt="TOTP QR" style="display:block;width:170px;height:170px"></div>':'')
+      +(en.secret?'<div style="font-size:10px;color:#9DABD0;margin-bottom:4px">수동 입력 키</div><div class="rj" style="font-size:12px;color:#FBBF24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:9px;padding:8px;word-break:break-all;margin-bottom:10px">'+en.secret+'</div>':'')
+      +'<input id="mfa-enroll-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6자리 코드" style="width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:16px;text-align:center;letter-spacing:5px;margin-bottom:8px">'
+      +'<div id="mfa-set-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px">'+(state.mfaSet.msg||'')+'</div>'
+      +'<div style="display:flex;gap:7px"><button onclick="mfaConfirmEnroll()" style="flex:1;padding:11px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">등록 완료</button><button onclick="mfaCancelEnroll()" style="flex:1;padding:11px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#9DABD0;font-size:12px">취소</button></div>';
+  }else if(f.totp&&f.totp.length){
+    inner='<div style="font-size:12px;font-weight:700;color:#4ADE80;margin-bottom:8px">2단계 인증 사용 중 ✓</div>'
+      +'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:10px">로그인 시 비밀번호에 더해 인증 앱의 6자리 코드가 필요합니다.<br>관리 기능은 코드 인증을 통과한 세션에서만 동작합니다.</div>'
+      +(state.mfaSet.msg?'<div style="font-size:11px;color:#F87171;margin-bottom:6px">'+state.mfaSet.msg+'</div>':'')
+      +'<button onclick="mfaUnenroll()" style="padding:9px 18px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">해제</button>';
+  }else{
+    inner='<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:10px">인증 앱(Google OTP 등)의 6자리 코드를 로그인에 추가해 계정을 보호합니다.<br>마스터 계정은 사용을 강력히 권장합니다.</div>'
+      +(state.mfaSet.msg?'<div style="font-size:11px;color:#F87171;margin-bottom:6px">'+state.mfaSet.msg+'</div>':'')
+      +'<button onclick="mfaStartEnroll()" style="padding:11px 22px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">'+(state.mfaSet.vbusy?'준비 중...':'설정 시작')+'</button>';
+  }
+  return '<div class="card"><div class="ttl">🔐 2단계 인증 설정</div>'+inner+'</div>';
+}
+function mfaStartEnroll(){
+  if(state.mfaSet.vbusy)return;
+  state.mfaSet.vbusy=true;state.mfaSet.msg='';
+  if(state.tab==='me')doTab('me');
+  // 만들다 만(미검증) TOTP 팩터가 남아 있으면 정리 후 새로 발급 — 재시도 시 enroll 충돌 방지
+  sb.auth.mfa.listFactors().then(function(res){
+    var all=(res&&res.data&&res.data.all)?res.data.all:[];
+    var chain=Promise.resolve(),i;
+    for(i=0;i<all.length;i++){
+      if(all[i].factor_type==='totp'&&all[i].status!=='verified'){
+        (function(fid){chain=chain.then(function(){return sb.auth.mfa.unenroll({factorId:fid});});})(all[i].id);
+      }
+    }
+    return chain;
+  }).then(function(){
+    return sb.auth.mfa.enroll({factorType:'totp',friendlyName:'LuckyDaily'});
+  }).then(function(res){
+    state.mfaSet.vbusy=false;
+    if(res.error){state.mfaSet.msg=mfaErrKo(res.error.message);if(state.tab==='me')doTab('me');return;}
+    var d=res.data;
+    state.mfaSet.enroll={
+      id:d.id,
+      qr:(d.totp&&d.totp.qr_code)?d.totp.qr_code:'',
+      secret:(d.totp&&d.totp.secret)?d.totp.secret:''
+    };
+    state.mfaSet.msg='';
+    if(state.tab==='me')doTab('me');
+  }).catch(function(e){
+    state.mfaSet.vbusy=false;
+    state.mfaSet.msg=mfaErrKo(e&&e.message?e.message:e);
+    if(state.tab==='me')doTab('me');
+  });
+}
+function mfaConfirmEnroll(){
+  var i=document.getElementById('mfa-enroll-code'),m=document.getElementById('mfa-set-msg');
+  var code=i?String(i.value).replace(/\D/g,''):'';
+  if(code.length!==6){if(m){m.style.color='#FBBF24';m.textContent='인증 앱에 표시된 6자리 코드를 입력하세요.';}return;}
+  if(state.mfaSet.vbusy||!state.mfaSet.enroll)return;
+  state.mfaSet.vbusy=true;
+  if(m){m.style.color='#9DABD0';m.textContent='확인 중...';}
+  var fid=state.mfaSet.enroll.id;
+  sb.auth.mfa.challenge({factorId:fid}).then(function(ch){
+    if(ch.error)throw ch.error;
+    return sb.auth.mfa.verify({factorId:fid,challengeId:ch.data.id,code:code});
+  }).then(function(vr){
+    state.mfaSet.vbusy=false;
+    if(vr.error){if(m){m.style.color='#F87171';m.textContent=mfaErrKo(vr.error.message);}return;}
+    // verify 성공 → 현재 세션이 즉시 aal2로 승격됨(재로그인 불필요)
+    state.mfaSet.enroll=null;state.mfaSet.factors=null;state.mfaSet.msg='';state.mfaOk=true;
+    state.notice='✅ 2단계 인증이 켜졌습니다. 다음 로그인부터 6자리 코드를 함께 입력합니다.';
+    if(state.tab==='me')doTab('me');
+  }).catch(function(e){
+    state.mfaSet.vbusy=false;
+    if(m){m.style.color='#F87171';m.textContent=mfaErrKo(e&&e.message?e.message:e);}
+  });
+}
+function mfaCancelEnroll(){
+  var en=state.mfaSet.enroll;
+  state.mfaSet.enroll=null;state.mfaSet.msg='';
+  if(en&&en.id)sb.auth.mfa.unenroll({factorId:en.id}).then(function(res){
+    state.mfaSet.factors=null;
+    if(state.tab==='me')doTab('me');
+  }).catch(function(e){});
+  if(state.tab==='me')doTab('me');
+}
+function mfaUnenroll(){
+  var f=state.mfaSet.factors;
+  var fid=(f&&f.totp&&f.totp.length)?f.totp[0].id:null;
+  if(!fid)return;
+  if(!window.confirm('2단계 인증을 해제하면 비밀번호만으로 로그인하게 됩니다.\n정말 해제할까요?'))return;
+  if(!window.confirm('마지막 확인입니다. 계정 보호 수준이 낮아집니다.\n해제를 진행할까요?'))return;
+  if(state.mfaSet.vbusy)return;
+  state.mfaSet.vbusy=true;
+  sb.auth.mfa.unenroll({factorId:fid}).then(function(res){
+    state.mfaSet.vbusy=false;
+    if(res.error)state.mfaSet.msg=mfaErrKo(res.error.message);
+    else{state.mfaSet.msg='';state.notice='2단계 인증이 해제되었습니다.';}
+    state.mfaSet.factors=null;
+    if(state.tab==='me')doTab('me');
+  }).catch(function(e){
+    state.mfaSet.vbusy=false;
+    state.mfaSet.msg=mfaErrKo(e&&e.message?e.message:e);
+    if(state.tab==='me')doTab('me');
+  });
+}
+
 // ── 부트스트랩 ──
 function refresh(){renderAcct();renderTabs();doTab(state.tab);}
 var _lastUid=null;
@@ -2004,8 +2210,11 @@ sb.auth.onAuthStateChange(function(ev,session){
   var identityChanged=(newUid!==_lastUid);
   state.session=session;_lastUid=newUid;
   if(identityChanged){
-    state.rec=null;state.mode='wide';state.admin=null;state.myPicks=null;state.savedKeys={};state.sdk.st=null;state.lb={};
-    loadProfile(function(){refresh();trackVisit();if(session){doCheckin();loadSdkStatus();}});
+    state.rec=null;state.mode='wide';state.admin=null;state.admErr='';state.myPicks=null;state.savedKeys={};state.sdk.st=null;state.lb={};
+    state.mfaOk=false;state.mfaSet.factors=null;state.mfaSet.enroll=null;state.mfaSet.msg='';
+    var afterAuth=function(){loadProfile(function(){refresh();trackVisit();if(session){doCheckin();loadSdkStatus();}});};
+    // MFA 등록 계정은 AAL2 통과 전까지 게이트가 앱 진입을 막는다 (미등록 계정은 즉시 통과)
+    ensureAal(function(ok){if(ok)afterAuth();else state.mfaResume.push(afterAuth);});
   }else if(session){
     doCheckin();loadSdkStatus();
   }
@@ -2040,6 +2249,8 @@ try{
 }catch(e){}
 sb.auth.getSession().then(function(res){
   state.session=res.data?res.data.session:null;
+  // 세션 복원 시에도 AAL 확인 — 이미 aal2로 통과한 세션은 저장돼 있어 재차 코드를 묻지 않음
+  var bootMain=function(){
   loadProfile(function(){
     refresh();
     trackVisit();
@@ -2055,6 +2266,8 @@ sb.auth.getSession().then(function(res){
       if(state.tab==='freq'||state.tab==='hist'||state.tab==='hot')doTab(state.tab);
     });
   });
+  };
+  ensureAal(function(ok){if(ok)bootMain();else state.mfaResume.push(bootMain);});
 });
 </script>
 </body>
