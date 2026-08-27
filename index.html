@@ -158,7 +158,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.16.00';
+var APP_VERSION='2.0.16.01';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -1896,7 +1896,7 @@ function doTab(id){
     renderTabs();
     var c=document.getElementById('content'),html='';
     if(APP_ENV!=='live'&&!envAllowed()){
-      c.innerHTML='<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:34px;margin-bottom:12px">'+(APP_ENV==='qa'?'🧪':'🛠')+'</div><div class="ttl">'+APP_ENV.toUpperCase()+' 환경 — '+(APP_ENV==='qa'?'테스터/마스터':'마스터')+' 전용</div><div style="font-size:11px;color:#8A8A93;line-height:1.8;margin-bottom:14px">이곳은 배포 전 테스트 환경입니다.<br>권한이 있는 계정으로 로그인해 주세요.</div>'+(state.session?'<div style="font-size:11px;color:#F87171">현재 계정은 열람 권한이 없습니다.</div>':'<button onclick="openAuth()" style="padding:12px 26px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:14px">로그인</button>')+'</div><div class="footer">v'+APP_VERSION+' · '+APP_ENV+'</div>';
+      c.innerHTML='<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:34px;margin-bottom:12px">'+(APP_ENV==='qa'?'🧪':'🛠')+'</div><div class="ttl">'+APP_ENV.toUpperCase()+' 환경 — '+'테스터/마스터 전용</div><div style="font-size:11px;color:#8A8A93;line-height:1.8;margin-bottom:14px">이곳은 배포 전 테스트 환경입니다.<br>권한이 있는 계정으로 로그인해 주세요.</div>'+(state.session?'<div style="font-size:11px;color:#F87171">현재 계정은 열람 권한이 없습니다.</div>':'<button onclick="openAuth()" style="padding:12px 26px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:14px">로그인</button>')+'</div><div class="footer">v'+APP_VERSION+' · '+APP_ENV+'</div>';
       return;
     }
     var tdef=null;for(var i=0;i<TABS.length;i++)if(TABS[i].id===id)tdef=TABS[i];
@@ -2017,7 +2017,7 @@ function loadProfile(cb){
 }
 function envAllowed(){
   if(APP_ENV==='qa')return state.level===99||state.level===100;
-  if(APP_ENV==='dev')return state.level===100;
+  if(APP_ENV==='dev')return state.level===99||state.level===100;
   return true;
 }
 function trackVisit(){
