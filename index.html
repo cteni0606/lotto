@@ -13,50 +13,65 @@
 <meta name="description" content="로또 6/45 번호 분석 · 결과 자동대조 · 미니게임 — luckydaily.co.kr">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://luckydaily.co.kr/">
-<meta property="og:title" content="LuckyDaily — 로또 6/45 번호 분석">
+<meta property="og:title" content="오늘의 행운 — 로또 6/45 번호 분석">
 <meta property="og:description" content="번호 분석·저장·결과 자동대조까지, 매주 새로운 미니게임도 함께">
 <meta property="og:image" content="https://luckydaily.co.kr/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{-webkit-text-size-adjust:100%;background:#07071a;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:linear-gradient(160deg,#07071a 0%,#0d0d25 50%,#100820 100%);color:#DDE3F5;min-height:100svh;padding-bottom:env(safe-area-inset-bottom,20px);}
+html{-webkit-text-size-adjust:100%;background:#0A0A0D;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0A0A0D;color:#F2F2F0;min-height:100svh;padding-bottom:env(safe-area-inset-bottom,20px);}
 button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .rj{font-weight:800;letter-spacing:-.03em;}
 @keyframes popIn{0%{transform:scale(0);opacity:0}65%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
-@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
 @keyframes spin2{0%,100%{opacity:1}50%{opacity:.3}}
 .ap{animation:popIn .35s cubic-bezier(.34,1.56,.64,1) both;}
 .as{animation:spin2 1.4s ease-in-out infinite;}
-#hdr{padding:max(env(safe-area-inset-top,14px),14px) 14px 12px;text-align:center;border-bottom:1px solid rgba(251,191,36,.12);background:linear-gradient(180deg,rgba(251,191,36,.06) 0%,transparent 100%);}
-#hdr h1{font-size:22px;font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#FBBF24,#FB923C,#FBBF24);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;}
-#hdr p{font-size:11px;color:#8A97BC;margin-top:4px;}
+#hdr{padding:max(env(safe-area-inset-top,12px),12px) 14px 10px;border-bottom:1px solid rgba(255,255,255,.08);background:#0C0C10;}
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;min-height:34px;}
+.brand{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;letter-spacing:-.02em;color:#F2F2F0;}
+.logo-orb{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 32% 28%,#fff 0%,#E8A93A 38%,#a8721c 100%);box-shadow:0 4px 10px -3px rgba(232,169,58,.5);}
+#hdr p{font-size:11px;color:#8A8A93;margin-top:6px;}
+.hero-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.hero-kicker{font-size:11px;font-weight:700;letter-spacing:.14em;color:#8A8A93;margin-bottom:8px;}
+.hero-title{font-size:24px;line-height:1.32;font-weight:800;letter-spacing:-.03em;color:#F2F2F0;}
+.hero-title b{color:#E8A93A;}
+.hero-visual{position:relative;height:150px;width:146px;flex-shrink:0;}
+.b{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#1a1206;background:radial-gradient(circle at 32% 28%,#fff5df 0%,#E8A93A 45%,#a8721c 100%);box-shadow:0 6px 14px -4px rgba(232,169,58,.45);}
+.b1{width:52px;height:52px;top:4px;right:40px;}
+.b2{width:40px;height:40px;top:0;right:0;background:radial-gradient(circle at 32% 28%,#e9e9ee 0%,#b9b9c4 45%,#6c6c78 100%);box-shadow:0 6px 14px -4px rgba(0,0,0,.35);color:#1a1a1e;}
+.b3{width:46px;height:46px;top:60px;right:96px;}
+.b4{width:34px;height:34px;top:110px;right:10px;background:radial-gradient(circle at 32% 28%,#e9e9ee 0%,#b9b9c4 45%,#6c6c78 100%);box-shadow:0 6px 14px -4px rgba(0,0,0,.35);color:#1a1a1e;}
+.b5{width:30px;height:30px;top:86px;right:56px;}
+.cta{display:block;width:100%;padding:15px 28px;border-radius:999px;background:#E8A93A;color:#171207;font-weight:800;font-size:16px;min-height:52px;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);}
 .zdots{display:flex;gap:8px;justify-content:center;margin-top:7px;flex-wrap:wrap;}
 .zdot{display:flex;align-items:center;gap:3px;font-size:11px;}
 .zd{width:7px;height:7px;border-radius:50%;}
 #stats{display:flex;gap:7px;padding:10px 9px 0;}
-.stat{flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06);}
+.stat{flex:1;padding:9px 5px;text-align:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);}
 .sv{font-size:16px;font-weight:800;letter-spacing:-.03em;}
-.sl{font-size:11px;color:#94A3C8;margin-top:2px;}
+.sl{font-size:11px;color:#8A8A93;margin-top:2px;}
 #tab-nav{display:flex;gap:5px;overflow-x:auto;padding:10px 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 #tab-nav::-webkit-scrollbar{display:none;}
-.tb{padding:8px 11px;border-radius:18px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);color:#9DABD0;font-size:13px;white-space:nowrap;flex-shrink:0;min-height:36px;transition:all .15s;}
-.tb.on{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.11);color:#FBBF24;font-weight:700;}
+.tb{padding:8px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8A8A93;font-size:13px;white-space:nowrap;flex-shrink:0;min-height:36px;transition:all .15s;}
+.tb.on{border-color:rgba(232,169,58,.45);background:rgba(232,169,58,.11);color:#E8A93A;font-weight:700;}
 #content{padding:0 9px;}
-.card{background:rgba(255,255,255,.035);border-radius:18px;border:1px solid rgba(255,255,255,.07);padding:14px 12px;margin-bottom:10px;}
+.card{background:rgba(255,255,255,.035);border-radius:16px;border:1px solid rgba(255,255,255,.08);padding:14px 12px;margin-bottom:10px;}
 .cg{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.18);}
 .cd{background:rgba(255,255,255,.02);}
-.ttl{font-size:12px;font-weight:700;margin-bottom:11px;}
+.ttl{font-size:15px;font-weight:700;margin-bottom:11px;}
 .ball{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;user-select:none;flex-shrink:0;}
 .sb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;}
 .freq-bars{display:flex;gap:1px;align-items:flex-end;height:120px;overflow-x:auto;padding:0 0 4px;}
 .fb{width:7px;min-width:7px;border-radius:2px 2px 0 0;}
-.tag{font-size:11px;padding:2px 6px;border-radius:5px;}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;}
+.info-chip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;font-size:10px;font-weight:700;color:#8A8A93;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);cursor:pointer;vertical-align:middle;margin-left:3px;}
+.help-inline{display:none;font-size:11px;color:#8A8A93;line-height:1.7;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 11px;margin-top:6px;margin-bottom:2px;}
 .set-tags{display:flex;gap:5px;margin-top:7px;margin-left:29px;flex-wrap:wrap;}
 .bt-table{width:100%;font-size:11px;border-collapse:collapse;}
-.bt-table th{padding:6px 5px 8px;color:#8A97BC;font-weight:600;border-bottom:1px solid rgba(255,255,255,.07);}
-.bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.05);}
-.duo-row{background:rgba(255,255,255,.025);border-radius:14px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(251,191,36,.12);}
+.bt-table th{padding:6px 5px 8px;color:#8A8A93;font-weight:600;border-bottom:1px solid rgba(255,255,255,.08);}
+.bt-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.08);}
+.duo-row{background:rgba(255,255,255,.025);border-radius:12px;padding:11px 10px;margin-bottom:8px;border:1px solid rgba(232,169,58,.12);}
 .sdkc{width:56px;height:56px;border-radius:0;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;}
 .sdk6{width:40px;height:40px;font-size:18px;}
 .sdk9{width:28px;height:28px;font-size:14px;}
@@ -67,7 +82,7 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 .sdkp{width:54px;height:46px;border-radius:12px;font-size:18px;font-weight:800;}
 .sdkp6{width:34px;height:44px;border-radius:10px;font-size:15px;}
 .sdkp9{width:46px;height:42px;border-radius:10px;font-size:15px;}
-.footer{text-align:center;font-size:10px;color:#6D7AA4;line-height:1.9;padding:4px 8px 20px;}
+.footer{text-align:center;font-size:10px;color:#6E6E76;line-height:1.9;padding:4px 8px 20px;}
 #err-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:#fff;padding:12px 14px;z-index:9999;font-size:11px;line-height:1.7;word-break:break-all;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -76,55 +91,57 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
 <body>
 <div id="err-banner"></div>
 <div id="hdr">
-  <h1>🎱 로또 번호 분석기 <span id="app-env" style="display:none;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;margin-left:6px;vertical-align:middle"></span></h1>
-  <p>제 <strong style="color:#FBBF24" id="h-next">…</strong>회 추천 &nbsp;·&nbsp; 전체 <strong style="color:#C084FC" id="h-total">…</strong>회</p>
-  <div id="acct" style="margin-top:8px"></div>
+  <div class="nav-row">
+    <h1 class="brand"><span class="logo-orb"></span>오늘의 행운 <span id="app-env" style="display:none;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;vertical-align:middle"></span></h1>
+    <div id="acct"></div>
+  </div>
+  <p>제 <strong style="color:#E8A93A" id="h-next">…</strong>회 추천 &nbsp;·&nbsp; 전체 <strong style="color:#F2F2F0" id="h-total">…</strong>회</p>
 </div>
 <div id="tab-nav"></div>
-<div id="content"><div style="text-align:center;padding:40px;color:#94A3C8">불러오는 중...</div></div>
-<div id="ver-badge" style="position:fixed;right:10px;bottom:8px;font-size:10px;color:#6D7AA4;z-index:40;pointer-events:none;font-family:ui-monospace,monospace"></div>
-<div id="pick-toast" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:34px;max-width:86%;background:#141A2E;border:1px solid rgba(251,191,36,.4);color:#E8ECFF;font-size:12px;line-height:1.5;padding:10px 18px;border-radius:12px;z-index:60;box-shadow:0 4px 20px rgba(0,0,0,.5);text-align:center"></div>
+<div id="content"><div style="text-align:center;padding:40px;color:#8A8A93">불러오는 중...</div></div>
+<div id="ver-badge" style="position:fixed;right:10px;bottom:8px;font-size:10px;color:#6E6E76;z-index:40;pointer-events:none;font-family:ui-monospace,monospace"></div>
+<div id="pick-toast" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:34px;max-width:86%;background:#1A1A1F;border:1px solid rgba(232,169,58,.4);color:#F2F2F0;font-size:12px;line-height:1.5;padding:10px 18px;border-radius:12px;z-index:60;box-shadow:0 4px 20px rgba(0,0,0,.5);text-align:center"></div>
 
 <!-- 로그인 모달 -->
 <div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,10,.75);z-index:50;padding:20px;overflow-y:auto">
-  <div style="max-width:360px;margin:60px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px">
+  <div style="max-width:360px;margin:60px auto;background:#131316;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div id="auth-title" style="font-size:16px;font-weight:800;color:#E8ECFF">로그인</div>
-      <button onclick="closeAuth()" style="background:none;border:none;color:#94A3C8;font-size:20px;padding:4px 8px">✕</button>
+      <div id="auth-title" style="font-size:16px;font-weight:800;color:#F2F2F0">로그인</div>
+      <button onclick="closeAuth()" style="background:none;border:none;color:#8A8A93;font-size:20px;padding:4px 8px">✕</button>
     </div>
-    <input id="auth-email" type="email" placeholder="이메일" autocomplete="email" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:9px">
-    <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:12px">
-    <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:#9DABD0;margin-bottom:8px"><input type="checkbox" id="auth-remember" checked style="width:16px;height:16px;accent-color:#2563EB"> 이메일 저장</label>
+    <input id="auth-email" type="email" placeholder="이메일" autocomplete="email" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#F2F2F0;font-size:14px;margin-bottom:9px">
+    <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#F2F2F0;font-size:14px;margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:#8A8A93;margin-bottom:8px"><input type="checkbox" id="auth-remember" checked style="width:16px;height:16px;accent-color:#E8A93A"> 이메일 저장</label>
     <div id="auth-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
-    <button id="auth-submit" onclick="doAuth()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">로그인</button>
-    <button onclick="toggleAuthMode()" id="auth-toggle" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#9DABD0;font-size:12px;margin-bottom:14px">처음이신가요? 회원가입</button>
-    <button onclick="doRecover()" style="width:100%;padding:8px;background:none;border:none;color:#8A97BC;font-size:11px;text-decoration:underline">비밀번호를 잊으셨나요?</button>
+    <button id="auth-submit" onclick="doAuth()" style="width:100%;padding:13px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:14px;margin-bottom:9px">로그인</button>
+    <button onclick="toggleAuthMode()" id="auth-toggle" style="width:100%;padding:10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:12px;margin-bottom:14px">처음이신가요? 회원가입</button>
+    <button onclick="doRecover()" style="width:100%;padding:8px;background:none;border:none;color:#8A8A93;font-size:11px;text-decoration:underline">비밀번호를 잊으셨나요?</button>
   </div>
 </div>
 
 <!-- 2단계 인증(MFA) 코드 입력 게이트 — 통과 전에는 앱 화면을 가림 (배경 불투명) -->
-<div id="mfa-gate" style="display:none;position:fixed;inset:0;background:#070714;z-index:70;padding:20px;overflow-y:auto">
-  <div style="max-width:360px;margin:80px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;text-align:center">
+<div id="mfa-gate" style="display:none;position:fixed;inset:0;background:#0A0A0D;z-index:70;padding:20px;overflow-y:auto">
+  <div style="max-width:360px;margin:80px auto;background:#131316;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px;text-align:center">
     <div style="font-size:30px;margin-bottom:10px">🔐</div>
-    <div style="font-size:16px;font-weight:800;color:#E8ECFF;margin-bottom:6px">2단계 인증</div>
-    <div style="font-size:12px;color:#9DABD0;line-height:1.7;margin-bottom:14px">인증 앱(Google OTP 등)에 표시된<br>6자리 코드를 입력하세요.</div>
-    <input id="mfa-gate-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:20px;text-align:center;letter-spacing:6px;margin-bottom:10px">
+    <div style="font-size:16px;font-weight:800;color:#F2F2F0;margin-bottom:6px">2단계 인증</div>
+    <div style="font-size:12px;color:#8A8A93;line-height:1.7;margin-bottom:14px">인증 앱(Google OTP 등)에 표시된<br>6자리 코드를 입력하세요.</div>
+    <input id="mfa-gate-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#F2F2F0;font-size:20px;text-align:center;letter-spacing:6px;margin-bottom:10px">
     <div id="mfa-gate-msg" style="font-size:11px;color:#F87171;min-height:16px;margin-bottom:8px"></div>
-    <button id="mfa-gate-btn" onclick="mfaGateVerify()" style="width:100%;padding:13px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px;margin-bottom:9px">확인</button>
-    <button onclick="mfaGateCancel()" style="width:100%;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#9DABD0;font-size:12px">로그아웃</button>
+    <button id="mfa-gate-btn" onclick="mfaGateVerify()" style="width:100%;padding:13px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:14px;margin-bottom:9px">확인</button>
+    <button onclick="mfaGateCancel()" style="width:100%;padding:10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:12px">로그아웃</button>
   </div>
 </div>
 
 <!-- QR 스캔 모달 (번호 자동입력) -->
 <div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,10,.82);z-index:55;padding:20px;overflow-y:auto">
-  <div style="max-width:360px;margin:40px auto;background:#0d0d28;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px">
+  <div style="max-width:360px;margin:40px auto;background:#131316;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:800;color:#E8ECFF">📷 QR로 번호 넣기</div>
-      <button onclick="closeQrScan()" style="background:none;border:none;color:#94A3C8;font-size:20px;padding:4px 8px">✕</button>
+      <div style="font-size:15px;font-weight:800;color:#F2F2F0">📷 QR로 번호 넣기</div>
+      <button onclick="closeQrScan()" style="background:none;border:none;color:#8A8A93;font-size:20px;padding:4px 8px">✕</button>
     </div>
     <div id="qr-video-wrap" style="display:none">
       <video id="qr-video" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000"></video>
-      <div id="qr-status" style="font-size:11px;color:#9AA6C8;text-align:center;margin-top:8px;line-height:1.6;min-height:16px"></div>
+      <div id="qr-status" style="font-size:11px;color:#8A8A93;text-align:center;margin-top:8px;line-height:1.6;min-height:16px"></div>
     </div>
     <canvas id="qr-canvas" style="display:none"></canvas>
     <div id="qr-result"></div>
@@ -141,15 +158,15 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.14.00';
+var APP_VERSION='2.0.16.02';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
 var LEVELS=[
-  {lv:0,name:'게스트',c:'#94A3C8',desc:'순수 랜덤 번호만',cond:'-'},
-  {lv:1,name:'회원',c:'#38BDF8',desc:'기본 필터 + 5개일치 회피 · 빈도/기록 열람',cond:'가입 즉시'},
+  {lv:0,name:'게스트',c:'#8A8A93',desc:'순수 랜덤 번호만',cond:'-'},
+  {lv:1,name:'회원',c:'#B9B9C4',desc:'기본 필터 + 5개일치 회피 · 빈도/기록 열람',cond:'가입 즉시'},
   {lv:2,name:'실버',c:'#C0C8D8',desc:'+ 독식지수(인기 회피) · 핫&콜드 열람',cond:'출석 +1일'},
-  {lv:3,name:'골드',c:'#FBBF24',desc:'+ 세트 구조 전략(분산/집중) · 프리미엄 정보',cond:'실버에서 +1일 더'}
+  {lv:3,name:'골드',c:'#E8A93A',desc:'+ 세트 구조 전략(분산/집중) · 프리미엄 정보',cond:'실버에서 +1일 더'}
 ];
 var MASTER={lv:100,name:'마스터',c:'#F472B6',desc:'운영자',cond:'-'};
 var TESTER={lv:99,name:'테스터',c:'#4ADE80',desc:'테스트 계정',cond:'-'};
@@ -168,11 +185,11 @@ var TABS=[
 ];
 
 var ZONES=[
-  {lo:1,hi:10,c:"#FBBF24",tc:"#1A1000"},{lo:11,hi:20,c:"#38BDF8",tc:"#001525"},
+  {lo:1,hi:10,c:"#E8A93A",tc:"#1A1000"},{lo:11,hi:20,c:"#38BDF8",tc:"#001525"},
   {lo:21,hi:30,c:"#F87171",tc:"#200000"},{lo:31,hi:40,c:"#C084FC",tc:"#120025"},
   {lo:41,hi:45,c:"#4ADE80",tc:"#001A00"}
 ];
-var SETC=["#FBBF24","#4ADE80","#38BDF8","#F87171","#C084FC"];
+var SETC=["#E8A93A","#E8A93A","#E8A93A","#E8A93A","#E8A93A"];
 var SETL=["A","B","C","D","E"];
 
 var state={session:null,level:0,streak:0,toNext:null,notice:'',mode:'wide',rec:null,recBusy:false,draws:null,latestWin:null,latestWinBusy:false,tab:'rec',authMode:'login',providers:{google:false,kakao:false},admin:null,admBusy:false,admErr:'',recovery:false,mfaOk:false,mfaBusy:false,mfaResume:[],mfaSet:{factors:null,busy:false,enroll:null,vbusy:false,msg:''},pick:[],diag:null,diagBusy:false,semi:null,semiBusy:false,myPicks:null,picksBusy:false,saveBusy:false,savedKeys:{},game:null,fw:null,mm:null,lb:{},sdk:{bank:null,bankBusy:false,bankErr:false,bank6:null,bank6Busy:false,bank6Err:false,bank9:null,bank9Busy:false,bank9Err:false,st:null,stBusy:false,date:null,cells:null,given:null,solution:{},done:null,sel:null,startMs:{m:0,b:0,c:0},busy:{},conf:{},celeb:{m:{},b:{},c:{}}}};
@@ -203,7 +220,7 @@ function maskEmail(email){
   var keep=local.length>=6?3:local.length>=3?2:1;
   return local.slice(0,keep)+'***'+domain;
 }
-function sBox(val,lbl,c){return '<div style="flex:1;background:rgba(255,255,255,.04);border-radius:13px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:'+c+'">'+val+'</div><div class="sl">'+lbl+'</div></div>';}
+function sBox(val,lbl,c){return '<div style="flex:1;padding:9px 5px;text-align:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)"><div class="sv rj" style="color:'+c+'">'+val+'</div><div class="sl">'+lbl+'</div></div>';}
 
 // ── 상단 계정/탭 ──
 function renderAcct(){
@@ -211,9 +228,9 @@ function renderAcct(){
   if(state.session){
     var li=lvInfo(state.level);
     var streakStr=state.streak>0?'<span style="font-size:11px;color:#F97316;margin-right:6px">🔥 '+state.streak+'일</span>':'';
-    el.innerHTML='<span style="font-size:11px;color:#9AA6C8">'+maskEmail(state.session.user.email||'')+'</span> <span style="font-size:11px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:9px;margin:0 6px">Lv.'+(state.level===100?'M':state.level===99?'T':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:11px;color:#94A3C8;background:none;border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:9px">로그아웃</button>';
+    el.innerHTML='<span style="font-size:11px;color:#8A8A93">'+maskEmail(state.session.user.email||'')+'</span> <span style="font-size:11px;font-weight:800;color:'+li.c+';background:'+li.c+'22;border:1px solid '+li.c+'55;padding:2px 9px;border-radius:999px;margin:0 6px">Lv.'+(state.level===100?'M':state.level===99?'T':state.level)+' '+li.name+'</span>'+streakStr+'<button onclick="doLogout()" style="font-size:11px;color:#8A8A93;background:none;border:1px solid rgba(255,255,255,.08);padding:3px 10px;border-radius:999px">로그아웃</button>';
   }else{
-    el.innerHTML='<span style="font-size:11px;font-weight:800;color:#94A3C8;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:2px 9px;border-radius:9px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);padding:4px 14px;border-radius:9px">로그인</button>';
+    el.innerHTML='<span style="font-size:11px;font-weight:800;color:#8A8A93;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:2px 9px;border-radius:999px;margin-right:6px">게스트</span><button onclick="openAuth()" style="font-size:11px;font-weight:700;color:#171207;background:#E8A93A;border:none;padding:5px 14px;border-radius:999px;box-shadow:0 6px 14px -6px rgba(232,169,58,.5)">로그인</button>';
   }
 }
 function renderTabs(){
@@ -233,64 +250,72 @@ function renderLadder(){
   var rows='';
   for(var i=0;i<LEVELS.length;i++){
     var L=LEVELS[i],mine=L.lv===state.level||((state.level===100||state.level===99)&&L.lv===3),locked=effLv()<L.lv;
-    rows+='<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:11px;margin-bottom:5px;background:'+(mine?L.c+'14':'rgba(255,255,255,.02)')+';border:1px solid '+(mine?L.c+'55':'rgba(255,255,255,.05)')+'">'
-      +'<span style="flex-shrink:0;font-size:11px;font-weight:800;color:'+(locked?'#6D7AA4':L.c)+';min-width:52px">'+(mine?'▶ ':'')+'Lv.'+L.lv+' '+L.name+'</span>'
-      +'<span style="font-size:11px;color:'+(locked?'#6D7AA4':'#9AA6C8')+';line-height:1.5;flex:1">'+(locked?'🔒 ':'')+L.desc+'</span>'
-      +'<span style="flex-shrink:0;font-size:11px;color:'+(locked?'#8A97BC':'#4ADE80')+'">'+L.cond+'</span></div>';
+    rows+='<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:999px;margin-bottom:5px;background:'+(mine?L.c+'14':'rgba(255,255,255,.02)')+';border:1px solid '+(mine?L.c+'55':'rgba(255,255,255,.05)')+'">'
+      +'<span style="flex-shrink:0;font-size:11px;font-weight:800;color:'+(locked?'#6E6E76':L.c)+';min-width:52px">'+(mine?'▶ ':'')+'Lv.'+L.lv+' '+L.name+'</span>'
+      +'<span style="font-size:11px;color:'+(locked?'#6E6E76':'#8A8A93')+';line-height:1.5;flex:1">'+(locked?'🔒 ':'')+L.desc+'</span>'
+      +'<span style="flex-shrink:0;font-size:11px;color:'+(locked?'#8A8A93':'#4ADE80')+'">'+L.cond+'</span></div>';
   }
   return rows;
 }
 function latestWinCardHTML(){
   var lw=state.latestWin;
   if(!lw||typeof lw.won1_count!=='number'||typeof lw.won1_amount!=='number')return '';
-  return '<div class="card cd"><div style="font-size:11px;color:#C4CCEE;line-height:1.9;text-align:center">📋 제'+lw.round+'회 1등 당첨자 <b style="color:#FBBF24">'+fmtNum(lw.won1_count)+'명</b> · 1인당 당첨금 <b style="color:#FBBF24">'+fmtNum(lw.won1_amount)+'원</b><br><span style="font-size:11px;color:#8A97BC">동행복권 공식 발표 기준</span></div></div>';
+  return '<div class="card cd"><div style="font-size:11px;color:#C7C7CC;line-height:1.9;text-align:center">📋 제'+lw.round+'회 1등 당첨자 <b style="color:#E8A93A">'+fmtNum(lw.won1_count)+'명</b> · 1인당 당첨금 <b style="color:#E8A93A">'+fmtNum(lw.won1_amount)+'원</b><br><span style="font-size:11px;color:#8A8A93">동행복권 공식 발표 기준</span></div></div>';
 }
 function renderRec(){
   var li=lvInfo(state.level);
-  var html='<div id="rec-win-fact">'+latestWinCardHTML()+'</div>';
+  var html='';
+  if(!state.recBusy&&!state.rec){
+    html+='<div class="card" style="padding:22px 18px 18px"><div class="hero-row"><div><div class="hero-kicker">LOTTO 6/45</div><div class="hero-title">제 <b>'+calcNextRound()+'회</b><br>오늘의 추천</div></div><div class="hero-visual"><div class="b b1">7</div><div class="b b2">14</div><div class="b b3">24</div><div class="b b4">38</div><div class="b b5">45</div></div></div><button class="cta" onclick="getRec()">🎲 번호 받기</button><div style="font-size:11px;color:#8A8A93;margin-top:10px;text-align:center">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
+  }
+  html+='<div id="rec-win-fact">'+latestWinCardHTML()+'</div>';
   if(state.notice){
-    html+='<div class="card" style="border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)"><div style="font-size:13px;font-weight:700;color:#FBBF24;text-align:center">'+state.notice+'</div></div>';
+    html+='<div class="card" style="border-color:rgba(232,169,58,.35);background:rgba(232,169,58,.06)"><div style="font-size:13px;font-weight:700;color:#E8A93A;text-align:center">'+state.notice+'</div></div>';
   }
   var prog='';
   if(state.session&&state.level>=1&&state.level<=2&&state.toNext!==null){
     var need=1,done=need-state.toNext;
     var pct=Math.round(done/need*100);
-    prog='<div style="margin-top:9px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9DABD0;margin-bottom:4px"><span>🔥 연속 출석 '+state.streak+'일</span><span>'+lvInfo(state.level+1).name+'까지 '+state.toNext+'일</span></div><div style="background:rgba(255,255,255,.08);border-radius:6px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#F97316,#FBBF24);border-radius:6px"></div></div></div>';
+    prog='<div style="margin-top:9px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#8A8A93;margin-bottom:4px"><span>🔥 연속 출석 '+state.streak+'일</span><span>'+lvInfo(state.level+1).name+'까지 '+state.toNext+'일</span></div><div style="background:rgba(255,255,255,.08);border-radius:6px;height:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#E8A93A;border-radius:6px"></div></div></div>';
   }
-  html+='<div class="card" style="padding:12px 14px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:12px;font-weight:800;color:'+li.c+'">🏅 '+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</span><span onclick="doTab(\'me\')" style="font-size:11px;color:#8A97BC;text-decoration:underline;cursor:pointer">레벨 안내 →</span></div>'+prog
-    +(state.level===0?'<div style="font-size:11px;color:#38BDF8;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:9px 12px;margin-top:10px">💡 무료 가입 시 분석 알고리즘 + 매일 접속만 해도 자동 승급됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
+  html+='<div class="card" style="padding:12px 14px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:12px;font-weight:800;color:'+li.c+'">🏅 '+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</span><span onclick="doTab(\'me\')" style="font-size:11px;color:#8A8A93;text-decoration:underline;cursor:pointer">레벨 안내 →</span></div>'+prog
+    +(state.level===0?'<div style="font-size:11px;color:#E8A93A;background:rgba(232,169,58,.08);border:1px solid rgba(232,169,58,.2);border-radius:12px;padding:9px 12px;margin-top:10px">💡 무료 가입 시 분석 알고리즘 + 매일 접속만 해도 자동 승급됩니다 → <b onclick="openAuth()" style="text-decoration:underline;cursor:pointer">로그인/가입</b></div>':'')
     +'</div>';
   if(effLv()>=3){
     var wOn=state.mode==='wide';
-    var bw='flex:1;padding:11px 6px;border-radius:12px;font-size:12px;font-weight:700;min-height:52px;';
-    html+='<div class="card"><div class="ttl">🧭 세트 구조 전략</div><div style="display:flex;gap:8px">'
-      +'<button onclick="setMode(1)" style="'+bw+'border:1.5px solid '+(wOn?'#38BDF8':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(56,189,248,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#38BDF8':'#94A3C8')+'">🌐 분산<br><span style="font-size:11px;font-weight:400">30개 완전 분리 · 3개+ 11.9%</span></button>'
-      +'<button onclick="setMode(0)" style="'+bw+'border:1.5px solid '+(!wOn?'#C084FC':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(192,132,252,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#C084FC':'#94A3C8')+'">🎯 집중<br><span style="font-size:11px;font-weight:400">핵심 3개 공유 · 동반 적중형</span></button></div></div>';
+    var cbw='flex:1;padding:11px 9px;border-radius:12px;font-size:12px;font-weight:700;min-height:64px;text-align:left;line-height:1.4;';
+    html+='<div class="card"><div class="ttl">🧭 세트 구조 전략 <span class="info-chip" onclick="toggleHelp(\'h-setmode\')">ⓘ</span></div>'
+      +'<div id="h-setmode" class="help-inline"><b style="color:#E8A93A">🌐 분산</b> — 5게임에 번호 30개를 겹치지 않게 나눠 담아요. 한 게임이라도 3개 이상 맞을 가능성을 가장 넓게 벌려두는 방식이에요. (5게임 중 최소 1게임이 3개+ 맞을 확률 약 11.9%)<br><br><b style="color:#E8A93A">🎯 집중</b> — 핵심 번호 3개를 5게임 모두에 공통으로 넣어요. 그 번호들이 당첨되면 여러 게임이 한꺼번에 맞는, 한 방을 노리는 방식이에요.</div>'
+      +'<div style="display:flex;gap:8px">'
+      +'<button onclick="setMode(1)" style="'+cbw+'border:1.5px solid '+(wOn?'#E8A93A':'rgba(255,255,255,.12)')+';background:'+(wOn?'rgba(232,169,58,.13)':'rgba(255,255,255,.03)')+';color:'+(wOn?'#E8A93A':'#8A8A93')+'">🌐 분산<br><span style="font-size:11px;font-weight:400;color:'+(wOn?'#C7C7CC':'#8A8A93')+'">5게임을 서로 다른 번호로 · 넓게 노리기</span></button>'
+      +'<button onclick="setMode(0)" style="'+cbw+'border:1.5px solid '+(!wOn?'#E8A93A':'rgba(255,255,255,.12)')+';background:'+(!wOn?'rgba(232,169,58,.13)':'rgba(255,255,255,.03)')+';color:'+(!wOn?'#E8A93A':'#8A8A93')+'">🎯 집중<br><span style="font-size:11px;font-weight:400;color:'+(!wOn?'#C7C7CC':'#8A8A93')+'">핵심 번호를 5게임에 공유 · 한 방 노리기</span></button></div></div>';
   }
   if(state.recBusy){
-    html+='<div class="card" style="text-align:center"><div class="ttl">서버에서 생성 중...</div><div style="background:rgba(255,255,255,.08);border-radius:8px;height:6px;overflow:hidden;margin:12px 0"><div style="width:55%;height:100%;background:linear-gradient(90deg,#0EA5E9,#6366F1);animation:shimmer 1.4s linear infinite"></div></div></div>';
+    html+='<div class="card" style="text-align:center"><div class="ttl">서버에서 생성 중...</div><div style="background:rgba(255,255,255,.08);border-radius:8px;height:6px;overflow:hidden;margin:12px 0"><div style="width:55%;height:100%;background:#E8A93A;animation:spin2 1.4s ease-in-out infinite"></div></div></div>';
   }else if(state.rec){
     var r=state.rec,setsHTML='';
     for(var idx=0;idx<r.sets.length;idx++){
       var s=r.sets[idx],bls='';
       for(var i=0;i<s.nums.length;i++)bls+=ballHTML(s.nums[i],36,true,(idx*6+i)*40);
       var tags='<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">짝 '+s.meta.even+'</span><span class="tag" style="color:#F87171;background:rgba(248,113,113,.1)">홀 '+(6-s.meta.even)+'</span>';
+      var helps='';
       if(typeof s.meta.unpop!=='undefined'){
-        var upC=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#FBBF24':'#F87171';
-        tags+='<span class="tag" style="color:'+upC+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span>';
-        tags+='<span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span>';
+        var upC=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#E8A93A':'#F87171';
+        tags+='<span class="tag" style="color:'+upC+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span><span class="info-chip" onclick="toggleHelp(\'h-unpop-'+idx+'\')">ⓘ</span>';
+        tags+='<span class="tag" style="color:#E8A93A;background:rgba(232,169,58,.1)">시너지 '+s.meta.synergy+'</span><span class="info-chip" onclick="toggleHelp(\'h-syn-'+idx+'\')">ⓘ</span>';
+        helps+='<div id="h-unpop-'+idx+'" class="help-inline"><b style="color:'+upC+'">독식</b> — 당첨됐을 때 다른 사람과 상금을 나눠 갖지 않을 가능성을 점수로 나타내요. 점수가 높을수록 남들이 잘 안 고르는 조합이라, 당첨 시 독식할 가능성이 커요. (당첨 확률 자체는 어떤 번호든 똑같아요)</div>';
+        helps+='<div id="h-syn-'+idx+'" class="help-inline"><b style="color:#E8A93A">시너지</b> — 6개 번호가 한쪽으로 치우치지 않고 고르게 짜였는지를 보는 참고 점수예요. 당첨을 예측하는 값은 아니고, 조합의 \'모양\'이 역대 당첨 번호처럼 균형 잡혔는지 참고용으로만 봐요.</div>';
       }
       if(s.meta.freshness){
         var fL=s.meta.freshness==='fresh'?'신선 ✓':s.meta.freshness==='overlap4'?'4개 겹침':'⚠ 유사';
-        var fC=s.meta.freshness==='fresh'?'#4ADE80':s.meta.freshness==='overlap4'?'#FBBF24':'#F87171';
-        tags+='<span class="tag" style="color:'+fC+';background:rgba(255,255,255,.06)">'+fL+'</span>';
+        var fC=s.meta.freshness==='fresh'?'#4ADE80':s.meta.freshness==='overlap4'?'#E8A93A':'#F87171';
+        tags+='<span class="tag" style="color:'+fC+';background:rgba(255,255,255,.06)">'+fL+'</span><span class="info-chip" onclick="toggleHelp(\'h-fresh-'+idx+'\')">ⓘ</span>';
+        helps+='<div id="h-fresh-'+idx+'" class="help-inline"><b style="color:'+fC+'">신선도</b> — 이 조합이 예전 1등 당첨 번호와 얼마나 닮았는지 보여줘요. \'신선\'은 겹침이 적은 새 조합, \'⚠ 유사\'는 예전 당첨 번호와 많이 겹친다는 뜻이에요. 당첨 확률에 영향을 주진 않지만, 이미 나온 번호를 그대로 다시 쓰는 걸 피하고 싶은 분을 위한 표시예요.</div>';
       }
       tags+='<span style="flex:1"></span>'+saveBtnHTML(r.nextRound,s.nums,'reco');
-      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:11px 10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div class="rj" style="font-size:13px;color:'+SETC[idx]+'">'+s.meta.sum+'</div><div style="font-size:10px;color:#8A97BC">합계</div></div></div><div class="set-tags">'+tags+'</div></div>';
+      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:12px;border:1px solid '+SETC[idx]+'22;padding:11px 10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div class="rj" style="font-size:13px;color:'+SETC[idx]+'">'+s.meta.sum+'</div><div style="font-size:10px;color:#8A8A93">합계</div></div></div><div class="set-tags">'+tags+'</div>'+helps+'</div>';
     }
-    html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="ttl" style="margin-bottom:0">🎯 제 '+r.nextRound+'회 추천 5세트</div><button onclick="getRec()" style="padding:6px 11px;border-radius:12px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#FBBF24;font-size:11px;font-weight:600">🔄 재생성</button></div><div style="font-size:11px;color:#8A97BC;margin-bottom:12px">적용: '+r.algo+'</div>'+setsHTML+'</div>';
-  }else{
-    html+='<div class="card" style="text-align:center"><button onclick="getRec()" style="padding:14px 30px;border-radius:13px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:800;font-size:15px;min-height:52px">🎲 번호 받기</button><div style="font-size:11px;color:#8A97BC;margin-top:10px">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
+    html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="ttl" style="margin-bottom:0">🎯 제 '+r.nextRound+'회 추천 5세트</div><button onclick="getRec()" style="padding:6px 11px;border-radius:999px;border:1px solid rgba(232,169,58,.3);background:rgba(232,169,58,.08);color:#E8A93A;font-size:11px;font-weight:600">🔄 재생성</button></div><div style="font-size:11px;color:#8A8A93;margin-bottom:12px">적용: '+r.algo+'</div>'+setsHTML+'</div>';
   }
   html+=gamesBannerHTML();
   return html;
@@ -310,6 +335,11 @@ function getRec(){
     .catch(function(e){state.recBusy=false;showErr('서버 연결 실패: '+e.message);doTab('rec');});
 }
 function setMode(w){state.mode=w?'wide':'focus';state.rec=null;doTab('rec');}
+function toggleHelp(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';
+}
 
 // ── 번호 저장 → 결과 자동대조 (Phase 1) ──
 function calcNextRound(){
@@ -326,7 +356,7 @@ function pickToast(msg){
 function saveBtnHTML(round,nums,source,btnId){
   var key=round+':'+nums.join(',');
   if(state.savedKeys[key])return '<span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 저장됨</span>';
-  return '<button class="tag"'+(btnId?' id="'+btnId+'"':'')+' onclick="savePick(this,'+round+',\''+nums.join(',')+'\',\''+source+'\')" style="color:#FBBF24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)">💾 저장</button>';
+  return '<button class="tag"'+(btnId?' id="'+btnId+'"':'')+' onclick="savePick(this,'+round+',\''+nums.join(',')+'\',\''+source+'\')" style="color:#E8A93A;background:rgba(232,169,58,.12);border:1px solid rgba(232,169,58,.3)">💾 저장</button>';
 }
 function savePick(btn,round,csv,source,cb){
   // cb: 일괄 저장(qrSaveAll)용 완료 콜백(성공 여부 전달) — 인라인 onclick 호출 시엔 undefined
@@ -371,12 +401,12 @@ function deletePick(id){
     .catch(function(e){pickToast('⚠ 서버 연결 실패');});
 }
 function pickRank(m,b){
-  if(m===6)return['🥇 1등!','#FBBF24'];
+  if(m===6)return['🥇 1등!','#E8A93A'];
   if(m===5&&b)return['🥈 2등!','#E2E8F0'];
   if(m===5)return['🥉 3등!','#F97316'];
   if(m===4)return['4등','#4ADE80'];
   if(m===3)return['5등','#38BDF8'];
-  return[m+'개 일치','#8A97BC'];
+  return[m+'개 일치','#8A8A93'];
 }
 
 // ── QR로 번호 넣기 (Lv.2+) — 용지 QR을 클라이언트에서만 파싱해 기존 저장 흐름에 넘김 (외부 요청 없음) ──
@@ -473,10 +503,10 @@ function qrShowPastResult(parsed,draw){
   if(st)st.textContent='';
   var wn=[draw.n1,draw.n2,draw.n3,draw.n4,draw.n5,draw.n6],wset={},i,k;
   for(i=0;i<6;i++)wset[wn[i]]=true;
-  var html='<div style="font-size:12px;font-weight:800;color:#FBBF24;margin-bottom:6px">🏁 제'+parsed.round+'회는 이미 추첨이 끝났어요 — 결과 바로 확인!</div>';
+  var html='<div style="font-size:12px;font-weight:800;color:#E8A93A;margin-bottom:6px">🏁 제'+parsed.round+'회는 이미 추첨이 끝났어요 — 결과 바로 확인!</div>';
   if(parsed.skipped)html+='<div style="font-size:11px;color:#F97316;margin-bottom:6px">⚠ 일부 게임('+parsed.skipped+'개)은 번호를 읽지 못해 제외했어요</div>';
   var wb='';for(i=0;i<6;i++)wb+=ballHTML(wn[i],22,false,0);
-  html+='<div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;padding:6px 0;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.1)"><span style="font-size:11px;color:#8A97BC;margin-right:2px">당첨번호</span>'+wb+'<span style="color:#8A97BC;font-size:11px;margin:0 1px">+</span>'+ballHTML(draw.bonus,22,false,0)+'</div>';
+  html+='<div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;padding:6px 0;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.08)"><span style="font-size:11px;color:#8A8A93;margin-right:2px">당첨번호</span>'+wb+'<span style="color:#8A8A93;font-size:11px;margin:0 1px">+</span>'+ballHTML(draw.bonus,22,false,0)+'</div>';
   for(i=0;i<parsed.games.length;i++){
     var nums=parsed.games[i],bls='',m=0,b=false;
     for(k=0;k<nums.length;k++){
@@ -484,14 +514,14 @@ function qrShowPastResult(parsed,draw){
       if(hit)m++;
       if(nums[k]===draw.bonus)b=true;
       if(hit)bls+=ballHTML(nums[k],24,true,0);
-      else bls+=ballHTML(nums[k],24,false,0,'#8A97BC');
+      else bls+=ballHTML(nums[k],24,false,0,'#8A8A93');
     }
     var rk=pickRank(m,b);
     var sub=(m>=3)?(m+'개 일치'+(m===5&&b?' + 보너스':'')):(m+'개 일치 — 5등(3개)에는 못 미쳐요');
-    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div style="font-size:11px;font-weight:800;color:'+rk[1]+'">'+rk[0]+'</div><div style="font-size:10px;color:#8A97BC">'+sub+'</div></div></div>';
+    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right"><div style="font-size:11px;font-weight:800;color:'+rk[1]+'">'+rk[0]+'</div><div style="font-size:10px;color:#8A8A93">'+sub+'</div></div></div>';
   }
-  html+='<div style="font-size:11px;color:#8A97BC;line-height:1.7;margin-top:10px">이미 추첨된 회차라 저장 없이 결과만 보여드려요.<br>실제 당첨 확인·수령은 동행복권 공식 채널을 이용해 주세요.</div>';
-  html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9AA6C8;font-size:12px">📷 다시 스캔</button>';
+  html+='<div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-top:10px">이미 추첨된 회차라 저장 없이 결과만 보여드려요.<br>실제 당첨 확인·수령은 동행복권 공식 채널을 이용해 주세요.</div>';
+  html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:12px">📷 다시 스캔</button>';
   var res=document.getElementById('qr-result');
   if(res)res.innerHTML=html;
 }
@@ -499,19 +529,19 @@ function qrShowPastResult(parsed,draw){
 function qrShowSaveList(parsed){
   var st=document.getElementById('qr-status');
   if(st)st.textContent='';
-  var html='<div style="font-size:12px;font-weight:800;color:#FBBF24;margin-bottom:8px">✅ 제'+parsed.round+'회 · '+parsed.games.length+'게임 인식됨</div>';
+  var html='<div style="font-size:12px;font-weight:800;color:#E8A93A;margin-bottom:8px">✅ 제'+parsed.round+'회 · '+parsed.games.length+'게임 인식됨</div>';
   if(parsed.skipped)html+='<div style="font-size:11px;color:#F97316;margin-bottom:8px">⚠ 일부 게임('+parsed.skipped+'개)은 번호를 읽지 못해 제외했어요</div>';
   var unsaved=0,i,k;
   for(i=0;i<parsed.games.length;i++)if(!state.savedKeys[parsed.round+':'+parsed.games[i].join(',')])unsaved++;
-  if(unsaved>0)html+='<div style="text-align:right;margin-bottom:4px"><button id="qr-saveall" class="tag" onclick="qrSaveAll()" style="color:#0B1024;background:linear-gradient(135deg,#FBBF24,#F59E0B);border:none;font-weight:800;padding:6px 14px">💾 전체 저장 ('+unsaved+'게임)</button></div>';
+  if(unsaved>0)html+='<div style="text-align:right;margin-bottom:4px"><button id="qr-saveall" class="tag" onclick="qrSaveAll()" style="color:#171207;background:#E8A93A;border:none;font-weight:800;padding:6px 14px">💾 전체 저장 ('+unsaved+'게임)</button></div>';
   else if(parsed.games.length>1)html+='<div style="text-align:right;margin-bottom:4px"><span class="tag" style="color:#4ADE80;background:rgba(74,222,128,.1)">✓ 전체 저장됨</span></div>';
   for(i=0;i<parsed.games.length;i++){
     var nums=parsed.games[i],bls='';
     for(k=0;k<nums.length;k++)bls+=ballHTML(nums[k],24,false,0);
-    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0">'+saveBtnHTML(parsed.round,nums,'qr','qr-sv-'+i)+'</div></div>';
+    html+='<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0">'+saveBtnHTML(parsed.round,nums,'qr','qr-sv-'+i)+'</div></div>';
   }
-  html+='<div style="font-size:11px;color:#8A97BC;line-height:1.7;margin-top:10px">저장하면 추첨 후 결과가 자동으로 대조됩니다.<br>실제 당첨 확인은 동행복권 공식 채널에서도 가능합니다.</div>';
-  html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9AA6C8;font-size:12px">📷 다시 스캔</button>';
+  html+='<div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-top:10px">저장하면 추첨 후 결과가 자동으로 대조됩니다.<br>실제 당첨 확인은 동행복권 공식 채널에서도 가능합니다.</div>';
+  html+='<button onclick="openQrScan()" style="width:100%;margin-top:12px;padding:10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:12px">📷 다시 스캔</button>';
   var res=document.getElementById('qr-result');
   if(res)res.innerHTML=html;
 }
@@ -743,21 +773,21 @@ function sdkBadgeChipsHTML(){
   var chips='';
   for(i=0;i<SDK_BADGES.length;i++){
     var b=SDK_BADGES[i],has=!!owned[b.kind];
-    chips+='<span class="tag" style="margin:2px 3px 2px 0;display:inline-block;'+(has?'color:#FBBF24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3)':'color:#6D7AA4;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)')+'">'+b.icon+' '+b.label+'</span>';
+    chips+='<span class="tag" style="margin:2px 3px 2px 0;display:inline-block;'+(has?'color:#E8A93A;background:rgba(232,169,58,.1);border:1px solid rgba(232,169,58,.3)':'color:#6E6E76;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)')+'">'+b.icon+' '+b.label+'</span>';
   }
   var trialNote='';
-  if(owned['trial_1d']||owned['trial_3d'])trialNote='<div style="font-size:11px;color:#9DABD0;margin-top:6px">🎟️ 체험권은 프리미엄 탭 적용 기능을 준비 중이에요 — 획득 기록은 안전하게 보관됩니다.</div>';
+  if(owned['trial_1d']||owned['trial_3d'])trialNote='<div style="font-size:11px;color:#8A8A93;margin-top:6px">🎟️ 체험권은 프리미엄 탭 적용 기능을 준비 중이에요 — 획득 기록은 안전하게 보관됩니다.</div>';
   return '<div style="line-height:1.9">'+chips+'</div>'+trialNote;
 }
 function sdkStreakCardHTML(){
   var st=state.sdk.st;
-  var inner='<div class="ttl" style="margin-bottom:8px;color:#C084FC">🧩 수도쿠 스트릭 <span style="font-size:11px;color:#8A97BC;font-weight:400">로또 출석(🔥)과는 별개예요</span></div>';
+  var inner='<div class="ttl" style="margin-bottom:8px;color:#E8A93A">🧩 수도쿠 스트릭 <span style="font-size:11px;color:#8A8A93;font-weight:400">로또 출석(🔥)과는 별개예요</span></div>';
   if(!state.session){
-    inner+='<div style="font-size:11px;color:#9DABD0;line-height:1.7">게스트도 퍼즐은 풀 수 있어요. <b onclick="openAuth()" style="color:#38BDF8;text-decoration:underline;cursor:pointer">로그인</b>하면 연속 기록·배지가 저장됩니다.</div>';
+    inner+='<div style="font-size:11px;color:#8A8A93;line-height:1.7">게스트도 퍼즐은 풀 수 있어요. <b onclick="openAuth()" style="color:#E8A93A;text-decoration:underline;cursor:pointer">로그인</b>하면 연속 기록·배지가 저장됩니다.</div>';
     return inner;
   }
-  if(!st){inner+='<div style="font-size:11px;color:#94A3C8">기록 불러오는 중...</div>';return inner;}
-  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML();
+  if(!st){inner+='<div style="font-size:11px;color:#8A8A93">기록 불러오는 중...</div>';return inner;}
+  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#F2F2F0')+sBox(st.best+'일','최고 기록','#E8A93A')+sBox(fmtNum(st.total),'누적 완료','#F2F2F0')+'</div>'+sdkBadgeChipsHTML();
   return inner;
 }
 // 셀 i가 속한 행·열·블록의 그룹 인덱스 3개 (sdkGroupList 순서: 행들→열들→블록들)
@@ -799,10 +829,10 @@ function sdkCellStyle(which,i){
   var bR=(col+1)%cfg.bw===0&&col!==n-1;
   var bB=(row+1)%cfg.bh===0&&row!==n-1;
   var s='border:0;';
-  if(given)s+='background:rgba(255,255,255,.10);color:#DDE3F5;';
-  else s+='background:rgba(56,189,248,.05);color:#38BDF8;';
+  if(given)s+='background:rgba(255,255,255,.10);color:#F2F2F0;';
+  else s+='background:rgba(232,169,58,.05);color:#E8A93A;';
   if(conf)s+='background:rgba(248,113,113,.16);color:'+(given?'#FCA5A5':'#F87171')+';box-shadow:inset 0 0 0 1.5px rgba(248,113,113,.7);';
-  if(sel)s+=(conf?'':'background:rgba(251,191,36,.10);')+'box-shadow:inset 0 0 0 2px #FBBF24;';
+  if(sel)s+=(conf?'':'background:rgba(232,169,58,.10);')+'box-shadow:inset 0 0 0 2px #E8A93A;';
   if(col!==n-1)s+='border-right:'+(bR?SDK_LINE_B:SDK_LINE)+';';
   if(row!==n-1)s+='border-bottom:'+(bB?SDK_LINE_B:SDK_LINE)+';';
   return s;
@@ -828,42 +858,42 @@ function sdkPadHTML(which){
   // 9×9는 두 줄(1~5 / 6~9+지움), 그 외 한 줄(1~n+지움)
   var split=n===9?5:n;
   html+='<div style="display:flex;gap:'+cfg.pgap+'px;justify-content:center;margin-top:11px">';
-  for(v=1;v<=split;v++)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\','+v+')" style="background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.35);color:#38BDF8">'+v+'</button>';
-  if(split>=n)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.14);color:#9DABD0;font-size:13px">지움</button>';
+  for(v=1;v<=split;v++)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\','+v+')" style="background:rgba(232,169,58,.1);border:1.5px solid rgba(232,169,58,.35);color:#E8A93A">'+v+'</button>';
+  if(split>=n)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);color:#8A8A93;font-size:13px">지움</button>';
   html+='</div>';
   if(split<n){
     html+='<div style="display:flex;gap:'+cfg.pgap+'px;justify-content:center;margin-top:'+cfg.pgap+'px">';
-    for(v=split+1;v<=n;v++)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\','+v+')" style="background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.35);color:#38BDF8">'+v+'</button>';
-    html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.14);color:#9DABD0;font-size:13px">지움</button></div>';
+    for(v=split+1;v<=n;v++)html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\','+v+')" style="background:rgba(232,169,58,.1);border:1.5px solid rgba(232,169,58,.35);color:#E8A93A">'+v+'</button>';
+    html+='<button class="'+cfg.pcls+'" onclick="sdkNum(\''+which+'\',0)" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);color:#8A8A93;font-size:13px">지움</button></div>';
   }
   return html;
 }
 function sdkDoneBodyHTML(which){
   var msg=which==='m'?'오늘의 퍼즐 완료!':(which==='b'?'보너스 6×6 완료!':'정통 수도쿠 9×9 완료!');
   var extra='';
-  if(!state.session)extra='<div style="font-size:11px;color:#9DABD0;margin-top:8px;line-height:1.7">지금 <b onclick="openAuth()" style="color:#38BDF8;text-decoration:underline;cursor:pointer">로그인</b>하면 오늘 기록부터 스트릭이 쌓여요</div>';
-  return '<div style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+msg+'</div><div id="sdk-sub-'+which+'" style="font-size:11px;color:#8A97BC;margin-top:6px"></div>'+extra+'</div>';
+  if(!state.session)extra='<div style="font-size:11px;color:#8A8A93;margin-top:8px;line-height:1.7">지금 <b onclick="openAuth()" style="color:#E8A93A;text-decoration:underline;cursor:pointer">로그인</b>하면 오늘 기록부터 스트릭이 쌓여요</div>';
+  return '<div style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">✓</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+msg+'</div><div id="sdk-sub-'+which+'" style="font-size:11px;color:#8A8A93;margin-top:6px"></div>'+extra+'</div>';
 }
 function sdkPuzzleCardHTML(which){
   var main=which==='m';
   var title,sub,accent;
   if(main){title='🧩 오늘의 퍼즐 (4×4)';sub='매일 자정(KST) 새 퍼즐 · 완료하면 연속 기록 +1';accent='';}
-  else if(which==='b'){title='🎁 보너스 퍼즐 (6×6)';sub='스트릭과 무관 · 누적 기록만 +1 · 1~6이 행·열·2×3칸에 한 번씩';accent=';color:#C084FC';}
-  else{title='🏆 정통 수도쿠 (9×9)';sub='스트릭과 무관 · 누적 기록만 +1 · 시간 여유 있을 때 도전!';accent=';color:#FBBF24';}
+  else if(which==='b'){title='🎁 보너스 퍼즐 (6×6)';sub='스트릭과 무관 · 누적 기록만 +1 · 1~6이 행·열·2×3칸에 한 번씩';accent=';color:#E8A93A';}
+  else{title='🏆 정통 수도쿠 (9×9)';sub='스트릭과 무관 · 누적 기록만 +1 · 시간 여유 있을 때 도전!';accent=';color:#E8A93A';}
   var body;
   if(!state.sdk.cells[which]){
     var bkey=which==='b'?'bank6':'bank9';
-    if(state.sdk[bkey+'Err'])body='<div style="text-align:center;padding:14px 0"><div style="font-size:11px;color:#F87171;margin-bottom:8px">퍼즐을 불러오지 못했어요</div><button onclick="state.sdk.'+bkey+'Err=false;doTab(\'games\')" style="padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:11px">다시 시도</button></div>';
-    else body='<div style="text-align:center;padding:14px 0;font-size:11px;color:#94A3C8">불러오는 중...</div>';
+    if(state.sdk[bkey+'Err'])body='<div style="text-align:center;padding:14px 0"><div style="font-size:11px;color:#F87171;margin-bottom:8px">퍼즐을 불러오지 못했어요</div><button onclick="state.sdk.'+bkey+'Err=false;doTab(\'games\')" style="padding:8px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#C7C7CC;font-size:11px">다시 시도</button></div>';
+    else body='<div style="text-align:center;padding:14px 0;font-size:11px;color:#8A8A93">불러오는 중...</div>';
   }
   else body=state.sdk.done[which]?sdkDoneBodyHTML(which):sdkGridHTML(which)+sdkPadHTML(which)+'<div id="sdk-msg-'+which+'" style="font-size:11px;color:#F87171;text-align:center;min-height:15px;margin-top:8px"></div>';
-  return '<div class="card"'+(main?'':' style="border-color:rgba(192,132,252,.25)"')+'><div class="ttl" style="margin-bottom:3px'+accent+'">'+title+'</div><div style="font-size:11px;color:#8A97BC;margin-bottom:9px">'+sub+'</div>'+lbBoxHTML('sudoku',SDK_CFG[which].tier)+'<div id="sdk-body-'+which+'">'+body+'</div></div>';
+  return '<div class="card"'+(main?'':' style="border-color:rgba(232,169,58,.25)"')+'><div class="ttl" style="margin-bottom:3px'+accent+'">'+title+'</div><div style="font-size:11px;color:#8A8A93;margin-bottom:9px">'+sub+'</div>'+lbBoxHTML('sudoku',SDK_CFG[which].tier)+'<div id="sdk-body-'+which+'">'+body+'</div></div>';
 }
 function renderSudoku(){
   if(!state.sdk.bank){
-    if(state.sdk.bankErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:12px;color:#F87171;margin-bottom:10px">퍼즐 데이터를 불러오지 못했어요</div><button onclick="state.sdk.bankErr=false;doTab(\'games\')" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-size:12px">다시 시도</button></div>';
+    if(state.sdk.bankErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:12px;color:#F87171;margin-bottom:10px">퍼즐 데이터를 불러오지 못했어요</div><button onclick="state.sdk.bankErr=false;doTab(\'games\')" style="padding:10px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#C7C7CC;font-size:12px">다시 시도</button></div>';
     sdkLoadBank();
-    return '<div class="card" style="text-align:center;color:#94A3C8;padding:30px">퍼즐 불러오는 중...</div>';
+    return '<div class="card" style="text-align:center;color:#8A8A93;padding:30px">퍼즐 불러오는 중...</div>';
   }
   sdkLoadBankFile('bank6','sudoku_bank6.json');
   sdkLoadBankFile('bank9','sudoku_bank9.json');
@@ -871,11 +901,11 @@ function renderSudoku(){
   if(!state.sdk.cells||!state.sdk.cells.m)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">퍼즐 데이터 오류</div>';
   if(state.session&&!state.sdk.st&&!state.sdk.stBusy)loadSdkStatus();
   sdkMaybeResubmit();
-  return '<div class="card" id="sdk-streak-card" style="border-color:rgba(192,132,252,.2)">'+sdkStreakCardHTML()+'</div>'
+  return '<div class="card" id="sdk-streak-card" style="border-color:rgba(232,169,58,.2)">'+sdkStreakCardHTML()+'</div>'
     +sdkPuzzleCardHTML('m')
     +sdkPuzzleCardHTML('b')
     +sdkPuzzleCardHTML('c')
-    +'<div class="card cd" style="font-size:11px;color:#8A97BC;line-height:1.8">모든 행·열·블록에 숫자가 한 번씩 들어가면 완성!<br>메인 4×4를 매일 완료하면 🧩 연속 기록이 쌓이고, 연속 14일·30일엔 프리미엄 체험권을 드려요.<br>보너스 6×6·9×9는 연속 기록과 무관 — 누적 완료 수에만 +1씩 쌓여요.</div>';
+    +'<div class="card cd" style="font-size:11px;color:#8A8A93;line-height:1.8">모든 행·열·블록에 숫자가 한 번씩 들어가면 완성!<br>메인 4×4를 매일 완료하면 🧩 연속 기록이 쌓이고, 연속 14일·30일엔 프리미엄 체험권을 드려요.<br>보너스 6×6·9×9는 연속 기록과 무관 — 누적 완료 수에만 +1씩 쌓여요.</div>';
 }
 function sdkSel(which,i){
   if(!state.sdk.cells||state.sdk.done[which])return;
@@ -1008,15 +1038,15 @@ function sdkTodayDone(){
 // 내정보 탭 카드 (로또 출석 카드와 분리)
 function sdkMeCardHTML(){
   var st=state.sdk.st;
-  var inner='<div class="ttl" style="margin-bottom:8px;color:#C084FC">🧩 수도쿠 기록 <span style="font-size:11px;color:#8A97BC;font-weight:400">로또 출석(🔥)과 별개</span></div>';
+  var inner='<div class="ttl" style="margin-bottom:8px;color:#E8A93A">🧩 수도쿠 기록 <span style="font-size:11px;color:#8A8A93;font-weight:400">로또 출석(🔥)과 별개</span></div>';
   if(!st){
     if(state.session&&!state.sdk.stBusy)loadSdkStatus();
-    inner+='<div style="font-size:11px;color:#94A3C8">불러오는 중...</div>';
+    inner+='<div style="font-size:11px;color:#8A8A93">불러오는 중...</div>';
     return inner;
   }
-  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#C084FC')+sBox(st.best+'일','최고 기록','#FBBF24')+sBox(fmtNum(st.total),'누적 완료','#38BDF8')+'</div>'+sdkBadgeChipsHTML()
-    +'<div style="font-size:11px;color:#8A97BC;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="openGame(\'sudoku\')" style="color:#C084FC;text-decoration:underline;cursor:pointer">풀러 가기</b>')
-    +' <span style="color:#6D7AA4">· 보너스</span> '+(st.todayBonus1?'<span style="color:#4ADE80">6×6 ✓</span>':'<span style="color:#6D7AA4">6×6 –</span>')+' '+(st.todayBonus2?'<span style="color:#4ADE80">9×9 ✓</span>':'<span style="color:#6D7AA4">9×9 –</span>')+'</div>';
+  inner+='<div style="display:flex;gap:7px;margin-bottom:10px">'+sBox(st.current+'일','현재 연속','#F2F2F0')+sBox(st.best+'일','최고 기록','#E8A93A')+sBox(fmtNum(st.total),'누적 완료','#F2F2F0')+'</div>'+sdkBadgeChipsHTML()
+    +'<div style="font-size:11px;color:#8A8A93;margin-top:8px">'+(st.todayMain?'✓ 오늘 퍼즐 완료':'오늘 퍼즐 미완료 — <b onclick="openGame(\'sudoku\')" style="color:#E8A93A;text-decoration:underline;cursor:pointer">풀러 가기</b>')
+    +' <span style="color:#6E6E76">· 보너스</span> '+(st.todayBonus1?'<span style="color:#4ADE80">6×6 ✓</span>':'<span style="color:#6E6E76">6×6 –</span>')+' '+(st.todayBonus2?'<span style="color:#4ADE80">9×9 ✓</span>':'<span style="color:#6E6E76">9×9 –</span>')+'</div>';
   return inner;
 }
 
@@ -1032,17 +1062,17 @@ function lbInnerHTML(g,t){
   var e=state.lb[lbKey(g,t)];
   var lab=LB_LABEL[lbKey(g,t)];
   var head='🏆 이번 주 최단'+(lab?' · '+lab:'');
-  if(e&&e.err)return '<span style="color:#8A97BC">'+head+' — 기록을 불러오지 못했어요</span>';
-  if(!e||!e.loaded)return '<span style="color:#8A97BC">'+head+' — 불러오는 중...</span>';
-  var mineLine=(typeof e.mine==='number')?'<br><span style="color:#7DD3FC">내 최단: '+fmtNum(e.mine)+'초</span>':'';
-  if(!e.top)return '<span style="color:#9DABD0">'+head+' — 아직 기록이 없어요, 첫 기록의 주인공이 되어보세요!</span>'+mineLine;
-  return '<span style="color:#FBBF24">'+head+': <b>'+e.top.name+'</b> '+fmtNum(e.top.seconds)+'초</span>'+mineLine;
+  if(e&&e.err)return '<span style="color:#8A8A93">'+head+' — 기록을 불러오지 못했어요</span>';
+  if(!e||!e.loaded)return '<span style="color:#8A8A93">'+head+' — 불러오는 중...</span>';
+  var mineLine=(typeof e.mine==='number')?'<br><span style="color:#E8A93A">내 최단: '+fmtNum(e.mine)+'초</span>':'';
+  if(!e.top)return '<span style="color:#8A8A93">'+head+' — 아직 기록이 없어요, 첫 기록의 주인공이 되어보세요!</span>'+mineLine;
+  return '<span style="color:#E8A93A">'+head+': <b>'+e.top.name+'</b> '+fmtNum(e.top.seconds)+'초</span>'+mineLine;
 }
 function lbPaint(g,t){var el=document.getElementById(lbElId(g,t));if(el)el.innerHTML=lbInnerHTML(g,t);}
 function lbBoxHTML(g,t){
   var e=state.lb[lbKey(g,t)];
   if(!e||!e.loaded||(Date.now()-(e.ts||0)>LB_TTL))lbLoad(g,t,false);
-  return '<div id="'+lbElId(g,t)+'" style="font-size:11px;text-align:center;margin-bottom:9px;padding:7px 8px;border-radius:10px;background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.16)">'+lbInnerHTML(g,t)+'</div>';
+  return '<div id="'+lbElId(g,t)+'" style="font-size:11px;text-align:center;margin-bottom:9px;padding:7px 8px;border-radius:12px;background:rgba(232,169,58,.05);border:1px solid rgba(232,169,58,.16)">'+lbInnerHTML(g,t)+'</div>';
 }
 function lbLoad(g,t,force){
   var k=lbKey(g,t),e=state.lb[k];
@@ -1101,8 +1131,8 @@ function fwCellStyle(side,i){
     if(side==='r')s+='background:rgba(74,222,128,.2);color:#4ADE80;box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.7);';
     else s+='background:rgba(74,222,128,.08);color:#86EFAC;';
   }
-  else if(side==='l')s+='background:rgba(255,255,255,.07);color:#AAB6D8;';
-  else s+='background:rgba(56,189,248,.07);color:#7DD3FC;';
+  else if(side==='l')s+='background:rgba(255,255,255,.07);color:#8A8A93;';
+  else s+='background:rgba(232,169,58,.07);color:#E8A93A;';
   return s;
 }
 function fwGridHTML(side){
@@ -1120,14 +1150,14 @@ function fwGridHTML(side){
 }
 function fwBoardHTML(){
   var fw=state.fw;
-  return '<div><div style="font-size:11px;color:#8B98B8;text-align:center;margin-bottom:6px">원본</div>'+fwGridHTML('l')+'</div>'
-    +'<div style="margin-top:14px"><div style="font-size:11px;color:#38BDF8;text-align:center;margin-bottom:6px">비교 — 여기서 찾기!</div>'+fwGridHTML('r')+'</div>'
+  return '<div><div style="font-size:11px;color:#8A8A93;text-align:center;margin-bottom:6px">원본</div>'+fwGridHTML('l')+'</div>'
+    +'<div style="margin-top:14px"><div style="font-size:11px;color:#E8A93A;text-align:center;margin-bottom:6px">비교 — 여기서 찾기!</div>'+fwGridHTML('r')+'</div>'
     +'<div style="text-align:center;margin-top:11px;font-size:11px;color:#4ADE80;font-weight:800">찾음 <span id="fw-cnt">'+fw.foundCnt+'</span> / '+fw.total+'</div>'
     +'<div id="fw-msg" style="font-size:11px;color:#F87171;text-align:center;min-height:15px;margin-top:6px"></div>';
 }
 function fwDoneHTML(){
   var fw=state.fw;
-  return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+fw.total+'개 전부 찾았어요!</div><div style="font-size:11px;color:#9AA6C8;margin-top:6px">소요 시간 <b style="color:#FBBF24">'+fw.doneSecs+'초</b></div><button onclick="fwRestart()" style="margin-top:14px;padding:11px 24px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:700;font-size:13px;border:none">🔄 새 판 시작</button></div>';
+  return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+fw.total+'개 전부 찾았어요!</div><div style="font-size:11px;color:#8A8A93;margin-top:6px">소요 시간 <b style="color:#E8A93A">'+fw.doneSecs+'초</b></div><button onclick="fwRestart()" style="margin-top:14px;padding:11px 24px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px;border:none">🔄 새 판 시작</button></div>';
 }
 function fwMsg(t){var el=document.getElementById('fw-msg');if(el)el.textContent=t||'';}
 function fwRestart(){
@@ -1164,8 +1194,8 @@ function fwClick(i){
 }
 function renderFindWrong(){
   if(!state.fw||!state.fw.left||state.fw.done)fwNew(); // 완료했거나 처음이면 새 판 (진행 중이면 유지)
-  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:11px;color:#8A97BC;margin-bottom:9px">위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!</div>'+lbBoxHTML('findwrong','')+'<div id="fw-body">'+fwBoardHTML()+'</div></div>'
-    +'<div class="card cd" style="font-size:11px;color:#8A97BC;line-height:1.8">1~45 로또 번호로 만든 5×5 그리드 두 개를 비교하는 순발력 게임이에요.<br>정답이면 초록, 아니면 빨강 — 전부 찾으면 걸린 시간이 표시됩니다. 매 판 새로 생성!</div>';
+  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🔍 틀린 번호 찾기</div><div id="fw-sub" style="font-size:11px;color:#8A8A93;margin-bottom:9px">위 원본과 다른 칸이 아래 비교판에 '+state.fw.total+'개 숨어 있어요 — 아래에서 찾아 누르세요!</div>'+lbBoxHTML('findwrong','')+'<div id="fw-body">'+fwBoardHTML()+'</div></div>'
+    +'<div class="card cd" style="font-size:11px;color:#8A8A93;line-height:1.8">1~45 로또 번호로 만든 5×5 그리드 두 개를 비교하는 순발력 게임이에요.<br>정답이면 초록, 아니면 빨강 — 전부 찾으면 걸린 시간이 표시됩니다. 매 판 새로 생성!</div>';
 }
 
 // ── 🃏 기억력 짝맞추기 (Phase 4) — 순수 클라이언트 게임 (findwrong과 동일 패턴, 서버 저장 없음) ──
@@ -1220,7 +1250,7 @@ function mmCellTxt(i){
 function mmCellStyle(i){
   var mm=state.mm,cfg=MM_CFG[mm.lvl];
   var s='width:'+cfg.cell+'px;height:'+cfg.cell+'px;border-radius:'+(cfg.n===9?6:9)+'px;display:flex;align-items:center;justify-content:center;font-size:'+cfg.fs+'px;font-weight:800;padding:0;border:none;';
-  if(mm.cells[i]===0)return s+'background:rgba(251,191,36,.08);color:#FBBF24;box-shadow:inset 0 0 0 1px rgba(251,191,36,.3);';
+  if(mm.cells[i]===0)return s+'background:rgba(232,169,58,.08);color:#E8A93A;box-shadow:inset 0 0 0 1px rgba(232,169,58,.3);';
   if(mm.matched[i])return s+'background:rgba(74,222,128,.18);color:#4ADE80;box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.6);';
   if(mm.preview||mmOpenHas(i)){var z=gz(mm.cells[i]);return s+'background:'+z.c+'26;color:'+z.c+';box-shadow:inset 0 0 0 1.5px '+z.c+'66;';}
   return s+'background:rgba(255,255,255,.07);color:rgba(255,255,255,0);';
@@ -1234,8 +1264,8 @@ function mmPaint(i){
 function mmFlash(i,cls){var el=document.getElementById('mm-c-'+i);if(el){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);}}
 function mmStatusHTML(){
   var mm=state.mm,cfg=MM_CFG[mm.lvl];
-  if(mm.preview)return '<span style="color:#FBBF24">👀 숫자 위치를 기억하세요! <span id="mm-cd">'+mm.prevLeft+'초</span> 후 가려집니다</span>';
-  return '<span style="color:#4ADE80">맞춘 쌍 <span id="mm-cnt">'+mm.matchedCnt+'</span> / '+cfg.pairs+'</span> <span style="color:#8A97BC;font-weight:400">· 시도 <span id="mm-try">'+mm.tries+'</span>회</span>';
+  if(mm.preview)return '<span style="color:#E8A93A">👀 숫자 위치를 기억하세요! <span id="mm-cd">'+mm.prevLeft+'초</span> 후 가려집니다</span>';
+  return '<span style="color:#4ADE80">맞춘 쌍 <span id="mm-cnt">'+mm.matchedCnt+'</span> / '+cfg.pairs+'</span> <span style="color:#8A8A93;font-weight:400">· 시도 <span id="mm-try">'+mm.tries+'</span>회</span>';
 }
 function mmBoardHTML(){
   var mm=state.mm,cfg=MM_CFG[mm.lvl],html='',r,c,i;
@@ -1285,7 +1315,7 @@ function mmClick(i){
 }
 function mmDoneHTML(){
   var mm=state.mm,cfg=MM_CFG[mm.lvl];
-  return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+cfg.label+' '+cfg.pairs+'쌍 전부 맞췄어요!</div><div style="font-size:11px;color:#9AA6C8;margin-top:6px">소요 시간 <b style="color:#FBBF24">'+mm.doneSecs+'초</b> · 시도 <b style="color:#38BDF8">'+mm.tries+'회</b></div><div style="display:flex;gap:8px;justify-content:center;margin-top:14px"><button onclick="mmStart(\''+mm.lvl+'\')" style="padding:11px 20px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#6366F1);color:#fff;font-weight:700;font-size:13px;border:none">🔄 같은 난이도</button><button onclick="mmMenu()" style="padding:11px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#C4CCEE;font-weight:700;font-size:13px">난이도 선택</button></div></div>';
+  return '<div class="ap" style="text-align:center;padding:16px 0"><div style="font-size:34px;margin-bottom:6px">🎉</div><div style="font-size:13px;font-weight:800;color:#4ADE80">'+cfg.label+' '+cfg.pairs+'쌍 전부 맞췄어요!</div><div style="font-size:11px;color:#8A8A93;margin-top:6px">소요 시간 <b style="color:#E8A93A">'+mm.doneSecs+'초</b> · 시도 <b style="color:#E8A93A">'+mm.tries+'회</b></div><div style="display:flex;gap:8px;justify-content:center;margin-top:14px"><button onclick="mmStart(\''+mm.lvl+'\')" style="padding:11px 20px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px;border:none">🔄 같은 난이도</button><button onclick="mmMenu()" style="padding:11px 20px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#C7C7CC;font-weight:700;font-size:13px">난이도 선택</button></div></div>';
 }
 function mmMenuHTML(){
   var keys=['e','m','h'],names={e:'🌱 쉬움',m:'🌿 보통',h:'🌳 어려움'},html='',k,cfg;
@@ -1294,13 +1324,13 @@ function mmMenuHTML(){
   html+='<div style="display:flex;flex-direction:column;gap:8px">';
   for(k=0;k<3;k++){
     cfg=MM_CFG[keys[k]];
-    html+='<button onclick="mmStart(\''+keys[k]+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-radius:13px;border:1px solid rgba(192,132,252,.25);background:rgba(192,132,252,.06);color:#E8ECFF"><span style="font-size:13px;font-weight:800">'+names[keys[k]]+' <span style="color:#C084FC">'+cfg.label+'</span></span><span style="font-size:11px;color:#8B98B8">'+cfg.sub+'</span></button>';
+    html+='<button onclick="mmStart(\''+keys[k]+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-radius:12px;border:1px solid rgba(232,169,58,.25);background:rgba(232,169,58,.06);color:#F2F2F0"><span style="font-size:13px;font-weight:800">'+names[keys[k]]+' <span style="color:#E8A93A">'+cfg.label+'</span></span><span style="font-size:11px;color:#8A8A93">'+cfg.sub+'</span></button>';
   }
   return html+'</div>';
 }
 function mmGameHTML(){
   var mm=state.mm,cfg=MM_CFG[mm.lvl];
-  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font-size:11px;font-weight:800;color:#C084FC">'+cfg.label+' · '+cfg.pairs+'쌍</span><button onclick="mmMenu()" style="padding:5px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#9AA6C8;font-size:11px;font-weight:700">난이도 변경</button></div>'+lbBoxHTML('memory',MM_TIER[mm.lvl])+'<div id="mm-body">'+(mm.done?mmDoneHTML():mmBoardHTML())+'</div>';
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font-size:11px;font-weight:800;color:#E8A93A">'+cfg.label+' · '+cfg.pairs+'쌍</span><button onclick="mmMenu()" style="padding:5px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8A8A93;font-size:11px;font-weight:700">난이도 변경</button></div>'+lbBoxHTML('memory',MM_TIER[mm.lvl])+'<div id="mm-body">'+(mm.done?mmDoneHTML():mmBoardHTML())+'</div>';
 }
 function mmStart(lvl){
   mmNew(lvl);
@@ -1315,8 +1345,8 @@ function mmMenu(){
 }
 function renderMemory(){
   if(state.mm&&state.mm.done){MM_GEN++;state.mm=null;} // 완료판은 재진입 시 난이도 선택부터 (진행 중이면 유지)
-  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🃏 기억력 짝맞추기</div><div style="font-size:11px;color:#8A97BC;margin-bottom:11px">같은 번호 두 장을 찾아 뒤집으세요 — 시작하면 잠깐 전체 공개!</div><div id="mm-wrap">'+(state.mm?mmGameHTML():mmMenuHTML())+'</div></div>'
-    +'<div class="card cd" style="font-size:11px;color:#8A97BC;line-height:1.8">1~45 로또 번호가 두 장씩 숨어 있어요. 미리보기가 끝나면 전부 가려지고, 같은 번호 짝을 기억해서 찾는 게임!<br>서버 저장 없음 · 매 판 새로 섞임 · 9×9의 남는 한 칸은 ⭐ 보너스 칸(이미 완성 취급)이에요.</div>';
+  return '<div class="card"><div class="ttl" style="margin-bottom:3px">🃏 기억력 짝맞추기</div><div style="font-size:11px;color:#8A8A93;margin-bottom:11px">같은 번호 두 장을 찾아 뒤집으세요 — 시작하면 잠깐 전체 공개!</div><div id="mm-wrap">'+(state.mm?mmGameHTML():mmMenuHTML())+'</div></div>'
+    +'<div class="card cd" style="font-size:11px;color:#8A8A93;line-height:1.8">1~45 로또 번호가 두 장씩 숨어 있어요. 미리보기가 끝나면 전부 가려지고, 같은 번호 짝을 기억해서 찾는 게임!<br>서버 저장 없음 · 매 판 새로 섞임 · 9×9의 남는 한 칸은 ⭐ 보너스 칸(이미 완성 취급)이에요.</div>';
 }
 
 // ── 🎮 미니게임 허브 — 게임 추가는 GAMES 배열 등록 한 번이면 끝 (허브·추천배너·내정보 자동 반영) ──
@@ -1343,7 +1373,7 @@ function gamesHub(){state.game=null;doTab('games');}
 function renderGames(){
   var g=state.game?gameById(state.game):null;
   if(g&&gameLocked(g)){state.game=null;g=null;} // 레벨 강등 등으로 잠기면 허브로 복귀
-  if(g)return '<div style="margin-bottom:8px"><button onclick="gamesHub()" style="padding:7px 13px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#9AA6C8;font-size:11px;font-weight:700">← 미니게임</button></div>'+g.render();
+  if(g)return '<div style="margin-bottom:8px"><button onclick="gamesHub()" style="padding:7px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8A8A93;font-size:11px;font-weight:700">← 미니게임</button></div>'+g.render();
   var cards='',i;
   for(i=0;i<GAMES.length;i++){
     var gm=GAMES[i],locked=gameLocked(gm),badge='';
@@ -1351,12 +1381,12 @@ function renderGames(){
       if(gm.todayDone())badge='<span style="position:absolute;top:9px;right:9px;font-size:10px;font-weight:800;color:#4ADE80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.35);padding:2px 7px;border-radius:8px">오늘 완료 ✓</span>';
       else badge='<span style="position:absolute;top:9px;right:9px;font-size:10px;font-weight:800;color:#FB923C;background:rgba(251,146,60,.14);border:1px solid rgba(251,146,60,.4);padding:2px 7px;border-radius:8px">오늘 미완료</span>';
     }
-    cards+='<div onclick="openGame(\''+gm.id+'\')" style="position:relative;background:rgba(255,255,255,.035);border:1px solid '+(locked?'rgba(255,255,255,.06)':'rgba(192,132,252,.22)')+';border-radius:16px;padding:16px 10px;text-align:center;cursor:pointer'+(locked?';opacity:.5':'')+'">'+badge
+    cards+='<div onclick="openGame(\''+gm.id+'\')" style="position:relative;background:rgba(255,255,255,.035);border:1px solid '+(locked?'rgba(255,255,255,.06)':'rgba(232,169,58,.22)')+';border-radius:16px;padding:16px 10px;text-align:center;cursor:pointer'+(locked?';opacity:.5':'')+'">'+badge
       +'<div style="font-size:30px;margin-bottom:7px">'+(locked?'🔒':gm.icon)+'</div>'
-      +'<div style="font-size:13px;font-weight:800;color:#E8ECFF">'+gm.name+'</div>'
-      +'<div style="font-size:11px;color:#9DABD0;margin-top:4px;line-height:1.5">'+(locked?('Lv.'+gm.min+' '+lvInfo(gm.min).name+'부터'):gm.desc)+'</div></div>';
+      +'<div style="font-size:13px;font-weight:800;color:#F2F2F0">'+gm.name+'</div>'
+      +'<div style="font-size:11px;color:#8A8A93;margin-top:4px;line-height:1.5">'+(locked?('Lv.'+gm.min+' '+lvInfo(gm.min).name+'부터'):gm.desc)+'</div></div>';
   }
-  return '<div class="card"><div class="ttl" style="color:#C084FC">🎮 미니게임 <span style="font-size:11px;color:#8A97BC;font-weight:400">잠깐 쉬어가는 두뇌 게임</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cards+'</div></div>';
+  return '<div class="card"><div class="ttl" style="color:#E8A93A">🎮 미니게임 <span style="font-size:11px;color:#8A8A93;font-weight:400">잠깐 쉬어가는 두뇌 게임</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cards+'</div></div>';
 }
 // 추천 탭 하단 배너 — daily 게임 중 오늘 미완료만 스캔 (1개=단일 배너, 2개+=칩 나열, 3개+는 "+N 더")
 function gamesBannerHTML(){
@@ -1369,15 +1399,15 @@ function gamesBannerHTML(){
   if(!pend.length)return '';
   if(pend.length===1){
     g=pend[0];
-    return '<div class="card" id="game-rec-banner" onclick="openGame(\''+g.id+'\')" style="cursor:pointer;border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#C084FC">'+g.icon+' 오늘의 '+g.name+' 아직 안 했어요</span><span style="font-size:11px;color:#8B98B8">하러 가기 →</span></div></div>';
+    return '<div class="card" id="game-rec-banner" onclick="openGame(\''+g.id+'\')" style="cursor:pointer;border-color:rgba(232,169,58,.3);background:rgba(232,169,58,.05);padding:11px 12px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#E8A93A">'+g.icon+' 오늘의 '+g.name+' 아직 안 했어요</span><span style="font-size:11px;color:#8A8A93">하러 가기 →</span></div></div>';
   }
   var chips='',shown=pend.length>2?2:pend.length;
   for(i=0;i<shown;i++){
     g=pend[i];
-    chips+='<button onclick="openGame(\''+g.id+'\')" style="padding:7px 12px;border-radius:12px;border:1px solid rgba(192,132,252,.35);background:rgba(192,132,252,.1);color:#C084FC;font-size:11px;font-weight:700">'+g.icon+' '+g.name+'</button>';
+    chips+='<button onclick="openGame(\''+g.id+'\')" style="padding:7px 12px;border-radius:999px;border:1px solid rgba(232,169,58,.35);background:rgba(232,169,58,.1);color:#E8A93A;font-size:11px;font-weight:700">'+g.icon+' '+g.name+'</button>';
   }
-  if(pend.length>2)chips+='<button onclick="gamesHub()" style="padding:7px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#9AA6C8;font-size:11px;font-weight:700">+'+(pend.length-2)+' 더</button>';
-  return '<div class="card" id="game-rec-banner" style="border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);padding:11px 12px"><div style="font-size:11px;font-weight:700;color:#C084FC;margin-bottom:8px">🎮 오늘의 게임 '+pend.length+'개 미완료</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+chips+'</div></div>';
+  if(pend.length>2)chips+='<button onclick="gamesHub()" style="padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#8A8A93;font-size:11px;font-weight:700">+'+(pend.length-2)+' 더</button>';
+  return '<div class="card" id="game-rec-banner" style="border-color:rgba(232,169,58,.3);background:rgba(232,169,58,.05);padding:11px 12px"><div style="font-size:11px;font-weight:700;color:#E8A93A;margin-bottom:8px">🎮 오늘의 게임 '+pend.length+'개 미완료</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+chips+'</div></div>';
 }
 // 게임 완료·서버 현황 도착 시 배너만 국소 갱신 (추천 탭에 떠 있을 때만 동작)
 function gamesBannerRefresh(){
@@ -1393,7 +1423,7 @@ function gamesMeCardsHTML(){
   for(i=0;i<GAMES.length;i++){
     g=GAMES[i];
     if(!g.meCard)continue;
-    html+='<div class="card" id="game-me-'+g.id+'" style="border-color:rgba(192,132,252,.2)">'+g.meCard()+'</div>';
+    html+='<div class="card" id="game-me-'+g.id+'" style="border-color:rgba(232,169,58,.2)">'+g.meCard()+'</div>';
   }
   return html;
 }
@@ -1431,7 +1461,7 @@ function loadDraws(cb){
 }
 function drawNums(d){return[d.n1,d.n2,d.n3,d.n4,d.n5,d.n6];}
 function needDraws(id){
-  return '<div class="card" style="text-align:center;color:#94A3C8;padding:30px">데이터 로딩 중...</div>';
+  return '<div class="card" style="text-align:center;color:#8A8A93;padding:30px">데이터 로딩 중...</div>';
 }
 
 function renderFreq(){
@@ -1442,10 +1472,10 @@ function renderFreq(){
   var bars='';for(var n=1;n<=45;n++){var z=gz(n),h=Math.round(freq[n]/mx*110);bars+='<div class="fb" style="height:'+h+'px;background:'+z.c+'"></div>';}
   var sorted=[];for(var n=1;n<=45;n++)sorted.push([n,freq[n]]);
   sorted.sort(function(a,b){return b[1]-a[1];});
-  var t10='';for(var i=0;i<10;i++)t10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:10px;color:#8A97BC;width:14px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C4CCEE">'+sorted[i][1]+'회</span></div>';
+  var t10='';for(var i=0;i<10;i++)t10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:10px;color:#8A8A93;width:14px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C7C7CC">'+sorted[i][1]+'회</span></div>';
   sorted.sort(function(a,b){return a[1]-b[1];});
-  var b10='';for(var i=0;i<10;i++)b10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:10px;color:#8A97BC;width:14px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C4CCEE">'+sorted[i][1]+'회</span></div>';
-  return '<div class="card"><div class="ttl">전체 출현 빈도 ('+state.draws.length+'회)</div><div class="freq-bars">'+bars+'</div><div style="display:flex;justify-content:space-between;font-size:10px;color:#8A97BC;margin:2px 0 16px"><span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>45</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:8px">🔴 많이 나온 TOP 10</div>'+t10+'</div><div><div style="font-size:11px;color:#38BDF8;font-weight:700;margin-bottom:8px">🔵 적게 나온 TOP 10</div>'+b10+'</div></div></div>';
+  var b10='';for(var i=0;i<10;i++)b10+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:10px;color:#8A8A93;width:14px">'+(i+1)+'</span>'+ballHTML(sorted[i][0],22,false,0)+'<span style="font-size:11px;color:#C7C7CC">'+sorted[i][1]+'회</span></div>';
+  return '<div class="card"><div class="ttl">전체 출현 빈도 ('+state.draws.length+'회)</div><div class="freq-bars">'+bars+'</div><div style="display:flex;justify-content:space-between;font-size:10px;color:#8A8A93;margin:2px 0 16px"><span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>45</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:8px">🔴 많이 나온 TOP 10</div>'+t10+'</div><div><div style="font-size:11px;color:#38BDF8;font-weight:700;margin-bottom:8px">🔵 적게 나온 TOP 10</div>'+b10+'</div></div></div>';
 }
 
 function histWinHTML(d){
@@ -1453,10 +1483,10 @@ function histWinHTML(d){
   for(var t=1;t<=5;t++){
     var c=d['won'+t+'_count'],a=d['won'+t+'_amount'];
     if(c===null||c===undefined)continue;
-    lines+='<div style="display:flex;justify-content:space-between"><span>'+t+'등 <b style="color:#FBBF24">'+fmtNum(c)+'명</b></span><span style="color:#7DD3FC">'+fmtWon(a)+'</span></div>';
+    lines+='<div style="display:flex;justify-content:space-between"><span>'+t+'등 <b style="color:#E8A93A">'+fmtNum(c)+'명</b></span><span style="color:#E8A93A">'+fmtWon(a)+'</span></div>';
   }
   if(!lines)return '';
-  return lines+'<div style="font-size:10px;color:#8A97BC;margin-top:4px;text-align:right">1인당 당첨금 · 동행복권 공식 발표 기준</div>';
+  return lines+'<div style="font-size:10px;color:#8A8A93;margin-top:4px;text-align:right">1인당 당첨금 · 동행복권 공식 발표 기준</div>';
 }
 function toggleWinDetail(r){
   var el=document.getElementById('wd-'+r),btn=document.getElementById('wb-'+r);
@@ -1474,10 +1504,10 @@ function renderHist(){
     var dt=d.drawn_date?d.drawn_date.replace(/-/g,'.'):rdate(d.round);
     var win=histWinHTML(d),winBtn='',winBox='';
     if(win){
-      winBtn='<button id="wb-'+d.round+'" onclick="toggleWinDetail('+d.round+')" style="font-size:11px;color:#7DD3FC;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:8px;padding:2px 8px">당첨정보 ▾</button>';
-      winBox='<div id="wd-'+d.round+'" style="display:none;margin-top:7px;font-size:11px;color:#C4CCEE;line-height:1.9;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 11px">'+win+'</div>';
+      winBtn='<button id="wb-'+d.round+'" onclick="toggleWinDetail('+d.round+')" style="font-size:11px;color:#E8A93A;background:rgba(232,169,58,.08);border:1px solid rgba(232,169,58,.25);border-radius:999px;padding:2px 8px">당첨정보 ▾</button>';
+      winBox='<div id="wd-'+d.round+'" style="display:none;margin-top:7px;font-size:11px;color:#C7C7CC;line-height:1.9;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 11px">'+win+'</div>';
     }
-    html+='<div style="border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:9px;margin-bottom:9px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span class="rj" style="font-size:11px;color:#FBBF24">제 '+d.round+'회</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:#8A97BC">'+dt+'</span>'+winBtn+'</span></div><div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">'+balls+'<span style="color:#8A97BC;font-size:11px;margin:0 1px">+</span>'+ballHTML(d.bonus,26,false,0)+'<span style="font-size:10px;color:#6D7AA4">보너스</span></div>'+winBox+'</div>';
+    html+='<div style="border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:9px;margin-bottom:9px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span class="rj" style="font-size:11px;color:#E8A93A">제 '+d.round+'회</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:#8A8A93">'+dt+'</span>'+winBtn+'</span></div><div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">'+balls+'<span style="color:#8A8A93;font-size:11px;margin:0 1px">+</span>'+ballHTML(d.bonus,26,false,0)+'<span style="font-size:10px;color:#6E6E76">보너스</span></div>'+winBox+'</div>';
   }
   return '<div class="card"><div class="ttl">최근 20회 당첨 번호</div>'+html+'</div>';
 }
@@ -1500,7 +1530,7 @@ function renderHot(){
   for(var n=1;n<=45;n++)if(rF[n]>=2)hs.push([n,rF[n]]);
   hs.sort(function(a,b){return b[1]-a[1];});
   for(var i=0;i<hs.length;i++)hot+='<div style="text-align:center">'+ballHTML(hs[i][0],38,true,0)+'<div style="font-size:11px;color:#F97316;margin-top:3px;font-weight:700">'+hs[i][1]+'회</div></div>';
-  if(!hot)hot='<div style="font-size:11px;color:#8A97BC">해당 없음</div>';
+  if(!hot)hot='<div style="font-size:11px;color:#8A8A93">해당 없음</div>';
   var cold='',lsS=[];
   for(var n=1;n<=45;n++)lsS.push([n,ls[n]]);
   lsS.sort(function(a,b){return b[1]-a[1];});
@@ -1508,7 +1538,7 @@ function renderHot(){
   var mn=Math.min.apply(null,sums),mxs=Math.max.apply(null,sums);
   return '<div class="card"><div class="ttl" style="color:#F97316">🔥 최근 10회 핫넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+hot+'</div></div>'
     +'<div class="card"><div class="ttl" style="color:#38BDF8">🧊 장기 미출현 콜드넘버</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+cold+'</div></div>'
-    +'<div class="card"><div class="ttl">홀짝 · 합계 분포</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#38BDF8">'+avgEven.toFixed(1)+'</div><div class="sl">짝수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#F87171">'+(6-avgEven).toFixed(1)+'</div><div class="sl">홀수 평균</div></div><div style="background:rgba(255,255,255,.04);border-radius:11px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,.06)"><div class="sv rj" style="color:#FBBF24">'+Math.round(avgSum)+'</div><div class="sl">합계 평균</div></div></div><div style="font-size:11px;color:#8A97BC;text-align:center">합계 범위: '+mn+' ~ '+mxs+'</div></div>';
+    +'<div class="card"><div class="ttl">홀짝 · 합계 분포 <span class="info-chip" onclick="toggleHelp(\'h-dist\')">ⓘ</span></div><div id="h-dist" class="help-inline"><b style="color:#F2F2F0">홀짝 분포</b> — 뽑힌 번호 6개 중 홀수와 짝수가 각각 몇 개인지예요. 역대 당첨은 3:3, 4:2처럼 균형 잡힌 비율이 대부분이었어요.<br><br><b style="color:#E8A93A">합계 분포</b> — 번호 6개를 전부 더한 숫자예요. 역대 당첨 합계는 대개 100~175 사이에 몰려 있고, 너무 작거나 큰 합은 드물게 나왔어요.</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"><div style="padding:9px 5px;text-align:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)"><div class="sv rj" style="color:#38BDF8">'+avgEven.toFixed(1)+'</div><div class="sl">짝수 평균</div></div><div style="padding:9px 5px;text-align:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)"><div class="sv rj" style="color:#F87171">'+(6-avgEven).toFixed(1)+'</div><div class="sl">홀수 평균</div></div><div style="padding:9px 5px;text-align:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)"><div class="sv rj" style="color:#E8A93A">'+Math.round(avgSum)+'</div><div class="sl">합계 평균</div></div></div><div style="font-size:11px;color:#8A8A93;text-align:center">합계 범위: '+mn+' ~ '+mxs+'</div></div>';
 }
 
 function pickNum(n){
@@ -1551,7 +1581,7 @@ function renderReport(){
   for(var k=0;k<=4;k++){
     var p=comb(6,k)*comb(39,6-k)/tot456;if(k===4)p=1-(comb(6,0)*comb(39,6)+comb(6,1)*comb(39,5)+comb(6,2)*comb(39,4)+comb(6,3)*comb(39,3))/tot456;
     var e=p*T,w1=Math.min(100,obs[k]/T*250),w2=Math.min(100,e/T*250);
-    rows1+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9AA6C8"><span>'+k+(k===4?'개+':'개')+' 겹침</span><span>관측 '+obs[k]+' / 기대 '+e.toFixed(0)+'</span></div><div style="display:flex;gap:2px;align-items:center"><div style="height:7px;width:'+w1+'%;background:#38BDF8;border-radius:4px"></div></div><div style="display:flex;gap:2px;align-items:center;margin-top:1px"><div style="height:4px;width:'+w2+'%;background:rgba(251,191,36,.5);border-radius:4px"></div></div></div>';
+    rows1+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#8A8A93"><span>'+k+(k===4?'개+':'개')+' 겹침</span><span>관측 '+obs[k]+' / 기대 '+e.toFixed(0)+'</span></div><div style="display:flex;gap:2px;align-items:center"><div style="height:7px;width:'+w1+'%;background:#38BDF8;border-radius:4px"></div></div><div style="display:flex;gap:2px;align-items:center;margin-top:1px"><div style="height:4px;width:'+w2+'%;background:rgba(232,169,58,.5);border-radius:4px"></div></div></div>';
   }
   // 미출현 구간별 출현율
   var lastIdx={},bins={'1-2':[0,0],'3-5':[0,0],'6-10':[0,0],'11-20':[0,0],'21+':[0,0]};
@@ -1571,7 +1601,7 @@ function renderReport(){
   for(i=0;i<keys.length;i++){
     var bb=bins[keys[i]],pr=bb[1]?bb[0]/bb[1]*100:0;
     var dev=pr-13.33;
-    rows2+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-size:11px;color:#9AA6C8;width:70px">'+keys[i]+'회 쉼</span><div style="flex:1;background:rgba(255,255,255,.06);border-radius:5px;height:10px;overflow:hidden;position:relative"><div style="width:'+Math.min(100,pr*5)+'%;height:100%;background:'+(Math.abs(dev)<0.7?'#4ADE80':'#FBBF24')+'"></div></div><span class="rj" style="font-size:11px;color:#C4CCEE;width:48px;text-align:right">'+pr.toFixed(2)+'%</span></div>';
+    rows2+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-size:11px;color:#8A8A93;width:70px">'+keys[i]+'회 쉼</span><div style="flex:1;background:rgba(255,255,255,.06);border-radius:5px;height:10px;overflow:hidden;position:relative"><div style="width:'+Math.min(100,pr*5)+'%;height:100%;background:'+(Math.abs(dev)<0.7?'#4ADE80':'#E8A93A')+'"></div></div><span class="rj" style="font-size:11px;color:#C7C7CC;width:48px;text-align:right">'+pr.toFixed(2)+'%</span></div>';
   }
   // 페어 TOP5
   var pf={};
@@ -1583,25 +1613,27 @@ function renderReport(){
   var rows3='';
   for(i=0;i<5;i++){
     var key2=+pl[i][0],n1=Math.floor(key2/100),n2=key2%100;
-    rows3+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+ballHTML(n1,24,false,0)+ballHTML(n2,24,false,0)+'<span style="font-size:11px;color:#C4CCEE;margin-left:4px">'+pl[i][1]+'회 동반</span><span style="font-size:11px;color:#8A97BC">(기대 '+exp.toFixed(1)+'회 · 우연 범위)</span></div>';
+    rows3+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+ballHTML(n1,24,false,0)+ballHTML(n2,24,false,0)+'<span style="font-size:11px;color:#C7C7CC;margin-left:4px">'+pl[i][1]+'회 동반</span><span style="font-size:11px;color:#8A8A93">(기대 '+exp.toFixed(1)+'회 · 우연 범위)</span></div>';
   }
   // 패턴 헌팅 요약 (2026-08 분석, 훈련 101~800 / 검증 801~1238)
   var hunt='<table class="bt-table"><thead><tr><th style="text-align:left">전략</th><th style="text-align:center">훈련</th><th style="text-align:center">검증</th></tr></thead><tbody>'
-    +'<tr><td style="color:#C4CCEE">모멘텀 (훈련 1위)</td><td style="text-align:center;color:#4ADE80" class="rj">0.850</td><td style="text-align:center;color:#F87171" class="rj">0.783</td></tr>'
-    +'<tr><td style="color:#C4CCEE">최근10 핫</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
-    +'<tr><td style="color:#C4CCEE">주기회귀 (훈련 꼴찌권)</td><td style="text-align:center;color:#F87171" class="rj">0.763</td><td style="text-align:center;color:#4ADE80" class="rj">0.815</td></tr>'
-    +'<tr><td style="color:#C4CCEE">가중치 256조합 훈련최적</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
-    +'<tr style="background:rgba(251,191,36,.05)"><td style="color:#FBBF24;font-weight:700">🎲 순수 랜덤</td><td style="text-align:center" class="rj">0.794</td><td style="text-align:center;color:#4ADE80;font-weight:700" class="rj">0.858</td></tr>'
+    +'<tr><td style="color:#C7C7CC">모멘텀 (훈련 1위)</td><td style="text-align:center;color:#4ADE80" class="rj">0.850</td><td style="text-align:center;color:#F87171" class="rj">0.783</td></tr>'
+    +'<tr><td style="color:#C7C7CC">최근10 핫</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
+    +'<tr><td style="color:#C7C7CC">주기회귀 (훈련 꼴찌권)</td><td style="text-align:center;color:#F87171" class="rj">0.763</td><td style="text-align:center;color:#4ADE80" class="rj">0.815</td></tr>'
+    +'<tr><td style="color:#C7C7CC">가중치 256조합 훈련최적</td><td style="text-align:center" class="rj">0.843</td><td style="text-align:center" class="rj">0.783</td></tr>'
+    +'<tr style="background:rgba(232,169,58,.05)"><td style="color:#E8A93A;font-weight:700">🎲 순수 랜덤</td><td style="text-align:center" class="rj">0.794</td><td style="text-align:center;color:#4ADE80;font-weight:700" class="rj">0.858</td></tr>'
     +'</tbody></table>';
-  return '<div class="card"><div class="ttl" style="color:#818CF8">📊 심층 통계 리포트 <span style="font-size:11px;color:#8A97BC">('+N+'회 · 매주 자동 갱신)</span></div>'
-    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">① 직전 회차와 겹치는 개수 <span style="font-size:11px;color:#8A97BC;font-weight:400">파랑=관측 · 노랑=이론</span></div>'+rows1
-    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 이론 분포와 일치 (χ²=3.4). 평균적으로 매주 0.8개가 재출현합니다.</div>'
-    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">② "나올 때가 됐다"는 진짜일까? <span style="font-size:11px;color:#8A97BC;font-weight:400">쉰 기간별 다음 회차 출현율 (이론 13.33%)</span></div>'+rows2
-    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 오래 쉰 번호도 확률은 그대로입니다. 콜드넘버 전략은 근거가 없습니다.</div>'
-    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">③ 최다 동반출현 페어 TOP 5</div>'+rows3
-    +'<div style="font-size:11px;color:#8A97BC;margin-bottom:14px">→ 990쌍 중 최다 페어도 통계 보정 후 우연 범위(z&lt;3.9)입니다.</div>'
-    +'<div style="font-size:11px;font-weight:700;color:#38BDF8;margin-bottom:8px">④ 패턴 헌팅 실험 — 14개 전략 + 256개 가중치 조합</div>'+hunt
-    +'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-top:8px">과거(훈련)에서 1위였던 패턴이 미래(검증)에선 평균 이하로, 꼴찌가 상위로 — 심지어 순수 랜덤이 검증 1위. 순위 자체가 노이즈라는 증거입니다. <span style="color:#818CF8">그래서 이 서비스는 "맞출 확률"이 아니라, 수학적으로 유효한 두 가지 — 세트 구조(3개+ 확률 극대화)와 독식지수(당첨 시 나눠 갖지 않기) — 에 집중합니다.</span></div></div>';
+  return '<div class="card"><div class="ttl" style="color:#E8A93A">📊 정직성 리포트 — 우리가 검증한 것들 <span style="font-size:11px;color:#8A8A93">('+N+'회 · 매주 자동 갱신)</span></div>'
+    +'<div style="background:rgba(232,169,58,.1);border:1px solid rgba(232,169,58,.28);border-radius:12px;padding:12px 13px;margin-bottom:16px;font-size:12px;color:#C7C7CC;line-height:1.75"><b style="color:#E8A93A">우리는 \'맞추는 법\'을 팔지 않습니다. 대신 이만큼 철저히 검증했습니다.</b> — 1,238회 전체를 다중비교보정으로 분석한 결과, 로또는 예측이 불가능하다는 것이 수학적으로 확정됐어요. 그래서 우리는 진짜 유효한 두 가지에만 집중합니다 — 세트 구조(3개+ 확률을 넓히기)와 독식지수(당첨 시 나눠 갖지 않기).</div>'
+    +'<div style="font-size:12px;font-weight:800;color:#E8A93A;margin-bottom:12px">🔍 검증 근거 — 우리가 직접 확인한 것들</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#E8A93A;margin-bottom:8px">① 직전 회차와 겹치는 개수 <span style="font-size:11px;color:#8A8A93;font-weight:400">파랑=관측 · 노랑=이론</span> <span class="info-chip" onclick="toggleHelp(\'h-obs\')">ⓘ</span></div><div id="h-obs" class="help-inline">관측값은 지난 회차에서 실제로 나온 횟수, 이론 기대값은 순수 확률로 계산하면 이쯤 나와야 하는 값이에요. 둘이 비슷할수록 \'완전한 무작위\'라는 뜻이에요.</div>'+rows1
+    +'<div style="font-size:11px;color:#8A8A93;margin-bottom:14px">→ 우리가 직접 확인했어요 — 직전 회차 재출현은 이론 분포와 정확히 맞아떨어졌어요 (χ²=3.4). 평균적으로 매주 0.8개가 자연스럽게 다시 나와요.</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#E8A93A;margin-bottom:8px">② "나올 때가 됐다"는 진짜일까? <span style="font-size:11px;color:#8A8A93;font-weight:400">쉰 기간별 다음 회차 출현율 (이론 13.33%)</span></div>'+rows2
+    +'<div style="font-size:11px;color:#8A8A93;margin-bottom:14px">→ 우리가 직접 확인했어요 — 오래 쉰 번호든 방금 나온 번호든, 다음 회차 출현율은 이론값(13.33%)과 똑같았어요. \'나올 때가 됐다\'는 느낌은 통계로는 재현되지 않았어요.</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#E8A93A;margin-bottom:8px">③ 최다 동반출현 페어 TOP 5</div>'+rows3
+    +'<div style="font-size:11px;color:#8A8A93;margin-bottom:14px">→ 우리가 직접 확인했어요 — 990쌍을 다중비교보정으로 검증했더니, 가장 많이 나온 페어조차 우연으로 설명되는 범위 안이었어요 (z&lt;3.9).</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#E8A93A;margin-bottom:8px">④ 패턴 헌팅 실험 — 14개 전략 + 256개 가중치 조합</div>'+hunt
+    +'<div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-top:8px">→ 우리가 직접 실험했어요 — 과거(훈련)에서 1위였던 패턴이 미래(검증)에선 평균 이하로 내려앉고, 꼴찌였던 전략이 위로 올라왔어요. 심지어 순수 랜덤이 검증에서 1위였죠. 순위 자체가 노이즈라는 걸 우리 손으로 확인한 거예요. <span style="color:#E8A93A">그래서 우리는 예측 대신, 확률이 정직하게 유효한 곳 — 세트 구조(3개+ 확률을 넓히기)와 독식지수(당첨 시 나눠 갖지 않기) — 에 힘을 씁니다.</span></div></div>';
 }
 function renderPrem(){
   var html='';
@@ -1609,31 +1641,31 @@ function renderPrem(){
   var grid='';
   for(var n=1;n<=45;n++){
     var sel=state.pick.indexOf(n)>=0,z=gz(n);
-    grid+='<button onclick="pickNum('+n+')" style="width:36px;height:36px;border-radius:50%;font-size:12px;font-weight:700;border:1.5px solid '+(sel?z.c:'rgba(255,255,255,.12)')+';background:'+(sel?z.c:'rgba(255,255,255,.04)')+';color:'+(sel?z.tc:'#8B98B8')+'">'+n+'</button>';
+    grid+='<button onclick="pickNum('+n+')" style="width:36px;height:36px;border-radius:50%;font-size:12px;font-weight:700;border:1.5px solid '+(sel?z.c:'rgba(255,255,255,.12)')+';background:'+(sel?z.c:'rgba(255,255,255,.04)')+';color:'+(sel?z.tc:'#8A8A93')+'">'+n+'</button>';
   }
   var cnt=state.pick.length;
   var canDiag=cnt===6,canSemi=cnt>=1&&cnt<=5;
-  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="ttl" style="margin-bottom:0">🎛 번호 선택 <span style="color:#FBBF24">'+cnt+'</span>/6</div>'+(cnt>0?'<button onclick="clearPick()" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:none;color:#9DABD0;font-size:11px">초기화</button>':'')+'</div>'
+  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="ttl" style="margin-bottom:0">🎛 번호 선택 <span style="color:#E8A93A">'+cnt+'</span>/6</div>'+(cnt>0?'<button onclick="clearPick()" style="padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:11px">초기화</button>':'')+'</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:12px">'+grid+'</div>'
-    +'<div style="display:flex;gap:8px"><button onclick="doDiag()" style="flex:1;padding:12px 6px;border-radius:12px;font-size:12px;font-weight:700;border:none;background:'+(canDiag?'linear-gradient(135deg,#7C3AED,#A855F7)':'rgba(255,255,255,.05)')+';color:'+(canDiag?'#fff':'#6D7AA4')+'">🔍 내 번호 진단<br><span style="font-size:11px;font-weight:400">6개 선택 시</span></button>'
-    +'<button onclick="doSemi()" style="flex:1;padding:12px 6px;border-radius:12px;font-size:12px;font-weight:700;border:none;background:'+(canSemi?'linear-gradient(135deg,#0EA5E9,#6366F1)':'rgba(255,255,255,.05)')+';color:'+(canSemi?'#fff':'#6D7AA4')+'">🎯 고정수 반자동<br><span style="font-size:11px;font-weight:400">1~5개 고정</span></button></div></div>';
-  if(state.diagBusy||state.semiBusy)html+='<div class="card" style="text-align:center;color:#818CF8;padding:20px">서버 분석 중...</div>';
+    +'<div style="display:flex;gap:8px"><button onclick="doDiag()" style="flex:1;padding:12px 6px;border-radius:999px;font-size:12px;font-weight:700;border:none;background:'+(canDiag?'#E8A93A':'rgba(255,255,255,.05)')+';color:'+(canDiag?'#171207':'#6E6E76')+'">🔍 내 번호 진단<br><span style="font-size:11px;font-weight:400">6개 선택 시</span></button>'
+    +'<button onclick="doSemi()" style="flex:1;padding:12px 6px;border-radius:999px;font-size:12px;font-weight:700;border:none;background:'+(canSemi?'#E8A93A':'rgba(255,255,255,.05)')+';color:'+(canSemi?'#171207':'#6E6E76')+'">🎯 고정수 반자동<br><span style="font-size:11px;font-weight:400">1~5개 고정</span></button></div></div>';
+  if(state.diagBusy||state.semiBusy)html+='<div class="card" style="text-align:center;color:#E8A93A;padding:20px">서버 분석 중...</div>';
   // 진단 결과
   if(state.diag){
     var d=state.diag;
-    var upC=d.unpop.score>=80?'#4ADE80':d.unpop.score>=60?'#FBBF24':'#F87171';
+    var upC=d.unpop.score>=80?'#4ADE80':d.unpop.score>=60?'#E8A93A':'#F87171';
     var items='';
     for(var i=0;i<d.unpop.items.length;i++){
       var it=d.unpop.items[i];
-      items+='<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:#9AA6C8">'+it.label+'</span><span class="rj" style="color:'+(it.penalty<0?'#F87171':'#4ADE80')+'">'+(it.penalty<0?it.penalty:'✓')+'</span></div>';
+      items+='<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span style="color:#8A8A93">'+it.label+'</span><span class="rj" style="color:'+(it.penalty<0?'#F87171':'#4ADE80')+'">'+(it.penalty<0?it.penalty:'✓')+'</span></div>';
     }
     var bls='';for(var i=0;i<d.nums.length;i++)bls+=ballHTML(d.nums[i],34,true,i*50);
-    html+='<div class="card" style="border-color:rgba(168,85,247,.3)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><div class="ttl" style="margin-bottom:0;color:#C084FC">🔍 진단 결과</div>'+saveBtnHTML(calcNextRound(),d.nums,'diag')+'</div>'
+    html+='<div class="card" style="border-color:rgba(232,169,58,.3)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><div class="ttl" style="margin-bottom:0;color:#E8A93A">🔍 진단 결과</div>'+saveBtnHTML(calcNextRound(),d.nums,'diag')+'</div>'
       +'<div style="display:flex;gap:5px;justify-content:center;margin-bottom:12px">'+bls+'</div>'
-      +'<div style="display:flex;gap:7px;margin-bottom:12px">'+sBox(d.unpop.score,'독식지수',upC)+sBox(d.sum,'합계','#FBBF24')+sBox(d.even+':'+(6-d.even),'짝:홀','#38BDF8')+sBox(d.zones+'/5','구간','#4ADE80')+'</div>'
+      +'<div style="display:flex;gap:7px;margin-bottom:12px">'+sBox(d.unpop.score,'독식지수',upC)+sBox(d.sum,'합계','#E8A93A')+sBox(d.even+':'+(6-d.even),'짝:홀','#F2F2F0')+sBox(d.zones+'/5','구간','#F2F2F0')+'</div>'
       +items
-      +'<div style="font-size:11px;color:#9AA6C8;line-height:1.8;margin-top:10px">역대 '+d.history.total+'회 대입: 3개+ 일치 <b style="color:#FBBF24">'+d.history.m3+'회</b> · 4개+ <b style="color:#FBBF24">'+d.history.m4+'회</b> · 5개+ <b>'+d.history.m5+'회</b> · 6개 <b>'+d.history.m6+'회</b><br>최고 기록: <b style="color:'+(d.freshness.best>=5?'#F87171':'#4ADE80')+'">'+d.freshness.best+'개 일치</b> (제'+d.freshness.round+'회)'+(d.freshness.best>=5?' — 이미 나온 조합과 매우 유사!':'')+'<br>'
-      +(d.valid?'<span style="color:#4ADE80">✓ 균형 필터(합계·홀짝·구간) 통과</span>':'<span style="color:#FBBF24">⚠ 균형 필터 미통과 — 당첨 확률은 동일하지만 통계적으로 드문 형태입니다</span>')
+      +'<div style="font-size:11px;color:#8A8A93;line-height:1.8;margin-top:10px">역대 '+d.history.total+'회 대입: 3개+ 일치 <b style="color:#E8A93A">'+d.history.m3+'회</b> · 4개+ <b style="color:#E8A93A">'+d.history.m4+'회</b> · 5개+ <b>'+d.history.m5+'회</b> · 6개 <b>'+d.history.m6+'회</b><br>최고 기록: <b style="color:'+(d.freshness.best>=5?'#F87171':'#4ADE80')+'">'+d.freshness.best+'개 일치</b> (제'+d.freshness.round+'회)'+(d.freshness.best>=5?' — 이미 나온 조합과 매우 유사!':'')+'<br>'
+      +(d.valid?'<span style="color:#4ADE80">✓ 균형 필터(합계·홀짝·구간) 통과</span>':'<span style="color:#E8A93A">⚠ 균형 필터 미통과 — 당첨 확률은 동일하지만 통계적으로 드문 형태입니다</span>')
       +(d.forbidden?'<br><span style="color:#F87171">⚠ 역대 5개 일치 금지 조합에 해당</span>':'')
       +'</div></div>';
   }
@@ -1646,13 +1678,13 @@ function renderPrem(){
         var isFx=r.fixed.indexOf(s.nums[i])>=0;
         bls2+='<div style="position:relative">'+ballHTML(s.nums[i],34,isFx,(idx*6+i)*35)+(isFx?'<div style="position:absolute;top:-4px;right:-3px;font-size:9px">📌</div>':'')+'</div>';
       }
-      var upC2=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#FBBF24':'#F87171';
-      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:14px;border:1px solid '+SETC[idx]+'22;padding:10px;margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls2+'</div></div><div class="set-tags"><span class="tag" style="color:'+upC2+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span><span class="tag" style="color:#818CF8;background:rgba(129,140,248,.1)">시너지 '+s.meta.synergy+'</span>'+(s.meta.relaxed?'<span class="tag" style="color:#FBBF24;background:rgba(251,191,36,.1)">⚠ 고정수 제약으로 균형필터 완화</span>':'')+'<span style="flex:1"></span>'+saveBtnHTML(r.nextRound,s.nums,'semi')+'</div></div>';
+      var upC2=s.meta.unpop>=80?'#4ADE80':s.meta.unpop>=60?'#E8A93A':'#F87171';
+      setsHTML+='<div style="background:rgba(255,255,255,.028);border-radius:12px;border:1px solid '+SETC[idx]+'22;padding:10px;margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;background:'+SETC[idx]+'18;border:1.5px solid '+SETC[idx]+'66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+SETC[idx]+'">'+SETL[idx]+'</div><div style="display:flex;gap:4px;flex:1;flex-wrap:wrap">'+bls2+'</div></div><div class="set-tags"><span class="tag" style="color:'+upC2+';background:rgba(255,255,255,.06)">독식 '+s.meta.unpop+'</span><span class="tag" style="color:#E8A93A;background:rgba(232,169,58,.1)">시너지 '+s.meta.synergy+'</span>'+(s.meta.relaxed?'<span class="tag" style="color:#E8A93A;background:rgba(232,169,58,.1)">⚠ 고정수 제약으로 균형필터 완화</span>':'')+'<span style="flex:1"></span>'+saveBtnHTML(r.nextRound,s.nums,'semi')+'</div></div>';
     }
-    html+='<div class="card" style="border-color:rgba(56,189,248,.3)"><div class="ttl" style="color:#38BDF8">🎯 고정수 반자동 5세트 <span style="font-size:11px;color:#8A97BC">📌 = 고정</span></div>'+setsHTML+'</div>';
+    html+='<div class="card" style="border-color:rgba(232,169,58,.3)"><div class="ttl" style="color:#E8A93A">🎯 고정수 반자동 5세트 <span style="font-size:11px;color:#8A8A93">📌 = 고정</span></div>'+setsHTML+'</div>';
   }
   // 심층 리포트
-  html+=state.draws?renderReport():'<div class="card" style="text-align:center;color:#94A3C8;padding:20px">리포트 데이터 로딩 중...</div>';
+  html+=state.draws?renderReport():'<div class="card" style="text-align:center;color:#8A8A93;padding:20px">리포트 데이터 로딩 중...</div>';
   return html;
 }
 
@@ -1660,15 +1692,15 @@ function renderPrem(){
 // ── 오늘 활동 목록 — 유저(👤)/게스트(👻) 섹션 분리, 10개씩 "더보기" (국소 갱신: 행만 추가, 재렌더 없음) ──
 var ADM_ACT_PAGE=10;
 function admActRowHTML(tv){
-  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:11px;color:'+(tv.member?'#C4CCEE':'#9DABD0')+'">'+(tv.member?'👤 ':'👻 ')+tv.who+'</span><span class="rj" style="font-size:11px;color:'+(tv.hits>=5?'#F97316':'#9AA6C8')+'">'+tv.hits+'회</span></div>';
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08)"><span style="font-size:11px;color:'+(tv.member?'#C7C7CC':'#8A8A93')+'">'+(tv.member?'👤 ':'👻 ')+tv.who+'</span><span class="rj" style="font-size:11px;color:'+(tv.hits>=5?'#F97316':'#8A8A93')+'">'+tv.hits+'회</span></div>';
 }
 function admActSectionHTML(kind,list){
-  var html='<div style="font-size:11px;font-weight:800;color:'+(kind==='m'?'#4ADE80':'#8B98B8')+';margin:'+(kind==='g'?'12px':'2px')+' 0 3px">'+(kind==='m'?'👤 유저':'👻 게스트')+' <span style="font-weight:400;color:#8A97BC">('+list.length+')</span></div>';
-  if(!list.length)return html+'<div style="font-size:11px;color:#8A97BC;padding:3px 0">오늘 방문 없음</div>';
+  var html='<div style="font-size:11px;font-weight:800;color:'+(kind==='m'?'#4ADE80':'#8A8A93')+';margin:'+(kind==='g'?'12px':'2px')+' 0 3px">'+(kind==='m'?'👤 유저':'👻 게스트')+' <span style="font-weight:400;color:#8A8A93">('+list.length+')</span></div>';
+  if(!list.length)return html+'<div style="font-size:11px;color:#8A8A93;padding:3px 0">오늘 방문 없음</div>';
   var rows='';
   for(var i=0;i<list.length&&i<ADM_ACT_PAGE;i++)rows+=admActRowHTML(list[i]);
   html+='<div id="adm-act-'+kind+'">'+rows+'</div>';
-  if(list.length>ADM_ACT_PAGE)html+='<button id="adm-act-more-'+kind+'" onclick="admActMore(\''+kind+'\')" style="width:100%;margin-top:6px;padding:6px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:none;color:#9DABD0;font-size:11px">더보기 ('+(list.length-ADM_ACT_PAGE)+' 남음)</button>';
+  if(list.length>ADM_ACT_PAGE)html+='<button id="adm-act-more-'+kind+'" onclick="admActMore(\''+kind+'\')" style="width:100%;margin-top:6px;padding:6px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:11px">더보기 ('+(list.length-ADM_ACT_PAGE)+' 남음)</button>';
   return html;
 }
 function admActMore(kind){
@@ -1685,21 +1717,21 @@ function renderAdm(){
   if(state.level!==100)return '<div class="card" style="text-align:center;color:#F87171;padding:30px">권한이 없습니다</div>';
   if(!state.admin){
     // 서버 거부(403 등) 시 재요청 루프 대신 사유 표시 — MFA(aal2) 미통과 안내 포함
-    if(state.admErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:26px;margin-bottom:8px">🔐</div><div style="font-size:12px;color:#F87171;line-height:1.7;margin-bottom:12px">'+state.admErr+'</div><button onclick="state.admErr=\'\';doTab(\'adm\')" style="padding:9px 18px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9DABD0;font-size:12px">다시 시도</button></div>';
+    if(state.admErr)return '<div class="card" style="text-align:center;padding:30px"><div style="font-size:26px;margin-bottom:8px">🔐</div><div style="font-size:12px;color:#F87171;line-height:1.7;margin-bottom:12px">'+state.admErr+'</div><button onclick="state.admErr=\'\';doTab(\'adm\')" style="padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:12px">다시 시도</button></div>';
     if(!state.admBusy)loadAdmin();
-    return '<div class="card" style="text-align:center;color:#94A3C8;padding:30px">관리 데이터 로딩 중...</div>';
+    return '<div class="card" style="text-align:center;color:#8A8A93;padding:30px">관리 데이터 로딩 중...</div>';
   }
   var a=state.admin;
   var boxes='<div style="display:flex;gap:7px;margin-bottom:7px">'
     +sBox(typeof a.visToday==='number'?a.visToday:'-','오늘 방문(전체)','#38BDF8')
-    +sBox(typeof a.guestToday==='number'?a.guestToday:'-','오늘 게스트','#8B98B8')
+    +sBox(typeof a.guestToday==='number'?a.guestToday:'-','오늘 게스트','#8A8A93')
     +sBox(a.dauToday,'오늘 출석(회원)','#4ADE80')
     +'</div><div style="display:flex;gap:7px;margin-bottom:7px">'
-    +sBox(typeof a.hitsToday==='number'?a.hitsToday:'-','오늘 조회수','#FBBF24')
+    +sBox(typeof a.hitsToday==='number'?a.hitsToday:'-','오늘 조회수','#E8A93A')
     +sBox((a.hitsToday&&a.visToday)?(a.hitsToday/a.visToday).toFixed(1):'-','인당 조회(오늘)','#C084FC')
     +sBox(typeof a.hits30==='number'?a.hits30:'-','30일 조회수','#F97316')
     +'</div><div style="display:flex;gap:7px;margin-bottom:4px">'
-    +sBox(a.totalUsers,'총 가입자','#FBBF24')
+    +sBox(a.totalUsers,'총 가입자','#E8A93A')
     +sBox(typeof a.visMau==='number'?a.visMau:'-','방문 MAU','#38BDF8')
     +sBox(a.mau,'회원 MAU','#4ADE80')
     +'</div>';
@@ -1713,22 +1745,22 @@ function renderAdm(){
     var d=a.days[i];
     var hv=Math.max(2,Math.round((d.v||0)/mxd*70));
     var hn=Math.max(2,Math.round(d.n/mxd*70));
-    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:10px;color:#FBBF24">'+(d.h||0)+'</span><div style="display:flex;gap:1px;align-items:flex-end"><div style="width:6px;height:'+hv+'px;background:#38BDF8;border-radius:2px 2px 0 0;opacity:.85"></div><div style="width:6px;height:'+hn+'px;background:#4ADE80;border-radius:2px 2px 0 0;opacity:.85"></div></div><span style="font-size:9px;color:#8A97BC">'+d.day.slice(8)+'</span></div>';
+    bars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:10px;color:#E8A93A">'+(d.h||0)+'</span><div style="display:flex;gap:1px;align-items:flex-end"><div style="width:6px;height:'+hv+'px;background:#38BDF8;border-radius:2px 2px 0 0;opacity:.85"></div><div style="width:6px;height:'+hn+'px;background:#4ADE80;border-radius:2px 2px 0 0;opacity:.85"></div></div><span style="font-size:9px;color:#8A8A93">'+d.day.slice(8)+'</span></div>';
   }
   var urows='';
   for(var i=0;i<a.users.length;i++){
     var u=a.users[i],li=lvInfo(u.level);
     var ctl='';
     if(u.level===100||!u.id){
-      ctl='<span style="font-size:11px;color:#8A97BC">—</span>';
+      ctl='<span style="font-size:11px;color:#8A8A93">—</span>';
     }else{
       var lvs=[1,2,3,99],opts='';
       for(var k=0;k<lvs.length;k++){opts+='<option value="'+lvs[k]+'"'+(u.level===lvs[k]?' selected':'')+'>'+lvs[k]+'</option>';}
-      ctl='<select onchange="admSetLevel(\''+u.id+'\',this)" style="background:#141A2E;color:#C4CCEE;border:1px solid rgba(255,255,255,.15);border-radius:7px;font-size:10px;padding:3px 2px">'+opts+'</select>'
-        +'<button onclick="admResetAttend(\''+u.id+'\')" title="출석 초기화" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#38BDF8;font-size:11px;padding:3px 6px;margin-left:3px">↺</button>'
+      ctl='<select onchange="admSetLevel(\''+u.id+'\',this)" style="background:#1A1A1F;color:#C7C7CC;border:1px solid rgba(255,255,255,.08);border-radius:7px;font-size:10px;padding:3px 2px">'+opts+'</select>'
+        +'<button onclick="admResetAttend(\''+u.id+'\')" title="출석 초기화" style="background:none;border:1px solid rgba(255,255,255,.08);border-radius:7px;color:#38BDF8;font-size:11px;padding:3px 6px;margin-left:3px">↺</button>'
         +'<button onclick="admDelUser(\''+u.id+'\')" title="삭제" style="background:none;border:1px solid rgba(248,113,113,.4);border-radius:7px;color:#F87171;font-size:11px;padding:3px 6px;margin-left:3px">🗑</button>';
     }
-    urows+='<tr><td style="color:#C4CCEE;font-size:11px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:11px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#9DABD0;font-size:11px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#8A97BC;font-size:11px">'+(u.created_at||'').slice(0,10)+'</td><td style="text-align:center;white-space:nowrap">'+ctl+'</td></tr>';
+    urows+='<tr><td style="color:#C7C7CC;font-size:11px;word-break:break-all">'+u.email+'</td><td style="text-align:center"><span style="font-size:11px;font-weight:800;color:'+li.c+'">'+(u.level===100?'👑 M':'Lv.'+u.level)+'</span></td><td style="text-align:center;color:#F97316" class="rj">'+(u.streak||0)+'</td><td style="text-align:center;color:#8A8A93;font-size:11px">'+(u.last_attend||'-')+'</td><td style="text-align:center;color:#8A8A93;font-size:11px">'+(u.created_at||'').slice(0,10)+'</td><td style="text-align:center;white-space:nowrap">'+ctl+'</td></tr>';
   }
   // 오늘 활동 — 유저/게스트 분리 + 10개씩 페이지네이션. 구버전 서버(todayList 합본) 응답도 클라이언트에서 분리해 호환
   var actM=a.todayMembers,actG=a.todayGuests;
@@ -1739,10 +1771,10 @@ function renderAdm(){
   actM=actM||[];actG=actG||[];
   state.admAct={m:actM,g:actG};
   var actCard='<div class="card"><div class="ttl">📱 오늘 활동 (방문자별 조회수)</div>'
-    +((!actM.length&&!actG.length)?'<div style="font-size:11px;color:#8A97BC">오늘 방문 없음</div>':admActSectionHTML('m',actM)+admActSectionHTML('g',actG))
+    +((!actM.length&&!actG.length)?'<div style="font-size:11px;color:#8A8A93">오늘 방문 없음</div>':admActSectionHTML('m',actM)+admActSectionHTML('g',actG))
     +'</div>';
-  return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.15);background:none;color:#9DABD0;font-size:11px">🔄 새로고침</button></div>'+boxes+'</div>'
-    +'<div class="card"><div class="ttl">최근 14일 — <span style="color:#FBBF24">숫자=조회수</span> · <span style="color:#38BDF8">파랑=방문자</span> · <span style="color:#4ADE80">초록=회원출석</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
+  return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ttl" style="margin-bottom:0">🛠 운영 현황</div><button onclick="state.admin=null;doTab(\'adm\')" style="padding:5px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:11px">🔄 새로고침</button></div>'+boxes+'</div>'
+    +'<div class="card"><div class="ttl">최근 14일 — <span style="color:#E8A93A">숫자=조회수</span> · <span style="color:#38BDF8">파랑=방문자</span> · <span style="color:#4ADE80">초록=회원출석</span></div><div style="display:flex;align-items:flex-end;gap:2px;padding-top:6px">'+bars+'</div></div>'
     +actCard+mfaSectionHTML()+'<div class="card"><div class="ttl">유저 목록 ('+a.users.length+')</div><div style="overflow-x:auto"><table class="bt-table"><thead><tr><th style="text-align:left">이메일</th><th style="text-align:center">레벨</th><th style="text-align:center">연속</th><th style="text-align:center">최근출석</th><th style="text-align:center">가입일</th><th style="text-align:center">관리</th></tr></thead><tbody>'+urows+'</tbody></table></div></div>';
 }
 function admFindUser(id){
@@ -1793,13 +1825,13 @@ function renderMyPicks(){
   if(!state.session)return '';
   if(!state.myPicks){
     if(!state.picksBusy)loadPicks();
-    return '<div class="card" style="text-align:center;color:#94A3C8;padding:20px;font-size:11px">💾 저장 번호 불러오는 중...</div>';
+    return '<div class="card" style="text-align:center;color:#8A8A93;padding:20px;font-size:11px">💾 저장 번호 불러오는 중...</div>';
   }
   var mp=state.myPicks,html='',i,j,k;
   // 동행복권 공식 팩트 카드
   var ld=(mp.latestRound&&mp.draws&&mp.draws[mp.latestRound])?mp.draws[mp.latestRound]:null;
   if(ld&&typeof ld.won1_count==='number'&&typeof ld.won1_amount==='number'){
-    html+='<div class="card cd"><div style="font-size:11px;color:#C4CCEE;line-height:1.9;text-align:center">📋 제'+mp.latestRound+'회 1등 당첨자 <b style="color:#FBBF24">'+fmtNum(ld.won1_count)+'명</b> · 1인당 당첨금 <b style="color:#FBBF24">'+fmtNum(ld.won1_amount)+'원</b><br><span style="font-size:11px;color:#8A97BC">동행복권 공식 발표 기준</span></div></div>';
+    html+='<div class="card cd"><div style="font-size:11px;color:#C7C7CC;line-height:1.9;text-align:center">📋 제'+mp.latestRound+'회 1등 당첨자 <b style="color:#E8A93A">'+fmtNum(ld.won1_count)+'명</b> · 1인당 당첨금 <b style="color:#E8A93A">'+fmtNum(ld.won1_amount)+'원</b><br><span style="font-size:11px;color:#8A8A93">동행복권 공식 발표 기준</span></div></div>';
   }
   // 누적 통계 (현재 보관분 + 지난 롤업분)
   var curBest=-1,scored=0;
@@ -1809,7 +1841,7 @@ function renderMyPicks(){
   var st=mp.stats,totAll=mp.picks.length+(st?st.total_saved:0);
   var bestAll=Math.max(curBest,st&&typeof st.best_match==='number'?st.best_match:-1);
   var statRow='';
-  if(totAll>0)statRow='<div style="display:flex;gap:7px;margin-bottom:11px">'+sBox(fmtNum(totAll),'누적 저장','#38BDF8')+sBox(bestAll>=0?bestAll+'개':'-','역대 최고 적중','#FBBF24')+sBox(mp.picks.length-scored,'결과 대기중','#C084FC')+'</div>';
+  if(totAll>0)statRow='<div style="display:flex;gap:7px;margin-bottom:11px">'+sBox(fmtNum(totAll),'누적 저장','#F2F2F0')+sBox(bestAll>=0?bestAll+'개':'-','역대 최고 적중','#E8A93A')+sBox(mp.picks.length-scored,'결과 대기중','#F2F2F0')+'</div>';
   // 회차별 목록
   var byRound=[],map={};
   for(i=0;i<mp.picks.length;i++){
@@ -1819,11 +1851,11 @@ function renderMyPicks(){
   }
   var body='';
   if(!mp.picks.length){
-    body='<div style="text-align:center;color:#9DABD0;font-size:11px;padding:14px 0;line-height:1.8">아직 보관 중인 번호가 없습니다.<br>🎯 추천 탭에서 번호를 받고 💾 저장을 눌러보세요.<br>추첨 후 결과가 자동으로 대조됩니다.</div>';
+    body='<div style="text-align:center;color:#8A8A93;font-size:11px;padding:14px 0;line-height:1.8">아직 보관 중인 번호가 없습니다.<br>🎯 추천 탭에서 번호를 받고 💾 저장을 눌러보세요.<br>추첨 후 결과가 자동으로 대조됩니다.</div>';
   }
   for(i=0;i<byRound.length;i++){
     var rd=byRound[i],list=map[rd],dw=(mp.draws&&mp.draws[rd])?mp.draws[rd]:null;
-    body+='<div style="display:flex;justify-content:space-between;align-items:center;margin:11px 0 6px"><span class="rj" style="font-size:11px;color:#FBBF24">제 '+rd+'회 · '+list.length+'개</span><span style="font-size:11px;color:'+(dw?'#4ADE80':'#9DABD0')+'">'+(dw?'결과 발표':'⏳ 결과 대기중')+'</span></div>';
+    body+='<div style="display:flex;justify-content:space-between;align-items:center;margin:11px 0 6px"><span class="rj" style="font-size:11px;color:#E8A93A">제 '+rd+'회 · '+list.length+'개</span><span style="font-size:11px;color:'+(dw?'#4ADE80':'#8A8A93')+'">'+(dw?'결과 발표':'⏳ 결과 대기중')+'</span></div>';
     for(j=0;j<list.length;j++){
       var p2=list[j],bls='';
       for(k=0;k<p2.numbers.length;k++){
@@ -1831,32 +1863,32 @@ function renderMyPicks(){
         bls+='<span style="'+(hit?'':'opacity:'+(dw?'.35':'1'))+'">'+ballHTML(p2.numbers[k],24,hit,0)+'</span>';
       }
       var res;
-      if(typeof p2.match_cnt!=='number')res='<span style="font-size:11px;color:#9DABD0">대기중</span>';
+      if(typeof p2.match_cnt!=='number')res='<span style="font-size:11px;color:#8A8A93">대기중</span>';
       else{
         var rk=pickRank(p2.match_cnt,p2.bonus_hit);
-        res='<span class="rj" style="font-size:11px;color:'+rk[1]+'">'+rk[0]+'</span>'+(p2.bonus_hit?'<div style="font-size:10px;color:#C084FC">+보너스</div>':'');
+        res='<span class="rj" style="font-size:11px;color:'+rk[1]+'">'+rk[0]+'</span>'+(p2.bonus_hit?'<div style="font-size:10px;color:#E8A93A">+보너스</div>':'');
       }
-      body+='<div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right;min-width:54px">'+res+'</div><button onclick="deletePick('+p2.id+')" style="flex-shrink:0;background:none;border:none;color:#8A97BC;font-size:11px;padding:2px 4px">🗑</button></div>';
+      body+='<div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right;min-width:54px">'+res+'</div><button onclick="deletePick('+p2.id+')" style="flex-shrink:0;background:none;border:none;color:#8A8A93;font-size:11px;padding:2px 4px">🗑</button></div>';
     }
   }
-  var qrBtn='<button onclick="openQrScan()" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#FBBF24;font-size:11px'+(qrLevelLocked()?';opacity:.5':'')+'">'+(qrLevelLocked()?'🔒 ':'')+'📷 QR로 번호 넣기</button>';
-  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:6px"><div class="ttl" style="margin-bottom:0">💾 내 저장 번호</div><div style="display:flex;gap:5px;flex-shrink:0">'+qrBtn+'<button onclick="state.myPicks=null;doTab(\'me\')" style="padding:4px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:none;color:#9DABD0;font-size:11px">🔄 새로고침</button></div></div>'+statRow+body
-    +'<div style="font-size:11px;color:#6D7AA4;line-height:1.7;margin-top:10px">회차당 최대 50개 저장 · 최근 4회차(한 달)까지 보관되며 이전 기록은 누적 통계로 남습니다.<br>추첨 결과 반영 후 자동으로 당첨 대조됩니다.</div></div>';
+  var qrBtn='<button onclick="openQrScan()" style="padding:4px 10px;border-radius:999px;border:1px solid rgba(232,169,58,.3);background:rgba(232,169,58,.08);color:#E8A93A;font-size:11px'+(qrLevelLocked()?';opacity:.5':'')+'">'+(qrLevelLocked()?'🔒 ':'')+'📷 QR로 번호 넣기</button>';
+  html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:6px"><div class="ttl" style="margin-bottom:0">💾 내 저장 번호</div><div style="display:flex;gap:5px;flex-shrink:0">'+qrBtn+'<button onclick="state.myPicks=null;doTab(\'me\')" style="padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:11px">🔄 새로고침</button></div></div>'+statRow+body
+    +'<div style="font-size:11px;color:#6E6E76;line-height:1.7;margin-top:10px">회차당 최대 50개 저장 · 최근 4회차(한 달)까지 보관되며 이전 기록은 누적 통계로 남습니다.<br>추첨 결과 반영 후 자동으로 당첨 대조됩니다.</div></div>';
   return html;
 }
 function renderMe(){
-  if(!state.session)return '<div class="card" style="text-align:center"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#9DABD0;margin-bottom:14px">로그인하면 레벨·출석 현황과 저장한 번호의 당첨 결과를 볼 수 있습니다.</div><button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인 / 회원가입</button></div>';
+  if(!state.session)return '<div class="card" style="text-align:center"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#8A8A93;margin-bottom:14px">로그인하면 레벨·출석 현황과 저장한 번호의 당첨 결과를 볼 수 있습니다.</div><button onclick="openAuth()" style="padding:12px 26px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:14px">로그인 / 회원가입</button></div>';
   var li=lvInfo(state.level);
   var nextInfo='';
   if(state.level>=1&&state.level<=2&&state.toNext!==null)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — '+lvInfo(state.level+1).name+' 승급까지 '+state.toNext+'일</div>';
   else if(state.level===3)nextInfo='<div style="font-size:11px;color:#F97316;margin-bottom:6px">🔥 연속 출석 '+state.streak+'일 — 최고 등급 유지 중! 출석이 끊기면 강등됩니다</div>';
-  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C4CCEE;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>'+gamesMeCardsHTML()+'<div id="mypicks-wrap">'+renderMyPicks()+'</div>';
+  return '<div class="card"><div class="ttl">👤 내정보</div><div style="font-size:12px;color:#C7C7CC;margin-bottom:6px">'+maskEmail(state.session.user.email||'')+'</div><div style="font-size:14px;font-weight:800;color:'+li.c+';margin-bottom:8px">'+(state.level===100?'👑 마스터':state.level===99?'🧪 테스터':'Lv.'+state.level+' '+li.name)+'</div>'+nextInfo+'<div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-bottom:14px">'+li.desc+'<br>매일 접속하면 자동으로 출석 처리됩니다 (한국시간 기준).<br>하루 빠짐은 유예 — 2일 이상 연속 미출석 시 한 단계 내려갑니다.</div><div style="margin-bottom:12px">'+renderLadder()+'</div><button onclick="doLogout()" style="padding:10px 22px;border-radius:999px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">로그아웃</button></div>'+gamesMeCardsHTML()+'<div id="mypicks-wrap">'+renderMyPicks()+'</div>';
 }
 
 // ── 탭 라우팅 ──
 function lockedCard(t){
   var li=lvInfo(t.min);
-  return '<div class="card" style="text-align:center;padding:34px 20px"><div style="font-size:32px;margin-bottom:10px">🔒</div><div class="ttl">'+t.label+' — Lv.'+t.min+' '+li.name+'부터</div><div style="font-size:11px;color:#9DABD0;line-height:1.8">'+(state.session?('연속 출석으로 승급하세요! (현재 🔥 '+state.streak+'일)'):'가입 후 매일 접속하면 자동으로 승급됩니다.')+'</div>'+(state.session?'':'<button onclick="openAuth()" style="margin-top:12px;padding:11px 24px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">로그인 / 회원가입</button>')+'</div>';
+  return '<div class="card" style="text-align:center;padding:34px 20px"><div style="font-size:32px;margin-bottom:10px">🔒</div><div class="ttl">'+t.label+' — Lv.'+t.min+' '+li.name+'부터</div><div style="font-size:11px;color:#8A8A93;line-height:1.8">'+(state.session?('연속 출석으로 승급하세요! (현재 🔥 '+state.streak+'일)'):'가입 후 매일 접속하면 자동으로 승급됩니다.')+'</div>'+(state.session?'':'<button onclick="openAuth()" style="margin-top:12px;padding:11px 24px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px">로그인 / 회원가입</button>')+'</div>';
 }
 function doTab(id){
   try{
@@ -1864,7 +1896,7 @@ function doTab(id){
     renderTabs();
     var c=document.getElementById('content'),html='';
     if(APP_ENV!=='live'&&!envAllowed()){
-      c.innerHTML='<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:34px;margin-bottom:12px">'+(APP_ENV==='qa'?'🧪':'🛠')+'</div><div class="ttl">'+APP_ENV.toUpperCase()+' 환경 — '+(APP_ENV==='qa'?'테스터/마스터':'마스터')+' 전용</div><div style="font-size:11px;color:#9DABD0;line-height:1.8;margin-bottom:14px">이곳은 배포 전 테스트 환경입니다.<br>권한이 있는 계정으로 로그인해 주세요.</div>'+(state.session?'<div style="font-size:11px;color:#F87171">현재 계정은 열람 권한이 없습니다.</div>':'<button onclick="openAuth()" style="padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:14px">로그인</button>')+'</div><div class="footer">v'+APP_VERSION+' · '+APP_ENV+'</div>';
+      c.innerHTML='<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:34px;margin-bottom:12px">'+(APP_ENV==='qa'?'🧪':'🛠')+'</div><div class="ttl">'+APP_ENV.toUpperCase()+' 환경 — '+'테스터/마스터 전용</div><div style="font-size:11px;color:#8A8A93;line-height:1.8;margin-bottom:14px">이곳은 배포 전 테스트 환경입니다.<br>권한이 있는 계정으로 로그인해 주세요.</div>'+(state.session?'<div style="font-size:11px;color:#F87171">현재 계정은 열람 권한이 없습니다.</div>':'<button onclick="openAuth()" style="padding:12px 26px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:14px">로그인</button>')+'</div><div class="footer">v'+APP_VERSION+' · '+APP_ENV+'</div>';
       return;
     }
     var tdef=null;for(var i=0;i<TABS.length;i++)if(TABS[i].id===id)tdef=TABS[i];
@@ -1879,7 +1911,7 @@ function doTab(id){
     else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
     var recCard='';
-    if(state.recovery)recCard='<div class="card" style="border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.05)"><div class="ttl" style="color:#38BDF8">🔑 새 비밀번호 설정</div><input type="password" id="new-pw" placeholder="새 비밀번호 (6자 이상)" style="width:100%;padding:13px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:14px;margin-bottom:8px"><div id="new-pw-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px"></div><button onclick="setNewPw()" style="width:100%;padding:12px;border-radius:11px;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;font-weight:700;font-size:13px">비밀번호 변경</button></div>';
+    if(state.recovery)recCard='<div class="card" style="border-color:rgba(232,169,58,.4);background:rgba(232,169,58,.05)"><div class="ttl" style="color:#E8A93A">🔑 새 비밀번호 설정</div><input type="password" id="new-pw" placeholder="새 비밀번호 (6자 이상)" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#F2F2F0;font-size:14px;margin-bottom:8px"><div id="new-pw-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px"></div><button onclick="setNewPw()" style="width:100%;padding:12px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px">비밀번호 변경</button></div>';
     c.innerHTML=recCard+html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
     if(!locked&&(id==='freq'||id==='hist'||id==='hot'||id==='prem')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
     if(!locked&&id==='rec'&&state.latestWin===null)loadLatestWin(function(){
@@ -1928,7 +1960,7 @@ function doAuth(){
   var pw=document.getElementById('auth-pw').value;
   var msg=document.getElementById('auth-msg');
   if(!email||pw.length<6){msg.textContent='이메일과 6자 이상 비밀번호를 입력하세요.';return;}
-  msg.style.color='#9DABD0';msg.textContent='처리 중...';
+  msg.style.color='#8A8A93';msg.textContent='처리 중...';
   var p=state.authMode==='login'?sb.auth.signInWithPassword({email:email,password:pw}):sb.auth.signUp({email:email,password:pw});
   p.then(function(res){
     if(res.error){msg.style.color='#F87171';msg.textContent=authErrKo(res.error.message);return;}
@@ -1943,8 +1975,8 @@ function doAuth(){
 function doRecover(){
   var email=document.getElementById('auth-email').value.trim();
   var msg=document.getElementById('auth-msg');
-  if(!email){msg.style.color='#FBBF24';msg.textContent='가입한 이메일을 입력한 뒤 다시 눌러주세요.';return;}
-  msg.style.color='#9DABD0';msg.textContent='재설정 메일 발송 중...';
+  if(!email){msg.style.color='#E8A93A';msg.textContent='가입한 이메일을 입력한 뒤 다시 눌러주세요.';return;}
+  msg.style.color='#8A8A93';msg.textContent='재설정 메일 발송 중...';
   sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname})
     .then(function(res){
       if(res.error){msg.style.color='#F87171';msg.textContent=authErrKo(res.error.message);return;}
@@ -1964,7 +1996,7 @@ function setNewPw(){
 function doOAuth(provider){
   var msg=document.getElementById('auth-msg');
   if(!state.providers[provider]){
-    if(msg){msg.style.color='#FBBF24';msg.textContent=(provider==='google'?'구글':'카카오')+' 로그인은 준비 중입니다. 이메일로 가입해 주세요.';}
+    if(msg){msg.style.color='#E8A93A';msg.textContent=(provider==='google'?'구글':'카카오')+' 로그인은 준비 중입니다. 이메일로 가입해 주세요.';}
     return;
   }
   sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:window.location.origin+window.location.pathname}})
@@ -1985,7 +2017,7 @@ function loadProfile(cb){
 }
 function envAllowed(){
   if(APP_ENV==='qa')return state.level===99||state.level===100;
-  if(APP_ENV==='dev')return state.level===100;
+  if(APP_ENV==='dev')return state.level===99||state.level===100;
   return true;
 }
 function trackVisit(){
@@ -2060,10 +2092,10 @@ function mfaErrKo(msg){
 function mfaGateVerify(){
   var i=document.getElementById('mfa-gate-code'),m=document.getElementById('mfa-gate-msg'),b=document.getElementById('mfa-gate-btn');
   var code=i?String(i.value).replace(/\D/g,''):'';
-  if(code.length!==6){if(m){m.style.color='#FBBF24';m.textContent='6자리 숫자 코드를 입력하세요.';}return;}
+  if(code.length!==6){if(m){m.style.color='#E8A93A';m.textContent='6자리 숫자 코드를 입력하세요.';}return;}
   if(state.mfaBusy)return;
   state.mfaBusy=true;
-  if(m){m.style.color='#9DABD0';m.textContent='확인 중...';}
+  if(m){m.style.color='#8A8A93';m.textContent='확인 중...';}
   if(b)b.disabled=true;
   sb.auth.mfa.listFactors().then(function(res){
     var f=(res&&res.data&&res.data.totp&&res.data.totp.length)?res.data.totp[0]:null;
@@ -2102,26 +2134,26 @@ function mfaSectionHTML(){
   var f=state.mfaSet.factors,inner='';
   if(!f){
     if(!state.mfaSet.busy)setTimeout(function(){try{loadMfaFactors();}catch(e){}},0);
-    inner='<div style="font-size:11px;color:#9DABD0">상태 확인 중...</div>';
+    inner='<div style="font-size:11px;color:#8A8A93">상태 확인 중...</div>';
   }else if(state.mfaSet.enroll){
     var en=state.mfaSet.enroll;
     // qr(data:image/svg+xml URL)은 따옴표 충돌을 피해 렌더 후 src를 프로퍼티로 주입
     setTimeout(function(){try{var img=document.getElementById('mfa-qr-img');if(img&&state.mfaSet.enroll&&state.mfaSet.enroll.qr)img.src=state.mfaSet.enroll.qr;}catch(e){}},0);
-    inner='<div style="font-size:11px;color:#C4CCEE;line-height:1.7;margin-bottom:10px">① 인증 앱(Google OTP·Authy 등)으로 아래 QR을 스캔하거나 키를 수동 입력<br>② 앱에 표시된 6자리 코드를 입력해 등록을 완료하세요.</div>'
+    inner='<div style="font-size:11px;color:#C7C7CC;line-height:1.7;margin-bottom:10px">① 인증 앱(Google OTP·Authy 등)으로 아래 QR을 스캔하거나 키를 수동 입력<br>② 앱에 표시된 6자리 코드를 입력해 등록을 완료하세요.</div>'
       +(en.qr?'<div style="background:#fff;border-radius:12px;padding:10px;width:190px;margin:0 auto 10px"><img id="mfa-qr-img" alt="TOTP QR" style="display:block;width:170px;height:170px"></div>':'')
-      +(en.secret?'<div style="font-size:10px;color:#9DABD0;margin-bottom:4px">수동 입력 키</div><div class="rj" style="font-size:12px;color:#FBBF24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:9px;padding:8px;word-break:break-all;margin-bottom:10px">'+en.secret+'</div>':'')
-      +'<input id="mfa-enroll-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6자리 코드" style="width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#E8ECFF;font-size:16px;text-align:center;letter-spacing:5px;margin-bottom:8px">'
+      +(en.secret?'<div style="font-size:10px;color:#8A8A93;margin-bottom:4px">수동 입력 키</div><div class="rj" style="font-size:12px;color:#E8A93A;background:rgba(232,169,58,.08);border:1px solid rgba(232,169,58,.25);border-radius:12px;padding:8px;word-break:break-all;margin-bottom:10px">'+en.secret+'</div>':'')
+      +'<input id="mfa-enroll-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6자리 코드" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#F2F2F0;font-size:16px;text-align:center;letter-spacing:5px;margin-bottom:8px">'
       +'<div id="mfa-set-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px">'+(state.mfaSet.msg||'')+'</div>'
-      +'<div style="display:flex;gap:7px"><button onclick="mfaConfirmEnroll()" style="flex:1;padding:11px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">등록 완료</button><button onclick="mfaCancelEnroll()" style="flex:1;padding:11px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:none;color:#9DABD0;font-size:12px">취소</button></div>';
+      +'<div style="display:flex;gap:7px"><button onclick="mfaConfirmEnroll()" style="flex:1;padding:11px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px">등록 완료</button><button onclick="mfaCancelEnroll()" style="flex:1;padding:11px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:none;color:#8A8A93;font-size:12px">취소</button></div>';
   }else if(f.totp&&f.totp.length){
     inner='<div style="font-size:12px;font-weight:700;color:#4ADE80;margin-bottom:8px">2단계 인증 사용 중 ✓</div>'
-      +'<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:10px">로그인 시 비밀번호에 더해 인증 앱의 6자리 코드가 필요합니다.<br>관리 기능은 코드 인증을 통과한 세션에서만 동작합니다.</div>'
+      +'<div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-bottom:10px">로그인 시 비밀번호에 더해 인증 앱의 6자리 코드가 필요합니다.<br>관리 기능은 코드 인증을 통과한 세션에서만 동작합니다.</div>'
       +(state.mfaSet.msg?'<div style="font-size:11px;color:#F87171;margin-bottom:6px">'+state.mfaSet.msg+'</div>':'')
-      +'<button onclick="mfaUnenroll()" style="padding:9px 18px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">해제</button>';
+      +'<button onclick="mfaUnenroll()" style="padding:9px 18px;border-radius:999px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#F87171;font-size:12px;font-weight:700">해제</button>';
   }else{
-    inner='<div style="font-size:11px;color:#9DABD0;line-height:1.7;margin-bottom:10px">인증 앱(Google OTP 등)의 6자리 코드를 로그인에 추가해 계정을 보호합니다.<br>마스터 계정은 사용을 강력히 권장합니다.</div>'
+    inner='<div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-bottom:10px">인증 앱(Google OTP 등)의 6자리 코드를 로그인에 추가해 계정을 보호합니다.<br>마스터 계정은 사용을 강력히 권장합니다.</div>'
       +(state.mfaSet.msg?'<div style="font-size:11px;color:#F87171;margin-bottom:6px">'+state.mfaSet.msg+'</div>':'')
-      +'<button onclick="mfaStartEnroll()" style="padding:11px 22px;border-radius:11px;background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;font-weight:700;font-size:13px">'+(state.mfaSet.vbusy?'준비 중...':'설정 시작')+'</button>';
+      +'<button onclick="mfaStartEnroll()" style="padding:11px 22px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px">'+(state.mfaSet.vbusy?'준비 중...':'설정 시작')+'</button>';
   }
   return '<div class="card"><div class="ttl">🔐 2단계 인증 설정</div>'+inner+'</div>';
 }
@@ -2161,10 +2193,10 @@ function mfaStartEnroll(){
 function mfaConfirmEnroll(){
   var i=document.getElementById('mfa-enroll-code'),m=document.getElementById('mfa-set-msg');
   var code=i?String(i.value).replace(/\D/g,''):'';
-  if(code.length!==6){if(m){m.style.color='#FBBF24';m.textContent='인증 앱에 표시된 6자리 코드를 입력하세요.';}return;}
+  if(code.length!==6){if(m){m.style.color='#E8A93A';m.textContent='인증 앱에 표시된 6자리 코드를 입력하세요.';}return;}
   if(state.mfaSet.vbusy||!state.mfaSet.enroll)return;
   state.mfaSet.vbusy=true;
-  if(m){m.style.color='#9DABD0';m.textContent='확인 중...';}
+  if(m){m.style.color='#8A8A93';m.textContent='확인 중...';}
   var fid=state.mfaSet.enroll.id;
   sb.auth.mfa.challenge({factorId:fid}).then(function(ch){
     if(ch.error)throw ch.error;
@@ -2236,7 +2268,7 @@ try{
     if(_es){
       _es.style.display='inline-block';
       _es.textContent=APP_ENV.toUpperCase();
-      if(APP_ENV==='qa'){_es.style.color='#FBBF24';_es.style.background='rgba(251,191,36,.15)';_es.style.border='1px solid rgba(251,191,36,.4)';}
+      if(APP_ENV==='qa'){_es.style.color='#E8A93A';_es.style.background='rgba(232,169,58,.15)';_es.style.border='1px solid rgba(232,169,58,.4)';}
       else{_es.style.color='#F87171';_es.style.background='rgba(248,113,113,.15)';_es.style.border='1px solid rgba(248,113,113,.4)';}
     }
     document.title='['+APP_ENV.toUpperCase()+'] '+document.title;
