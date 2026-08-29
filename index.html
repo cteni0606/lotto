@@ -159,7 +159,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.17.01';
+var APP_VERSION='2.0.18.00';
 var APP_ENV='live'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -180,6 +180,7 @@ var TABS=[
   {id:'hist',label:'📋 기록',min:1},
   {id:'hot',label:'🔥 핫&콜드',min:2},
   {id:'prem',label:'🔮 프리미엄',min:3},
+  {id:'histmatch',label:'🏆 역대매칭',min:3},
   {id:'games',label:'🎮 미니게임',min:0},
   {id:'adm',label:'🛠 관리',min:100},
   {id:'me',label:'👤 내정보',min:0}
@@ -382,7 +383,7 @@ function loadPicks(){
   state.picksBusy=true;
   fetch(SB_URL+'/functions/v1/picks',{headers:{'Authorization':'Bearer '+state.session.access_token}})
     .then(function(r){return r.json();})
-    .then(function(j){state.picksBusy=false;if(j&&j.ok)state.myPicks=j;if(state.tab==='me')doTab('me');})
+    .then(function(j){state.picksBusy=false;if(j&&j.ok)state.myPicks=j;if(state.tab==='me'||state.tab==='histmatch')doTab(state.tab);})
     .catch(function(e){state.picksBusy=false;});
 }
 function deletePick(id){
@@ -1550,6 +1551,46 @@ function drawNums(d){return[d.n1,d.n2,d.n3,d.n4,d.n5,d.n6];}
 function needDraws(id){
   return '<div class="card" style="text-align:center;color:#8A8A93;padding:30px">데이터 로딩 중...</div>';
 }
+function renderHistMatch(){
+  if(!state.draws)return needDraws('histmatch');
+  if(!state.myPicks){
+    if(!state.picksBusy)loadPicks();
+    return '<div class="card" style="text-align:center;color:#8A8A93;padding:20px;font-size:11px">💾 저장 번호 불러오는 중...</div>';
+  }
+  var mp=state.myPicks;
+  if(!mp.picks||!mp.picks.length){
+    return '<div class="card" style="text-align:center;color:#8A8A93;padding:24px;font-size:11px;line-height:1.8">아직 저장된 번호가 없습니다.<br>🎯 추천 탭에서 번호를 받고 💾 저장을 눌러보세요.<br>저장한 번호를 역대 '+state.draws.length+'회 전체와 비교해드려요.</div>';
+  }
+  var html='<div class="card" style="border-color:rgba(232,169,58,.3)"><div class="ttl" style="color:#E8A93A">🏆 역대매칭 — 내 저장 번호가 역대 몇 등이었는지</div><div style="font-size:11px;color:#8A8A93;line-height:1.7;margin-bottom:2px">저장한 각 번호 조합을 역대 '+state.draws.length+'개 회차 전부와 비교해 최고 기록을 보여줘요.</div></div>';
+  var i,j,k,p;
+  for(i=0;i<mp.picks.length;i++){
+    p=mp.picks[i];
+    var best={m:-1,bonus:false,round:null,date:null};
+    var c3=0,c4=0,c5=0,c6=0;
+    for(j=0;j<state.draws.length;j++){
+      var d=state.draws[j],dn=drawNums(d),m=0;
+      for(k=0;k<6;k++)if(p.numbers.indexOf(dn[k])>=0)m++;
+      var bonusHit=(m===5)&&(p.numbers.indexOf(d.bonus)>=0);
+      if(m>=3)c3++;
+      if(m>=4)c4++;
+      if(m>=5)c5++;
+      if(m===6)c6++;
+      var better=false;
+      if(m>best.m)better=true;
+      else if(m===best.m&&m===5&&bonusHit&&!best.bonus)better=true; // 5개 일치 중 보너스까지 맞은 쪽(2등)을 우선
+      if(better){best={m:m,bonus:bonusHit,round:d.round,date:d.drawn_date};}
+    }
+    var bls='';for(k=0;k<p.numbers.length;k++)bls+=ballHTML(p.numbers[k],26,false,0);
+    var rk=best.m>=0?pickRank(best.m,best.bonus):['-','#8A8A93'];
+    var bestLine=best.m>=3
+      ? '역대 최고: <b style="color:'+rk[1]+'">'+rk[0]+'</b> — 제 '+best.round+'회'+(best.date?' ('+best.date+')':'')
+      : '역대 최고 <b style="color:#8A8A93">'+(best.m<0?0:best.m)+'개 일치</b> — 아직 3개 이상 맞은 적은 없어요';
+    html+='<div class="card"><div style="display:flex;align-items:center;gap:4px;margin-bottom:8px"><div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">'+bls+'</div><div style="flex-shrink:0;text-align:right"><span class="rj" style="font-size:13px;color:'+rk[1]+'">'+rk[0]+'</span></div></div>'
+      +'<div style="font-size:11px;color:#C7C7CC;line-height:1.7">'+bestLine+'<br><span style="color:#8A8A93">역대 3개+ <b style="color:#E8A93A">'+c3+'회</b> · 4개+ <b style="color:#E8A93A">'+c4+'회</b> · 5개+ <b>'+c5+'회</b> · 6개 <b>'+c6+'회</b></span></div>'
+      +'<div style="font-size:10px;color:#6E6E76;margin-top:6px">제 '+p.round+'회에 저장한 번호</div></div>';
+  }
+  return html;
+}
 
 function renderFreq(){
   if(!state.draws)return needDraws('freq');
@@ -1994,13 +2035,14 @@ function doTab(id){
     else if(id==='hist')html=renderHist();
     else if(id==='hot')html=renderHot();
     else if(id==='prem')html=renderPrem();
+    else if(id==='histmatch')html=renderHistMatch();
     else if(id==='games')html=renderGames();
     else if(id==='adm')html=renderAdm();
     else if(id==='me')html=renderMe();
     var recCard='';
     if(state.recovery)recCard='<div class="card" style="border-color:rgba(232,169,58,.4);background:rgba(232,169,58,.05)"><div class="ttl" style="color:#E8A93A">🔑 새 비밀번호 설정</div><input type="password" id="new-pw" placeholder="새 비밀번호 (6자 이상)" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#F2F2F0;font-size:14px;margin-bottom:8px"><div id="new-pw-msg" style="font-size:11px;color:#F87171;min-height:15px;margin-bottom:6px"></div><button onclick="setNewPw()" style="width:100%;padding:12px;border-radius:999px;background:#E8A93A;color:#171207;box-shadow:0 10px 24px -8px rgba(232,169,58,.5);font-weight:700;font-size:13px">비밀번호 변경</button></div>';
     c.innerHTML=recCard+html+'<div class="footer">⚠️ 통계 패턴 분석이며 실제 당첨을 보장하지 않습니다<br>로또 6/45 당첨확률 1/8,145,060</div>';
-    if(!locked&&(id==='freq'||id==='hist'||id==='hot'||id==='prem')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
+    if(!locked&&(id==='freq'||id==='hist'||id==='hot'||id==='prem'||id==='histmatch')&&!state.draws)loadDraws(function(){if(state.tab===id)doTab(id);});
     if(!locked&&id==='rec'&&state.latestWin===null)loadLatestWin(function(){
       try{
         if(state.tab!=='rec')return;
