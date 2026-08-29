@@ -159,7 +159,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.18.01';
+var APP_VERSION='2.0.18.02';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -271,7 +271,7 @@ function renderRec(){
     html+='<div class="card" style="padding:22px 18px 18px"><div class="hero-row"><div><div class="hero-kicker">LOTTO 6/45</div><div class="hero-title">제 <b>'+calcNextRound()+'회</b><br>오늘의 추천</div></div><div class="hero-visual"><div class="b b1">7</div><div class="b b2">14</div><div class="b b3">24</div><div class="b b4">38</div><div class="b b5">45</div></div></div><button class="cta" onclick="getRec()">🎲 번호 받기</button><div style="font-size:11px;color:#8A8A93;margin-top:10px;text-align:center">번호는 서버에서 생성됩니다 · 레벨이 높을수록 더 많은 분석이 적용됩니다</div></div>';
   }
   html+='<div id="rec-win-fact">'+latestWinCardHTML()+'</div>';
-  html+='<div style="font-size:10px;color:#6E6E76;text-align:center;margin:-2px 0 10px;line-height:1.6">🕘 결과는 매주 토요일 추첨 후 밤 9시 45분경 자동 반영돼요 (드물게 지연 시 다음날 오전 재시도)</div>';
+  html+='<div style="font-size:10px;color:#6E6E76;text-align:center;margin:-2px 0 10px;line-height:1.6">🕘 결과는 매주 토요일 추첨 후 밤 9시 15분경 자동 반영돼요 (드물게 지연 시 다음날 오전 재시도)</div>';
   if(state.notice){
     html+='<div class="card" style="border-color:rgba(232,169,58,.35);background:rgba(232,169,58,.06)"><div style="font-size:13px;font-weight:700;color:#E8A93A;text-align:center">'+state.notice+'</div></div>';
   }
