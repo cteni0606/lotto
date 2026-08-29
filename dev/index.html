@@ -139,8 +139,9 @@ button{font-family:inherit;cursor:pointer;-webkit-appearance:none;border:none;}
       <div style="font-size:15px;font-weight:800;color:#F2F2F0">📷 QR로 번호 넣기</div>
       <button onclick="closeQrScan()" style="background:none;border:none;color:#8A8A93;font-size:20px;padding:4px 8px">✕</button>
     </div>
-    <div id="qr-video-wrap" style="display:none">
-      <video id="qr-video" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000"></video>
+    <div id="qr-video-wrap" style="display:none;position:relative">
+      <video id="qr-video" autoplay muted playsinline style="width:100%;border-radius:12px;background:#000;display:block"></video>
+      <div id="qr-guide" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:62%;aspect-ratio:1/1;border:3px solid #E8A93A;border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);pointer-events:none"></div>
       <div id="qr-status" style="font-size:11px;color:#8A8A93;text-align:center;margin-top:8px;line-height:1.6;min-height:16px"></div>
     </div>
     <canvas id="qr-canvas" style="display:none"></canvas>
@@ -158,7 +159,7 @@ window.onerror=function(m,u,l){showErr(m+' (줄:'+l+')');return true;};
 
 var SB_URL='https://gdckvqbolfwtrydeervz.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY2t2cWJvbGZ3dHJ5ZGVlcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTgzNzIsImV4cCI6MjEwMjk3NDM3Mn0.UDNfuKVhXI-kGQVt3Z1_Rcy7ewW1oGkKLO7_aJwOMR8';
-var APP_VERSION='2.0.16.02';
+var APP_VERSION='2.0.17.00';
 var APP_ENV='dev'; // 배포 파이프라인이 dev/qa로 치환
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 
@@ -444,33 +445,56 @@ function openQrScan(){
   document.getElementById('qr-video-wrap').style.display='block';
   document.getElementById('qr-status').textContent='카메라 준비 중...';
   qrActive=true;
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
-    .then(function(stream){
-      if(!qrActive){var ts=stream.getTracks();for(var i=0;i<ts.length;i++){try{ts[i].stop();}catch(e){}}return;}
-      qrStream=stream;
-      var v=document.getElementById('qr-video');
-      if(v){v.srcObject=stream;try{v.play();}catch(e2){}}
-      var st=document.getElementById('qr-status');
-      if(st)st.textContent='로또 용지 하단의 QR코드를 화면에 맞춰주세요';
-      qrTick();
-    })
+  var onStream=function(stream){
+    if(!qrActive){var ts=stream.getTracks();for(var i=0;i<ts.length;i++){try{ts[i].stop();}catch(e){}}return;}
+    qrStream=stream;
+    var v=document.getElementById('qr-video');
+    if(v){v.srcObject=stream;try{v.play();}catch(e2){}}
+    var st=document.getElementById('qr-status');
+    if(st)st.textContent='로또 용지 하단의 QR코드를 가이드 박스 안에 맞춰주세요';
+    qrTick();
+  };
+  var onFail=function(e){
+    var st2=document.getElementById('qr-status');
+    if(st2)st2.textContent='⚠ 카메라를 열 수 없습니다. 브라우저 설정에서 카메라 권한을 허용한 뒤 다시 시도해 주세요.';
+  };
+  // 1차: 후면 카메라 고해상도 + 연속 초점. 일부 기기가 세밀한 제약을 거부(OverconstrainedError)하면 2차로 폴백.
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},advanced:[{focusMode:'continuous'}]}})
+    .then(onStream)
     .catch(function(e){
-      var st2=document.getElementById('qr-status');
-      if(st2)st2.textContent='⚠ 카메라를 열 수 없습니다. 브라우저 설정에서 카메라 권한을 허용한 뒤 다시 시도해 주세요.';
+      navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+        .then(onStream)
+        .catch(onFail);
     });
 }
+var qrTickN=0;
 function qrTick(){
   try{
     if(!qrActive||!qrStream)return;
     var v=document.getElementById('qr-video');
     if(v&&v.readyState>=2&&v.videoWidth>0){
+      qrTickN++;
+      var vw=v.videoWidth,vh=v.videoHeight;
+      // 가이드 박스(화면 폭의 62% 정사각형)에 대응하는 실제 프레임 픽셀 영역만 크롭.
+      // 짧은 변 기준 62%를 정사각형으로 중앙에서 잘라 canvas 전체에 그려 픽셀 밀도를 높인다.
+      var side=Math.floor(Math.min(vw,vh)*0.62);
+      if(side<1)side=Math.min(vw,vh);
+      var sx=Math.floor((vw-side)/2),sy=Math.floor((vh-side)/2);
       var cv=document.getElementById('qr-canvas');
-      cv.width=v.videoWidth;cv.height=v.videoHeight;
       var ctx=cv.getContext('2d');
-      ctx.drawImage(v,0,0,cv.width,cv.height);
-      var img=ctx.getImageData(0,0,cv.width,cv.height);
       var code=null;
-      try{code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});}catch(e1){}
+      // 1) 중앙 크롭 영역 디코딩(확대 효과)
+      cv.width=side;cv.height=side;
+      ctx.drawImage(v,sx,sy,side,side,0,0,side,side);
+      var img=ctx.getImageData(0,0,side,side);
+      try{code=window.jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});}catch(e1){}
+      // 2) 크롭 실패 시, 매 3번째 tick마다 전체 프레임도 시도(가이드 밖 QR 폴백)
+      if((!code||!code.data)&&(qrTickN%3===0)){
+        cv.width=vw;cv.height=vh;
+        ctx.drawImage(v,0,0,vw,vh);
+        var img2=ctx.getImageData(0,0,vw,vh);
+        try{code=window.jsQR(img2.data,img2.width,img2.height,{inversionAttempts:'attemptBoth'});}catch(e3){}
+      }
       if(code&&code.data){
         var parsed=parseLottoQR(code.data);
         if(parsed){qrFound(parsed);return;}
